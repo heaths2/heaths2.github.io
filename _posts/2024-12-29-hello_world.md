@@ -53,6 +53,8 @@ ruby --version
 gem --version
 ```
 
+## 환경변수 설정
+
 ```bash
 echo '# Install Ruby Gems to ~/gems' >> ~/.bashrc
 echo 'export GEM_HOME="$HOME/gems"' >> ~/.bashrc
@@ -60,9 +62,13 @@ echo 'export PATH="$HOME/gems/bin:$PATH"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
+## Jekyll 및 Bundler 설치
+
 ```bash
 gem install jekyll bundler
 ```
+
+## Node.js 설치
 
 ```bash
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
@@ -70,11 +76,15 @@ source ~/.bashrc
 nvm install 22
 ```
 
+## Node.js 설치 확인
+
 ```bash
 node -v
 nvm current
 npm -v
 ```
+
+## Jekyll 테마 설치 및 초기화
 
 ```bash
 git clone https://github.com/cotes2020/jekyll-theme-chirpy.git
@@ -82,8 +92,14 @@ cd jekyll-theme-chirpy
 bash tools/init.sh
 ```
 
+## Gemfile에 정의된 모든 종속성을 설치
+
 ```bash
 bundle install
+```
+
+## Jekyll 로컬 서버를 실행
+```bash
 bundle exec jekyll serve --host 0.0.0.0
 ```
 

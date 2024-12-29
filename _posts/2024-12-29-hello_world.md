@@ -38,3 +38,55 @@ name: G.G
 | `url`       | GitHub Pages에서 블로그가 배포될 URL을 설정합니다. | `https://heaths2.github.io` |
 | `name`      | 작성자의 이름을 설정합니다.                  | `G.G`                   |
 
+
+## Ruby 및 필수 패키지 설치
+
+```bash
+sudo apt-get update
+sudo apt-get install ruby-full build-essential zlib1g-dev
+```
+
+## Ruby와 Gem의 설치 확인
+
+```bash
+ruby --version
+gem --version
+```
+
+```bash
+echo '# Install Ruby Gems to ~/gems' >> ~/.bashrc
+echo 'export GEM_HOME="$HOME/gems"' >> ~/.bashrc
+echo 'export PATH="$HOME/gems/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+```bash
+gem install jekyll bundler
+```
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+source ~/.bashrc
+nvm install 22
+```
+
+```bash
+node -v
+nvm current
+npm -v
+```
+
+```bash
+git clone https://github.com/cotes2020/jekyll-theme-chirpy.git
+cd jekyll-theme-chirpy
+bash tools/init.sh
+```
+
+```bash
+bundle install
+bundle exec jekyll serve --host 0.0.0.0
+```
+
+## 참조
+- [Jekyll 공식 문서](https://jekyllrb.com/docs/installation/)
+- [Chirpy 테마 GitHub 리포지토리](https://github.com/cotes2020/jekyll-theme-chirpy)

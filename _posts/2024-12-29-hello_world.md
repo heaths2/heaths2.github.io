@@ -15,8 +15,8 @@ pin: true
 
 ## GitHub에서 Chirpy Jekyll 템플릿으로 블로그 시작하기
 
-![image](https://github.com/user-attachments/assets/637590f0-3c00-47d1-b89b-9c7e70b29255)
-![image](https://github.com/user-attachments/assets/8e7a2703-8aa5-4137-b732-ac26c56f3d1c)
+![image](https://github.com/user-attachments/assets/7e77c4a8-289f-462d-97fc-71cc92c225cc)
+![image](https://github.com/user-attachments/assets/3d26ee42-9fd9-4923-937a-2922b844224a)
 
 ## `_config.yml` 기본 설정
 
@@ -28,6 +28,8 @@ url: "https://heaths2.github.io"
 name: G.G
 ```
 
+{: .prompt-info }
+>
 | **항목**    | **설명**                                     | **예시**                 |
 |-------------|----------------------------------------------|--------------------------|
 | `lang`      | 사이트의 언어를 설정합니다.                  | `ko-KR` (한국어)         |
@@ -35,4 +37,4 @@ name: G.G
 | `title`     | 블로그의 제목을 설정합니다.                  | `G.G` (블로그 이름)      |
 | `url`       | GitHub Pages에서 블로그가 배포될 URL을 설정합니다. | `https://heaths2.github.io` |
 | `name`      | 작성자의 이름을 설정합니다.                  | `G.G`                   |
-{: .prompt-info }
+

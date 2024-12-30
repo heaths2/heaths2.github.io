@@ -7,6 +7,138 @@ tags: [kubernetes, k8s, kubespray]
 pin: true
 ---
 
+## HA 설정
+
+Haproxy + Keepalived
+
+```bash
+sudo apt update
+sudo apt install keepalived haproxy
+```
+
+```bash
+cat <<EOF > /etc/keepalived/keepalived.conf
+! Configuration File for keepalived
+  
+global_defs {
+    notification_email {
+        idc@infra.com               # 알림 이메일을 받을 주소
+    }
+
+    notification_email_from no-reply@infra.com
+
+    smtp_server 127.0.0.1           # SMTP 서버 주소
+    smtp_connect_timeout 60         # SMTP 서버 연결 타임아웃
+
+    router_id LVS_MAIN              # 라우터 ID (서버 식별용)
+    
+    vrrp_skip_check_adv_addr        # Advertisement Address 검사 비활성화
+    vrrp_garp_interval 0.000001     # GARP 패킷 비활성화 (IPv4)
+    vrrp_gna_interval 0.000001      # GNA 패킷 비활성화 (IPv6)
+    
+    script_user root
+    enable_script_security          # 스크립트 보안 활성화
+}
+
+vrrp_script chk_haproxy {
+    script "/usr/bin/killall -0 haproxy"
+    interval 2
+    weight 2
+}
+
+# Internal VRRP 인스턴스
+vrrp_instance K8s-VIP {
+    state MASTER                    # MASTER/BACKUP 중 선택 (주 서버에서는 MASTER)
+    interface eth0                  # VIP를 할당할 네트워크 인터페이스
+    virtual_router_id 240           # VRRP 그룹 ID (범위: 1 ~255, 같은 그룹에서는 동일해야 함)
+    priority 101                    # 우선순위 (숫자가 높을수록 우선)
+    smtp_alert                      # VRRP 인스턴스 상태 변화 시 이메일로 알림 전송
+    advert_int 1                    # VRRP 신호 간격 (초 단위)
+
+
+    authentication {
+        auth_type PASS
+        auth_pass 1234              # VRRP 인증 비밀번호
+    }
+
+    unicast_src_ip 10.1.81.246      # 현재 노드의 소스 IP
+    unicast_peer {
+        10.1.81.247                 # 다른 Keepalived 인스턴스의 IP 주소
+    }
+
+    virtual_ipaddress {
+        10.1.81.240/32              # VIP 설정
+    }
+
+    track_script {
+        chk_haproxy                 #  스크립트를 실행하여 HAProxy 상태를 확인
+    }
+}
+EOF
+```
+
+```bash
+cat <<EOF > /etc/keepalived/keepalived.conf
+! Configuration File for keepalived
+  
+global_defs {
+    notification_email {
+        idc@infra.com               # 알림 이메일을 받을 주소
+    }
+
+    notification_email_from no-reply@infra.com
+
+    smtp_server 127.0.0.1           # SMTP 서버 주소
+    smtp_connect_timeout 60         # SMTP 서버 연결 타임아웃
+
+    router_id LVS_MAIN              # 라우터 ID (서버 식별용)
+    
+    vrrp_skip_check_adv_addr        # Advertisement Address 검사 비활성화
+    vrrp_garp_interval 0.000001     # GARP 패킷 비활성화 (IPv4)
+    vrrp_gna_interval 0.000001      # GNA 패킷 비활성화 (IPv6)
+    
+    script_user root
+    enable_script_security          # 스크립트 보안 활성화
+}
+
+vrrp_script chk_haproxy {
+    script "/usr/bin/killall -0 haproxy"
+    interval 2
+    weight 2
+}
+
+# Internal VRRP 인스턴스
+vrrp_instance K8s-VIP {
+    state BACKUP                    # MASTER/BACKUP 중 선택 (주 서버에서는 MASTER)
+    interface eth0                  # VIP를 할당할 네트워크 인터페이스
+    virtual_router_id 240           # VRRP 그룹 ID (범위: 1 ~255, 같은 그룹에서는 동일해야 함)
+    priority 100                    # 우선순위 (숫자가 높을수록 우선)
+    smtp_alert                      # VRRP 인스턴스 상태 변화 시 이메일로 알림 전송
+    advert_int 1                    # VRRP 신호 간격 (초 단위)
+
+
+    authentication {
+        auth_type PASS
+        auth_pass 1234              # VRRP 인증 비밀번호
+    }
+
+    unicast_src_ip 10.1.81.246      # 현재 노드의 소스 IP
+    unicast_peer {
+        10.1.81.247                 # 다른 Keepalived 인스턴스의 IP 주소
+    }
+
+    virtual_ipaddress {
+        10.1.81.240/32              # VIP 설정
+    }
+
+    track_script {
+        chk_haproxy                 #  스크립트를 실행하여 HAProxy 상태를 확인
+    }
+}
+EOF
+```
+
+B. Haproxy + Keepalived
 
 ## Kubespray 설치
 

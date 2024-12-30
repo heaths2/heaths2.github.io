@@ -2,7 +2,7 @@
 title: Kubespray 설치방법
 author: G.G
 date: 2024-12-30 11:56:00 +0900
-categories: [Blog, Orchestration, Kubernetes]
+categories: [Blog, Orchestration]
 tags: [kubernetes, k8s, kubespray]
 pin: true
 ---
@@ -86,3 +86,4 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
 ## 참조
 - [Kubespray 설치가이드](https://kubernetes.io/ko/docs/setup/production-environment/tools/kubespray/)
+- [](https://github.com/kubernetes-sigs/kubespray)

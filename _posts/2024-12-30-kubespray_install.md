@@ -10,6 +10,19 @@ pin: true
 
 ## Kubespray 설치
 
+| IP           | Hostname        | Describe                 |
+|:------------:|:----------------|:-------------------------|
+| 10.1.81.240  | haproxy-VIP     | HAProxy VIP              |
+| 10.1.81.241  | master-node01   | Kubernetes Control Plane |
+| 10.1.81.242  | master-node02   | Kubernetes Control Plane |
+| 10.1.81.243  | master-node03   | Kubernetes Control Plane |
+| 10.1.81.244  | worker-node01   | Kubernetes Woker node    |
+| 10.1.81.245  | worker-node02   | Kubernetes Woker node    |
+| 10.1.81.246  | haproxy01       | HAProxy + Keepalived LB  |
+| 10.1.81.247  | haproxy02       | HAProxy + Keepalived LB  |
+| 10.1.81.248  | postgres01      | PostgresSQL Database     |
+| 10.1.81.249  | postgres02      | PostgresSQL Database     |
+
 ```bash
 echo "yes" | ssh-keygen -t ed25519 -N "" -f /root/.ssh/id_ed25519 -C $(hostname -s)
 ssh-copy-id -i /root/.ssh/id_ed25519.pub localhost

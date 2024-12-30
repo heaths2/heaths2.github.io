@@ -85,5 +85,4 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ```
 
 ## 참조
-- [Kubespray 설치가이드](https://kubernetes.io/ko/docs/setup/production-environment/tools/kubespray/)
-- [](https://github.com/kubernetes-sigs/kubespray)
+- [Kubespray 공식 리포지토리](https://github.com/kubernetes-sigs/kubespray)

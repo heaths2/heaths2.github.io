@@ -205,8 +205,7 @@ vgcreate Disks /dev/sdb
 ## XEN Hypervisor 설치
 
 ### 패키지 설치
-
-1. 패키지 설치
+> 필수 패키지를 설치합니다.
 
 ```bash
 sudo apt update
@@ -215,8 +214,7 @@ sudo apt install -y xen-hypervisor-4.17-amd64 xen-utils-4.17 xen-tools
 
 ### cfg 파일 설정
 
-2. `/etc/default/grub.d/xen.cfg`{: .filepath} 파일 설정
-- Xen이 기본 GRUB 부트 항목을 오버라이드하도록 설정
+> `/etc/default/grub.d/xen.cfg`{: .filepath} 파일을 Xen이 기본 GRUB 부트 항목을 오버라이드하도록 설정합니다.
 
 ```cfg
 sed -i 's/#XEN_OVERRIDE_GRUB_DEFAULT=.*/XEN_OVERRIDE_GRUB_DEFAULT=1/' /etc/default/grub.d/xen.cfg
@@ -242,6 +240,3 @@ update-grub
 ```bash
 reboot
 ```
-3. 
-4. 5
-5. 

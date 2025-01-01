@@ -1,7 +1,7 @@
 ---
 title: Hello World
 description: >-
-  안녕하세요, G.G입니다! 이 블로그에서는 제가 배우고 경험한 내용을 공유합니다.
+  안녕하세요, G.G입니다! 이 블로그에서는 제가 배우고 경험한 내용을 공유합니다. 기존 Just-the-docs Jekyll 템플릿에서 작성된 새로운 Chirpy Jekyll 템플릿으로 리뉴얼 합니다.
 author: G.G
 date: 2024-12-29 22:28:00 +0900
 categories: [Blog, Tutorial]

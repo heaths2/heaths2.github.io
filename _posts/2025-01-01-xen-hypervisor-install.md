@@ -205,7 +205,7 @@ vgcreate Disks /dev/sdb
 ## XEN Hypervisor 설치
 
 ### 패키지 설치
-> 필수 패키지를 설치합니다.
+필수 패키지를 설치합니다.
 
 ```bash
 sudo apt update
@@ -213,15 +213,14 @@ sudo apt install -y xen-hypervisor-4.17-amd64 xen-utils-4.17 xen-tools
 ```
 
 ### cfg 파일 설정
-
-> `/etc/default/grub.d/xen.cfg`{: .filepath} 파일을 Xen이 기본 GRUB 부트 항목을 오버라이드하도록 설정합니다.
+`/etc/default/grub.d/xen.cfg`{: .filepath} 파일을 Xen이 기본 GRUB 부트 항목을 오버라이드하도록 설정합니다.
 
 ```cfg
 sed -i 's/#XEN_OVERRIDE_GRUB_DEFAULT=.*/XEN_OVERRIDE_GRUB_DEFAULT=1/' /etc/default/grub.d/xen.cfg
 ```
 {: file='xen.cfg'}
 
-- Xen 하이퍼바이저 커널 옵션 추가
+Xen 하이퍼바이저 커널 옵션 추가
 
 ```cfg
 sed -i -e 's/#GRUB_CMDLINE_XEN_DEFAULT=.*/GRUB_CMDLINE_XEN_DEFAULT="dom0_mem=16G,max:32G dom0_max_vcpus=1-4 dom0_vcpus_pin iommu=1 msi=1 pci_pt_e820_access=on watchdog ucode=scan crashkernel=256M,below=4G console=vga,com1 vga=mode-0x0314 com1=115200,8n1"/' \
@@ -239,4 +238,36 @@ update-grub
 
 ```bash
 reboot
+```
+
+### 주요 명령어
+1. `xl list`: Xen 하이퍼바이저에서 실행 중인 도메인(가상 머신) 상태를 확인합니다.
+2. `xl info`: Xen 하이퍼바이저의 전반적인 상태 및 설정 정보를 출력합니다.
+3. `xl create`: Xen 가상 머신(도메인)을 생성하고 실행합니다.
+4. `xl shutdown`: Xen 가상 머신(도메인)을 안전하게 종료합니다.
+5. `xl destroy`: Xen 가상 머신(도메인)을 강제로 종료합니다.
+6. `xl mem-set`: Xen 가상 머신(도메인)에 할당된 메모리를 동적으로 조정합니다.
+
+```bash
+xl list
+```
+
+```bash
+xl info
+```
+
+```bash
+xl create /etc/xen/noble.cfg
+```
+
+```bash
+xl shutdown <domain>
+```
+
+```bash
+xl destroy <domain>
+```
+
+```bash
+xl mem-set <domain> <memory-size>
 ```

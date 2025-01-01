@@ -464,7 +464,7 @@ xen-create-image    --hostname=noble \
                     --extension=
 ```
 
-```cfg
+```bash
 #
 # Configuration file for the Xen instance ubuntu-img, created
 # by xen-tools 4.9.2 on Tue Feb 13 09:38:46 2024.

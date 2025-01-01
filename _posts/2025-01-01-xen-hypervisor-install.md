@@ -111,14 +111,7 @@ network:
 EOF
 ```
 
-2. 패키지 설치
-
-```bash
-sudo apt update
-sudo apt install -y xen-hypervisor-4.17-amd64 xen-utils-4.17 xen-tools
-```
-
-3. 저장소 생성
+2. 저장소 생성
 - 기본적으로 /dev/sda가 OS영역으로 할당되어 있음
 
 A. LVM 방식
@@ -178,7 +171,7 @@ mount /dev/Disks/img /data/volumes
 echo '/dev/Disks/img /data/volumes ext4 defaults 0 0' >> /etc/fstab
 ```
 
-4. 오류 발생시
+3. 오류 발생시
 - 오류 발생: `vgcreate Disks /dev/sdb`
 
 ```bash
@@ -211,8 +204,44 @@ vgcreate Disks /dev/sdb
 
 ## XEN Hypervisor 설치
 
-1. 
-2. 3
-3. 4
+### 패키지 설치
+
+1. 패키지 설치
+
+```bash
+sudo apt update
+sudo apt install -y xen-hypervisor-4.17-amd64 xen-utils-4.17 xen-tools
+```
+
+### cfg 파일 설정
+
+2. `/etc/default/grub.d/xen.cfg`{: .filepath} 파일 설정
+- Xen이 기본 GRUB 부트 항목을 오버라이드하도록 설정
+
+```cfg
+sed -i 's/#XEN_OVERRIDE_GRUB_DEFAULT=.*/XEN_OVERRIDE_GRUB_DEFAULT=1/' /etc/default/grub.d/xen.cfg
+```
+{: file='xen.cfg'}
+
+- Xen 하이퍼바이저 커널 옵션 추가
+
+```cfg
+sed -i -e 's/#GRUB_CMDLINE_XEN_DEFAULT=.*/GRUB_CMDLINE_XEN_DEFAULT="dom0_mem=16G,max:32G dom0_max_vcpus=1-4 dom0_vcpus_pin iommu=1 msi=1 pci_pt_e820_access=on watchdog ucode=scan crashkernel=256M,below=4G console=vga,com1 vga=mode-0x0314 com1=115200,8n1"/' \
+       -e 's/#GRUB_CMDLINE_XEN=.*/GRUB_CMDLINE_XEN=""/' /etc/default/grub.d/xen.cfg
+```
+{: file='xen.cfg'}
+
+### grub 업데이트
+
+```bash
+update-grub
+```
+
+### 시스 재부팅
+
+```bash
+reboot
+```
+3. 
 4. 5
 5. 

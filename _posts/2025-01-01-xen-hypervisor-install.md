@@ -270,3 +270,151 @@ xl destroy <domain>
 ```bash
 xl mem-set <domain> <memory-size>
 ```
+
+## VM 생성
+
+### Domain-U 생성
+1. LVM 방식
+  - cfg 파일
+2. IMG 방식
+  - cfg 파일
+
+```bash
+xen-create-image    --hostname=noble \
+                    --dist=noble \
+                    --memory=16G \
+                    --maxmem=64G \
+                    --vcpus=44 \
+                    --bridge=xenbr0 \
+                    --dhcp \
+                    --size=50G \
+                    --swap=1G \
+                    --lvm=Disks \
+                    --force \
+                    --pygrub \
+                    --role='required-packages' \
+                    --password=1234 \
+                    --extension=
+```
+
+```cfg
+#
+# Configuration file for the Xen instance ubuntu-img, created
+# by xen-tools 4.9.2 on Tue Feb 13 09:38:46 2024.
+#
+
+#
+#  Kernel + memory size
+#
+
+
+bootloader = 'pygrub'
+
+cpus        = [ '4-47' ]
+vcpus       = '44'
+memory      = '16384'
+maxmem      = '65536'
+
+#
+#  Disk device(s).
+#
+root        = '/dev/xvda2 ro'
+disk        = [
+                  'phy:/dev/Disks/noble-disk,xvda2,w',
+                  'phy:/dev/Disks/noble-swap,xvda1,w',
+              ]
+
+
+#
+#  Physical volumes
+#
+
+
+#
+#  Hostname
+#
+name        = 'noble'
+
+#
+#  Networking
+#
+dhcp        = 'dhcp'
+vif         = [ 'bridge=xenbr0' ]
+
+#
+#  Behaviour
+#
+on_poweroff = 'destroy'
+on_reboot   = 'restart'
+on_crash    = 'restart'
+```
+
+```bash
+xen-create-image    --hostname=noble \
+                    --dist=noble \
+                    --memory=16G \
+                    --maxmem=64G \
+                    --vcpus=44 \
+                    --bridge=xenbr0 \
+                    --dhcp \
+                    --size=50G \
+                    --swap=1G \
+                    --dir=/data/volumes \
+                    --force \
+                    --pygrub \
+                    --role='required-packages' \
+                    --password=1234 \
+                    --extension=
+```
+
+```bash
+#
+# Configuration file for the Xen instance ubuntu-img, created
+# by xen-tools 4.9.2 on Tue Feb 13 09:38:46 2024.
+#
+
+#
+#  Kernel + memory size
+#
+
+
+bootloader = 'pygrub'
+
+cpu         = '4-47'
+vcpus       = '44'
+memory      = '16384'
+maxmem      = '65536'
+
+#
+#  Disk device(s).
+#
+root        = '/dev/xvda2 ro'
+disk        = [
+                  'file:/data/volumes/domains/jammy/disk.img,xvda2,w',
+                  'file:/data/volumes/domains/jammy/swap.img,xvda1,w',
+              ]
+
+
+#
+#  Physical volumes
+#
+
+
+#
+#  Hostname
+#
+name        = 'noble'
+
+#
+#  Networking
+#
+dhcp        = 'dhcp'
+vif         = [ 'bridge=xenbr0' ]
+
+#
+#  Behaviour
+#
+on_poweroff = 'destroy'
+on_reboot   = 'restart'
+on_crash    = 'restart'
+```

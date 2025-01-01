@@ -34,7 +34,7 @@ lang: ko-KR
 timezone: Asia/Seoul
 title: G.G
 name: G.G
-avatar: `/assets/img/g.g.png`{: .filepath}
+avatar: /assets/img/g.g.png
 ```
 {: file='_config.yml'}
 

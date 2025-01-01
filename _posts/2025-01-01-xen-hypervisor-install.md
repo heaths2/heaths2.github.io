@@ -43,6 +43,7 @@ Xen Hypervisor는 고성능 및 고효율의 오픈소스 **하이퍼바이저(H
 ## 환경구성
 > HPE Proliant DL360 Gen9 서버를 활용하여 Ubuntu 24.04에서 환경 구성합니다.
 
+### 네트워크 설정
 1. NIC 설정
 
 | **구분**    | **IP 대역**             | **VLAN**  | **용도**                                    |
@@ -207,3 +208,11 @@ pvcreate /dev/sdb
 vgcreate Disks /dev/sdb
   Physical volume "/dev/sdb" successfully created.
 ```
+
+## XEN Hypervisor 설치
+
+1. 
+2. 3
+3. 4
+4. 5
+5. 

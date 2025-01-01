@@ -285,7 +285,7 @@ tree -apf /etc/xen-tools/skel/
 ```
 
 ### 패키지 설치 및 설정
-Xen VM에 필요한 패키지를 설치하고, 다양한 환경 설정을 자동으로 처리하는 스크립트를 작성합니다.
+Xen VM에 필요한 패키지를 설치하고, 다양한 환경 설정을 자동으로 처리하는 `/etc/xen-tools/role.d/custom_role`{: .filepath} 스크립트를 작성합니다.
 
 ```bash
 #!/bin/bash
@@ -459,7 +459,7 @@ xen-create-image    --hostname=noble \
                     --lvm=Disks \
                     --force \
                     --pygrub \
-                    --role='required-packages' \
+                    --role='custom_role' \
                     --password=1234 \
                     --extension=
 ```
@@ -529,7 +529,7 @@ xen-create-image    --hostname=noble \
                     --dir=/data/volumes \
                     --force \
                     --pygrub \
-                    --role='required-packages' \
+                    --role='custom_role' \
                     --password=1234 \
                     --extension=
 ```

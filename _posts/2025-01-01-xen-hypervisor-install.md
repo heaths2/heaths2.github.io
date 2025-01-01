@@ -271,6 +271,173 @@ xl destroy <domain>
 xl mem-set <domain> <memory-size>
 ```
 
+## 구성 파일 생성
+
+### skel 설정
+Xen-tools에서 VM을 생성할 때 사용할 기본 디렉토리 구조를 설정합니다.
+
+```bash
+mkdir -pv /etc/xen-tools/skel/root/.ssh
+chown -R root:root /etc/xen-tools/skel/root/.ssh
+cp -v /etc/skel/.bashrc /etc/xen-tools/skel/root
+cp -v ~/.ssh/{authorized_keys,config} /etc/xen-tools/skel/root/.ssh
+tree -apf /etc/xen-tools/skel/
+```
+
+### 패키지 설치 및 설정
+Xen VM에 필요한 패키지를 설치하고, 다양한 환경 설정을 자동으로 처리하는 스크립트를 작성합니다.
+
+```bash
+#!/bin/bash
+#
+# Required packages installation script for Xen VM
+#
+# This script installs a list of essential packages and configures zsh plugins, SSH settings, timezone, locale, and user groups.
+
+prefix=$1
+
+# Check if the common functions file exists, which includes the installDebianPackage function.
+if [ -e /usr/share/xen-tools/common.sh ]; then
+    . /usr/share/xen-tools/common.sh
+else
+    echo "Installation problem: common.sh not found"
+    exit 1
+fi
+
+chroot ${prefix} /bin/bash -c "set -o xtrace"
+
+# List of required packages to be installed
+packages=(
+  alien
+  apt-rdepends
+  bash-completion
+  colordiff
+  command-not-found
+  curl
+  dnsutils
+  dstat
+  ethtool
+  file
+  gcc
+  gdb
+  git
+  hardinfo
+  hdparm
+  htop
+  ifenslave
+  iftop
+  imvirt
+  iotop
+  iptables
+  iptraf-ng
+  jq
+  landscape-common
+  lshw
+  lsof
+  lsscsi
+  lvm2
+  multitail
+  mtr
+  neofetch
+  neovim
+  net-tools
+  network-manager
+  nfs-common
+  nscd
+  ntp
+  openvswitch-switch
+  parted
+  psmisc
+  pigz
+  pv
+  python3
+  python3-dev
+  python3-pip
+  python3-pipdeptree
+  rename
+  rsync
+  screen
+  smartmontools
+  software-properties-common
+  speedtest-cli
+  spfquery
+  ssh-askpass
+  sysstat
+  tcpdump
+  tcpflow
+  telnet
+  tmux
+  traceroute
+  tree
+  ufw
+  vim
+  vim-gtk
+  virt-what
+  vnstat
+  wget
+  whois
+  xonsh
+  xxhash
+)
+
+# Update APT lists
+chroot ${prefix} /usr/bin/apt-get update
+
+# Install each package from the list
+for package in "${packages[@]}"; do
+  installDebianPackage ${prefix} ${package}
+done
+
+# SSH configuration adjustments
+chroot ${prefix} /bin/bash -c "sed -i '/#PermitRootLogin prohibit-password/a PermitRootLogin yes' /etc/ssh/sshd_config"
+chroot ${prefix} /bin/bash -c "sed -i '/#PubkeyAuthentication yes/a PubkeyAcceptedAlgorithms +ssh-rsa' /etc/ssh/sshd_config"
+
+# Timezone configuration
+chroot ${prefix} /bin/bash -c "rm -f /etc/localtime && ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime && echo 'Asia/Seoul' > /etc/timezone"
+
+# Locale configuration
+chroot ${prefix} /bin/bash -c "/usr/bin/localectl set-locale LANG=en_US.UTF-8"
+chroot ${prefix} /bin/bash -c "sed -i 's/# ko_KR.UTF-8 UTF-8/ko_KR.UTF-8 UTF-8/' /etc/locale.gen && /usr/sbin/locale-gen"
+
+# Change group and user IDs for nobody
+chroot ${prefix} /bin/bash -c "groupadd -fg 99 nobody"
+chroot ${prefix} /bin/bash -c "sed -i -e 's/^\(nobody:[^:]\):[0-9]*:[0-9]*:/\1:99:99:/' /etc/passwd"
+
+# systemctl enable --now systemd-networkd-wait-online.service
+# Disable and stop systemd-networkd-wait-online.service
+chroot ${prefix} /bin/bash -c "rm -v /etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service"
+# systemctl mask systemd-networkd-wait-online.service
+chroot ${prefix} /bin/bash -c "ln -sfv /dev/null /etc/systemd/system/systemd-networkd-wait-online.service"
+
+# ZSH plugins and configurations
+chroot ${prefix} /bin/bash -c "git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf && ~/.fzf/install --all"
+
+# Sysstat configuration (after package installation)
+chroot ${prefix} /bin/bash -c "sed -i 's/ENABLED=\"[^\"]*\"/ENABLED=\"true\"/' /etc/default/sysstat"
+chroot ${prefix} /bin/bash -c "sed -i -e 's/^HISTORY=.*/HISTORY=31/' -e 's/^COMPRESSAFTER=.*/COMPRESSAFTER=31/' /etc/sysstat/sysstat"
+chroot ${prefix} /bin/bash -c "cat << EOF | sudo tee /etc/cron.d/sysstat
+# The first element of the path is a directory where the debian-sa1
+# script is located
+PATH=/usr/lib/sysstat:/usr/sbin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# Activity reports every 5 minutes everyday
+*/5 * * * * root command -v debian-sa1 > /dev/null && debian-sa1 1 1
+
+# Additional run at 23:59 to rotate the statistics file
+59 23 * * * root command -v debian-sa1 > /dev/null && debian-sa1 60 2
+EOF"
+chroot ${prefix} /bin/bash -c "/usr/sbin/dpkg-reconfigure -f noninteractive sysstat"
+
+
+# NTP configuration changes (after package installation)
+chroot ${prefix} /bin/bash -c "sed -i 's/pool 0.ubuntu.pool.ntp.org iburst/server time1.google.com iburst/' /etc/ntp.conf"
+chroot ${prefix} /bin/bash -c "sed -i 's/pool 1.ubuntu.pool.ntp.org iburst/server time2.google.com iburst/' /etc/ntp.conf"
+chroot ${prefix} /bin/bash -c "sed -i 's/pool 2.ubuntu.pool.ntp.org iburst/server time3.google.com iburst/' /etc/ntp.conf"
+chroot ${prefix} /bin/bash -c "sed -i 's/pool 3.ubuntu.pool.ntp.org iburst/server time4.google.com iburst/' /etc/ntp.conf"
+
+chroot ${prefix} /bin/bash -c "set +o xtrace"
+```
+
 ## VM 생성
 
 ### Domain-U 생성

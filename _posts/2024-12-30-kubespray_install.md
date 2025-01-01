@@ -209,11 +209,11 @@ backend tcp_k8s_api
         mode    tcp
         balance source
         option log-health-checks
-        default-server check inter 5s fastinter 1s rise 2 fall 3
+        default-server inter 5s downinter 5s fastinter 1s rise 2 fall 3 slowstart 60s maxconn 250 maxqueue 256 weight 100
 
-        server control-node01 10.1.81.241:6443
-        server control-node02 10.1.81.242:6443
-        server control-node03 10.1.81.243:6443
+        server control-node01 10.1.81.241:6443 check
+        server control-node02 10.1.81.242:6443 check
+        server control-node03 10.1.81.243:6443 check
 
 #--------------------------------------------------------------------#
 # HAProxy Monitoring Configuration                                   #

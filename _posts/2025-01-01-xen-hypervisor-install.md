@@ -51,6 +51,11 @@ Xen Hypervisor는 고성능 및 고효율의 오픈소스 **하이퍼바이저(H
 | 공인 IP 2   | 203.51.100.0/24         | VLAN 200  | 공인 IP 예시 2 (임의의 테스트용 IP 대역)      |
 | 사설 IP 1   | 10.1.1.0/24             | VLAN 1000 | 사설 IP Domain-0 관리 IP                     |
 
+<details markdown="block" style="margin: 1em 0; padding: 0.8em; border: 2px solid #007acc; border-radius: 10px; background-color: #f5faff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
+  <summary>
+    펼치기/접기
+  </summary>
+
 ```bash
 tee /etc/netplan/50-cloud-init.yaml << EOF
 # This is the network config written by 'subiquity'
@@ -109,6 +114,8 @@ network:
   version: 2
 EOF
 ```
+
+</details>
 
 ### 저장소 생성
 기본적으로 /dev/sda가 OS영역으로 할당되어 있음
@@ -170,7 +177,7 @@ mount /dev/Disks/img /data/volumes
 echo '/dev/Disks/img /data/volumes ext4 defaults 0 0' >> /etc/fstab
 ```
 
-3. 오류 발생시
+### 오류 발생시
 - 오류 발생: `vgcreate Disks /dev/sdb`
 
 ```bash
@@ -286,6 +293,11 @@ tree -apf /etc/xen-tools/skel/
 
 ### 패키지 설치 및 설정
 Xen VM에 필요한 패키지를 설치하고, 다양한 환경 설정을 자동으로 처리하는 `/etc/xen-tools/role.d/custom_role`{: .filepath} 스크립트를 작성합니다.
+
+<details markdown="block" style="margin: 1em 0; padding: 0.8em; border: 2px solid #007acc; border-radius: 10px; background-color: #f5faff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
+  <summary>
+    펼치기/접기
+  </summary>
 
 ```bash
 #!/bin/bash
@@ -438,6 +450,8 @@ chroot ${prefix} /bin/bash -c "sed -i 's/pool 3.ubuntu.pool.ntp.org iburst/serve
 chroot ${prefix} /bin/bash -c "set +o xtrace"
 ```
 
+</details>
+
 ## VM 생성
 
 ### Domain-U 생성
@@ -445,6 +459,11 @@ chroot ${prefix} /bin/bash -c "set +o xtrace"
   - cfg 파일
 2. IMG 방식
   - cfg 파일
+
+<details markdown="block" style="margin: 1em 0; padding: 0.8em; border: 2px solid #007acc; border-radius: 10px; background-color: #f5faff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
+  <summary>
+    펼치기/접기
+  </summary>
 
 ```bash
 xen-create-image    --hostname=noble \
@@ -516,6 +535,13 @@ on_reboot   = 'restart'
 on_crash    = 'restart'
 ```
 
+</details>
+
+<details markdown="block" style="margin: 1em 0; padding: 0.8em; border: 2px solid #007acc; border-radius: 10px; background-color: #f5faff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
+  <summary>
+    펼치기/접기
+  </summary>
+
 ```bash
 xen-create-image    --hostname=noble \
                     --dist=noble \
@@ -585,3 +611,5 @@ on_poweroff = 'destroy'
 on_reboot   = 'restart'
 on_crash    = 'restart'
 ```
+
+</details>

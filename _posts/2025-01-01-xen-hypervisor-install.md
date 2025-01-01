@@ -177,3 +177,33 @@ mount /dev/Disks/img /data/volumes
 echo '/dev/Disks/img /data/volumes ext4 defaults 0 0' >> /etc/fstab
 ```
 
+4. 오류 발생시
+- 오류 발생: `vgcreate Disks /dev/sdb`
+
+```bash
+vgcreate Disks /dev/sdb
+  Device /dev/sdb excluded by a filter.
+```
+
+- 메타데이터 제거: `wipefs -a /dev/sdb`
+
+```bash
+wipefs -a /dev/sdb
+/dev/sdb: 8 bytes were erased at offset 0x00000200 (gpt): 45 46 49 20 50 41 52 54
+/dev/sdb: 8 bytes were erased at offset 0xb54ba25e00 (gpt): 45 46 49 20 50 41 52 54
+/dev/sdb: 2 bytes were erased at offset 0x000001fe (PMBR): 55 aa
+/dev/sdb: calling ioctl to re-read partition table: Success
+```
+
+- 물리 볼륨 생성: `pvcreate /dev/sdb`
+
+```bash
+pvcreate /dev/sdb
+```
+
+- 볼륨 그룹 생성: `vgcreate Disks /dev/sdb`
+
+```bash
+vgcreate Disks /dev/sdb
+  Physical volume "/dev/sdb" successfully created.
+```

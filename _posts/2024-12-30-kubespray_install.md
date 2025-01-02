@@ -350,5 +350,12 @@ sudo cp -v /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ```
 
+```bash
+source <(kubectl completion bash)
+echo "source <(kubectl completion bash)" >> ~/.bashrc
+source <(kubeadm completion bash)
+echo "source <(kubeadm completion bash)" >> ~/.bashrc
+```
+
 ## 참조
 - [Kubespray 공식 리포지토리](https://github.com/kubernetes-sigs/kubespray)

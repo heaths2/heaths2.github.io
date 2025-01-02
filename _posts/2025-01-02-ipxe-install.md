@@ -92,6 +92,11 @@ systemctl restart tftpd-hpa.service
 sudo apt install isc-dhcp-server
 ```
 
+<details markdown="block" style="margin: 1em 0; padding: 0.8em; border: 2px solid #007acc; border-radius: 10px; background-color: #f5faff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
+  <summary>
+    펼치기/접기
+  </summary>
+
 ```bash
 IPADD=$(hostname -I | awk '{print $1}')
 IPGW=$(ip route | grep default | head -n 1 | awk '{print $3}')
@@ -155,6 +160,8 @@ subnet 10.1.0.0 netmask 255.255.0.0 {
 EOF
 ```
 
+</details>
+
 ```bash
 dhcpd -t -cf /etc/dhcp/dhcpd.conf
 ```
@@ -182,4 +189,243 @@ EOF
 
 ```bash
 exportfs -rv
+# 또는
+systemctl restart nfs-kernel-server
 ```
+
+## iPXE 설치
+
+### iPXE 설치 및 환경 구성
+1. 필수 패키지 설치
+2. iPXE 소스 코드 다운로드
+3. iPXE 설정 변경
+- DOWNLOAD_PROTO_NFS: NFS(Network File System) 다운로드 지원.
+- PING_CMD: 네트워크 연결 상태를 확인하기 위한 ping 명령 활성화.
+- IPSTAT_CMD: 네트워크 통계 출력 명령 활성화.
+- REBOOT_CMD: 재부팅 명령 활성화.
+- POWEROFF: 전원 종료 명령 활성화.
+- CONSOLE_CMD: 콘솔 명령어 활성화.
+- 프레임 버퍼 콘솔 지원을 활성화.
+4. 설정 확인
+5. iPXE 바이너리 빌드
+6. TFTP 디렉토리 구성
+7. iPXE 초기 스크립트 작성
+8. iPXE 부트 메뉴 작성
+
+```bash
+sudo apt install build-essential liblzma-dev isolinux git
+```
+
+```bash
+git clone https://github.com/ipxe/ipxe.git
+cd ipxe/src
+```
+
+```bash
+sed -i.bak -e 's/#undef\tDOWNLOAD_PROTO_NFS/#define\tDOWNLOAD_PROTO_NFS/' \
+       -e 's/\/\/#define\ PING_CMD/#define\ PING_CMD/' \
+       -e 's/\/\/#define\ IPSTAT_CMD/#define\ IPSTAT_CMD/' \
+       -e 's/\/\/#define\ REBOOT_CMD/#define\ REBOOT_CMD/' \
+       -e 's/\/\/#define\ POWEROFF/#define\ POWEROFF/' \
+       -e 's/\/\/#define\ CONSOLE_CMD/#define\ CONSOLE_CMD/' config/general.h
+```
+
+```bash
+sed -i 's/\/\/#define[[:space:]]\+CONSOLE_FRAMEBUFFER/#define       CONSOLE_FRAMEBUFFER/' config/console.h
+```
+
+```bash
+grep -E 'DOWNLOAD_PROTO_NFS|PING_CMD|IPSTAT_CMD|REBOOT_CMD|POWEROFF_CMD|CONSOLE_CMD/' config/general.h
+grep 'CONSOLE_FRAMEBUFFER' config/console.h
+```
+
+```bash
+make bin/ipxe.pxe bin/undionly.kpxe bin/undionly.kkpxe bin/undionly.kkkpxe bin-x86_64-efi/ipxe.efi EMBED=/root/ipxe/src/embed.ipxe
+```
+
+```bash
+mkdir -pv /srv/tftp/ipxe/{bin,src}/
+cp -av bin/{ipxe.pxe,undionly.kpxe,undionly.kkpxe,undionly.kkkpxe} bin-x86_64-efi/ipxe.efi /srv/tftp/ipxe/bin/
+wget http://boot.ipxe.org/ipxe.png -O /srv/tftp/ipxe/src/ipxe.png
+```
+
+```bash
+tee /root/ipxe/src/embed.ipxe << EOF
+#!ipxe
+# DHCP
+dhcp
+chain tftp://\${next-server}/main.ipxe
+EOF
+```
+
+<details markdown="block" style="margin: 1em 0; padding: 0.8em; border: 2px solid #007acc; border-radius: 10px; background-color: #f5faff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
+  <summary>
+    펼치기/접기
+  </summary>
+
+```bash
+#!ipxe
+# Background Images
+console --x 1024 --y 768 --picture ipxe/src/ipxe.png --left 32 --right 32 --top 32 --bottom 48
+
+# Set Color Fonts
+set esc:hex 1b
+set bold ${esc:string}[1m
+set boldoff ${esc:string}[22m
+set fg_off ${esc:string}[0m
+set fg_red ${esc:string}[31m
+set fg_gre ${esc:string}[32m
+set fg_cya ${esc:string}[36m
+set fg_whi ${esc:string}[37m
+
+# Set NFS strings
+set nfs-server          ${next-server}
+set nfs-mount           /srv/tftp
+set nfs-path            nfs://${nfs-server}${nfs-mount}
+set nfs-root            ${nfs-server}:${nfs-mount}
+
+# HTTP and iSCSI
+set iscsi-server        ${next-server}
+set http-root           http://${next-server}:3259
+
+:start
+menu iPXE boot menu options
+item --gap --                   ------------------------- Local boot options ------------------------------
+item            localboot               Boot to local drive
+item --gap --                   ------------------------- Network boot options ----------------------------
+item            ubuntu24.04             Install Ubuntu 24.04
+item            ubuntu22.04             Install Ubuntu 22.04
+item            ubuntu20.04             Install Ubuntu 20.04
+item            windows10               Install Windows10
+item            restoredisk-u24         Install Clonezilla Restoredisk u24-BareMetal
+item            restoredisk-xen24       Install Clonezilla Restoredisk u24-XEN
+item            restoredisk-u22         Install Clonezilla Restoredisk u22-BareMetal
+item            restoredisk-xen22       Install Clonezilla Restoredisk u22-XEN
+item            restoredisk-u20         Install Clonezilla Restoredisk u20-BareMetal
+item            restoredisk-xen20       Install Clonezilla Restoredisk u20-XEN
+item --gap --                   ------------------------- HPE options -------------------------------------
+item            ssa2.60                 Go to HPE Smart Storage Administrator 2.60
+item            ssa4.15                 Go to HPE Smart Storage Administrator 4.15
+item            gen8                    Go to HPE Service Pack for ProLiant Gen8
+item            gen9                    Go to HPE Service Pack for ProLiant Gen9
+item --gap --                   ------------------------- Advanced options --------------------------------
+item --key c    clonezilla              Go to Clonezilla Live
+item --key s    shell                   Go to iPXE Shell
+item --key r    reboot                  Reboot
+item
+item --key x    exit                    Exit iPXE and continue BIOS boot
+choose --default localboot --timeout 10000 target && goto ${target}
+
+:localboot
+echo ${fg_gre}Continue${fg_off} booting to local drive
+goto exit
+
+:shell
+echo Type "exit" to return to menu
+shell
+goto start
+
+:reboot
+reboot
+
+:exit
+exit
+
+###
+### Custom menu entries
+###
+
+:clonezilla
+kernel clonezilla/live/vmlinuz
+initrd clonezilla/live/initrd.img
+imgargs vmlinuz boot=live username=user union=overlay components noswap noprompt keyboard-layouts=us locales=en_US.UTF-8 fetch=tftp://${nfs-server}/clonezilla/live/filesystem.squashfs video=1024x768
+boot
+
+:restoredisk-u24
+kernel clonezilla/live/vmlinuz
+initrd clonezilla/live/initrd.img
+imgargs vmlinuz boot=live username=user union=overlay config components quiet noswap edd=on nomodeset enforcing=0 noeject fetch=tftp://${nfs-server}/clonezilla/live/filesystem.squashfs ocs_prerun="dhclient -v" ocs_prerun1="echo '1234' | sshfs root@${nfs-server}:/home/partimag /home/partimag -p 22 -o noatime -o ssh_command='ssh -oStrictHostKeyChecking=No' -o password_stdin" ocs_live_run="/usr/sbin/ocs-sr -g auto -e1 auto -e2 -r -j2 -icds -k1 -p reboot restoredisk u24-BareMetal sda" keyboard-layouts=NONE ocs_live_batch="no" locales="en_US.UTF-8" nolocales video=1024x768
+boot
+
+:restoredisk-xen24
+kernel clonezilla/live/vmlinuz
+initrd clonezilla/live/initrd.img
+imgargs vmlinuz boot=live username=user union=overlay config components quiet noswap edd=on nomodeset enforcing=0 noeject fetch=tftp://${nfs-server}/clonezilla/live/filesystem.squashfs ocs_prerun="dhclient -v" ocs_prerun1="echo '1234' | sshfs root@${nfs-server}:/home/partimag /home/partimag -p 22 -o noatime -o ssh_command='ssh -oStrictHostKeyChecking=No' -o password_stdin" ocs_live_run="/usr/sbin/ocs-sr -g auto -e1 auto -e2 -r -j2 -icds -k1 -p reboot restoredisk u24-XEN sda" keyboard-layouts=NONE ocs_live_batch="no" locales="en_US.UTF-8" nolocales video=1024x768
+boot
+
+:restoredisk-u22
+kernel clonezilla/live/vmlinuz
+initrd clonezilla/live/initrd.img
+imgargs vmlinuz boot=live username=user union=overlay config components quiet noswap edd=on nomodeset enforcing=0 noeject fetch=tftp://${nfs-server}/clonezilla/live/filesystem.squashfs ocs_prerun="dhclient -v" ocs_prerun1="echo '1234' | sshfs root@${nfs-server}:/home/partimag /home/partimag -p 22 -o noatime -o ssh_command='ssh -oStrictHostKeyChecking=No' -o password_stdin" ocs_live_run="/usr/sbin/ocs-sr -g auto -e1 auto -e2 -r -j2 -icds -k1 -p reboot restoredisk u22-BareMetal sda" keyboard-layouts=NONE ocs_live_batch="no" locales="en_US.UTF-8" nolocales video=1024x768
+boot
+
+:restoredisk-xen22
+kernel clonezilla/live/vmlinuz
+initrd clonezilla/live/initrd.img
+imgargs vmlinuz boot=live username=user union=overlay config components quiet noswap edd=on nomodeset enforcing=0 noeject fetch=tftp://${nfs-server}/clonezilla/live/filesystem.squashfs ocs_prerun="dhclient -v" ocs_prerun1="echo '1234' | sshfs root@${nfs-server}:/home/partimag /home/partimag -p 22 -o noatime -o ssh_command='ssh -oStrictHostKeyChecking=No' -o password_stdin" ocs_live_run="/usr/sbin/ocs-sr -g auto -e1 auto -e2 -r -j2 -icds -k1 -p reboot restoredisk u22-XEN sda" keyboard-layouts=NONE ocs_live_batch="no" locales="en_US.UTF-8" nolocales video=1024x768
+boot
+
+:restoredisk-u20
+kernel clonezilla/live/vmlinuz
+initrd clonezilla/live/initrd.img
+imgargs vmlinuz boot=live username=user union=overlay config components quiet noswap edd=on nomodeset enforcing=0 noeject fetch=tftp://${nfs-server}/clonezilla/live/filesystem.squashfs ocs_prerun="dhclient -v" ocs_prerun1="echo '1234' | sshfs root@${nfs-server}:/home/partimag /home/partimag -p 22 -o noatime -o ssh_command='ssh -oStrictHostKeyChecking=No' -o password_stdin" ocs_live_run="/usr/sbin/ocs-sr -g auto -e1 auto -e2 -r -j2 -icds -k1 -p reboot restoredisk u20-BareMetal sda" keyboard-layouts=NONE ocs_live_batch="no" locales="en_US.UTF-8" nolocales video=1024x768
+boot
+
+:restoredisk-xen20
+kernel clonezilla/live/vmlinuz
+initrd clonezilla/live/initrd.img
+imgargs vmlinuz boot=live username=user union=overlay config components quiet noswap edd=on nomodeset enforcing=0 noeject fetch=tftp://${nfs-server}/clonezilla/live/filesystem.squashfs ocs_prerun="dhclient -v" ocs_prerun1="echo '1234' | sshfs root@${nfs-server}:/home/partimag /home/partimag -p 22 -o noatime -o ssh_command='ssh -oStrictHostKeyChecking=No' -o password_stdin" ocs_live_run="/usr/sbin/ocs-sr -g auto -e1 auto -e2 -r -j2 -icds -k1 -p reboot restoredisk u20-XEN sda" keyboard-layouts=NONE ocs_live_batch="no" locales="en_US.UTF-8" nolocales video=1024x768
+boot
+
+:ubuntu22.04
+kernel ubuntu22.04/casper/vmlinuz
+initrd ubuntu22.04/casper/initrd
+imgargs vmlinuz initrd=initrd ip=dhcp nfsroot=${nfs-root}/ubuntu24.04 netboot=nfs boot=casper maybe-ubiquity quiet splash video=1024x768 --- 
+boot
+
+:ubuntu22.04
+kernel ubuntu22.04/casper/vmlinuz
+initrd ubuntu22.04/casper/initrd
+imgargs vmlinuz initrd=initrd ip=dhcp nfsroot=${nfs-root}/ubuntu22.04 netboot=nfs boot=casper maybe-ubiquity quiet splash video=1024x768 --- 
+boot
+
+:ubuntu20.04
+kernel ubuntu20.04/casper/vmlinuz
+initrd ubuntu20.04/casper/initrd
+imgargs vmlinuz initrd=initrd ip=dhcp nfsroot=${nfs-root}/ubuntu20.04 netboot=nfs boot=casper maybe-ubiquity quiet splash video=1024x768
+boot
+
+:ssa2.60
+kernel ssa2.60/system/vmlinuz
+initrd ssa2.60/system/initrd.img
+imgargs vmlinuz initrd=initrd.img media=cdrom rw root=/dev/ram0 ramdisk_size=257144 init=/bin/init loglevel=3 ide=nodma ide=noraid pnpbios=off splash=silent showopts TYPE=MANUAL iso1mnt=/mnt/ssa2.60 iso1=nfs://${nfs-server}/srv/tftp/ssaoffline-2.60-18.0.iso iso1opts=timeo=120,nolock,bg,ro video=1024x768
+boot
+
+:ssa4.15
+kernel ssa4.15/system/vmlinuz
+initrd ssa4.15/system/initrd.img
+imgargs vmlinuz initrd=initrd.img media=cdrom rw root=/dev/ram0 ramdisk_size=257144 init=/bin/init loglevel=3 ide=nodma ide=noraid pnpbios=off splash=silent showopts TYPE=MANUAL iso1mnt=/mnt/ssa4.15 iso1=nfs://${nfs-server}/srv/tftp/ssaoffline-4.15-6.0.iso iso1opts=timeo=120,nolock,bg,ro video=1024x768
+boot
+
+:gen8
+kernel spp8/system/vmlinuz
+initrd spp8/system/initrd.img
+imgargs vmlinuz initrd=initrd.img media=net root=/dev/ram0 splash quiet hp_fibre showopts TYPE=AUTOMATIC AUTOPOWEROFFONSUCCESS=no AUTOREBOOTONSUCCESS=yes iso1=nfs://${nfs-server}/srv/tftp/spp8/spp8.iso iso1mnt=/mnt/bootdevice video=1024x768
+boot
+
+:gen9
+kernel spp9/system/vmlinuz
+initrd spp9/system/initrd.img
+imgargs vmlinuz initrd=initrd.img media=net root=/dev/ram0 splash quiet hp_fibre showopts TYPE=AUTOMATIC AUTOPOWEROFFONSUCCESS=no AUTOREBOOTONSUCCESS=yes iso1=nfs://${nfs-server}/srv/tftp/spp9/spp9.iso iso1mnt=/mnt/bootdevice video=1024x768
+boot
+```
+
+</details>
+
+### 테스트 및 검증
+
+## 참조
+- [iPXE 공식 사이트](https://ipxe.org/)
+- [FOG Project Wiki 문서](https://wiki.fogproject.org/wiki/index.php/BIOS_and_UEFI_Co-Existence)
+- [GitHub Gist 사용자 정의 메뉴 참조 문서](https://gist.github.com/rikka0w0/50895b82cbec8a3a1e8c7707479824c1)
+

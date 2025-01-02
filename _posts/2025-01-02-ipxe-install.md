@@ -162,3 +162,24 @@ dhcpd -t -cf /etc/dhcp/dhcpd.conf
 ```bash
 systemctl restart isc-dhcp-server
 ```
+
+### NFS 서버 설정
+1. NFS 서버 설치
+2. NFS 서버 설정
+4. NFS 서버 서비스 재시작
+
+```bash
+sudo apt install nfs-kernel-server
+```
+
+```bash
+cat <<EOF | sudo tee -a /etc/exports
+/srv/tftp/ubuntu24.04   10.1.81.0/16(async,no_root_squash,no_subtree_check,ro)
+/srv/tftp/ubuntu22.04   10.1.81.0/16(async,no_root_squash,no_subtree_check,ro)
+/srv/tftp/ubuntu20.04   10.1.81.0/16(async,no_root_squash,no_subtree_check,ro)
+EOF
+```
+
+```bash
+exportfs -rv
+```

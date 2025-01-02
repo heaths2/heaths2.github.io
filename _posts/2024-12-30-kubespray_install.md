@@ -340,7 +340,7 @@ calico-rr
 </details>
 
 ```bash
-ansible master -m ping -i inventory/awx/inventory.ini
+ansible all -m ping -i inventory/awx/inventory.ini
 ansible-playbook -i inventory/awx/inventory.ini -become --become-user=root cluster.yml
 ```
 

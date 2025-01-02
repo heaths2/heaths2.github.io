@@ -257,22 +257,16 @@ ssh-copy-id -i /root/.ssh/id_ed25519.pub localhost
 ```
 
 ```bash
-sudo apt update
-sudo apt install software-properties-common
-sudo add-apt-repository --yes --update ppa:ansible/ansible
-sudo apt install ansible -y
-```
-
-```bash
 git clone https://github.com/kubernetes-sigs/kubespray.git
 cd kubespray
 ```
 
 ```bash
+sudo apt install python3-pip
 sudo apt install -y python3-venv
 python3 -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt
+python3 -m pip install -r requirements.txt
 ```
 
 ```bash
@@ -295,21 +289,33 @@ cp -rfpv inventory/sample inventory/awx
 # Configure 'ip' variable to bind kubernetes services on a different ip than the default iface
 # We should set etcd_member_name for etcd cluster. The node that are not etcd members do not need to set the value,
 # or can set the empty string value.
-[kube_control_plane]
-master_node01 ansible_host=192.168.0.240 ip=192.168.0.240 etcd_member_name=etcd1
-master_node01 ansible_host=192.168.0.240 ip=192.168.0.240 etcd_member_name=etcd1
-master_node01 ansible_host=192.168.0.240 ip=192.168.0.240 etcd_member_name=etcd1
-# node1 ansible_host=95.54.0.12  # ip=10.3.0.1 etcd_member_name=etcd1
-# node2 ansible_host=95.54.0.13  # ip=10.3.0.2 etcd_member_name=etcd2
-# node3 ansible_host=95.54.0.14  # ip=10.3.0.3 etcd_member_name=etcd3
+[all]
+control-node01 ansible_host=10.1.81.241 ip=10.1.81.241 etcd_member_name=etcd1
+control-node02 ansible_host=10.1.81.242 ip=10.1.81.242 etcd_member_name=etcd2
+control-node03 ansible_host=10.1.81.243 ip=10.1.81.243 etcd_member_name=etcd3
+worker-node01  ansible_host=10.1.81.244 ip=10.1.81.244
+worker-node02  ansible_host=10.1.81.245 ip=10.1.81.245
 
-[etcd:children]
-kube_control_plane
+[kube_control_plane]
+control-node01
+control-node02
+control-node03
+
+[etcd]
+control-node01
+control-node02
+control-node03
 
 [kube_node]
-# node4 ansible_host=95.54.0.15  # ip=10.3.0.4
-# node5 ansible_host=95.54.0.16  # ip=10.3.0.5
-# node6 ansible_host=95.54.0.17  # ip=10.3.0.6
+worker-node01
+worker-node02
+
+[calico-rr]
+
+[k8s_cluster:children]
+kube_control_plane
+kube_node
+calico-rr
 ```
 
 </details>

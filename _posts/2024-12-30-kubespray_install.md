@@ -17,6 +17,11 @@ sudo apt install keepalived haproxy
 
 MASTER 서버 설정
 
+<details markdown="block" style="margin: 1em 0; padding: 0.8em; border: 2px solid #007acc; border-radius: 10px; background-color: #f5faff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
+  <summary>
+    펼치기/접기
+  </summary>
+
 ```bash
 cat <<EOF > /etc/keepalived/keepalived.conf
 ! Configuration File for keepalived
@@ -78,7 +83,14 @@ vrrp_instance K8s-VIP {
 EOF
 ```
 
+</details>
+
 BACKUP 서버 설정
+
+<details markdown="block" style="margin: 1em 0; padding: 0.8em; border: 2px solid #007acc; border-radius: 10px; background-color: #f5faff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
+  <summary>
+    펼치기/접기
+  </summary>
 
 ```bash
 cat <<EOF > /etc/keepalived/keepalived.conf
@@ -141,7 +153,14 @@ vrrp_instance K8s-VIP {
 EOF
 ```
 
+</details>
+
 haproxy 설정
+
+<details markdown="block" style="margin: 1em 0; padding: 0.8em; border: 2px solid #007acc; border-radius: 10px; background-color: #f5faff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
+  <summary>
+    펼치기/접기
+  </summary>
 
 ```bash
 cat <<'EOF' > /etc/haproxy/haproxy.cfg
@@ -236,6 +255,8 @@ userlist crdentials
 EOF
 ```
 
+</details>
+
 ## Kubespray 설치
 
 | IP           | Hostname        | Describe                 |
@@ -273,9 +294,9 @@ python3 -m pip install -r requirements.txt
 cp -rfpv inventory/sample inventory/awx
 ```
 
-<details markdown="block">
+<details markdown="block" style="margin: 1em 0; padding: 0.8em; border: 2px solid #007acc; border-radius: 10px; background-color: #f5faff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
   <summary>
-    코드
+    펼치기/접기
   </summary>
 
 **~/kubespray/inventory/awx/inventory.ini**

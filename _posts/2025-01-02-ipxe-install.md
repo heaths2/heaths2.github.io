@@ -422,7 +422,10 @@ boot
 
 </details>
 
-### 테스트 및 검증
+### 테스트
+
+![iPXE](/assets/img/2025-01-02/iPXE.png)
+_iPXE boot menu_
 
 ## 참조
 - [iPXE 공식 사이트](https://ipxe.org/)

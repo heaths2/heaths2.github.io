@@ -172,11 +172,18 @@ systemctl restart isc-dhcp-server
 
 ### NFS 서버 설정
 1. NFS 서버 설치
-2. NFS 서버 설정
+2. NFS 서버 마운트 설정
+3. NFS 서버 설정
 4. NFS 서버 서비스 재시작
 
 ```bash
 sudo apt install nfs-kernel-server
+```
+
+```bash
+mount ubuntu-24.04.1-live-server-amd64.iso /srv/tftp/ubuntu24.04/
+mount ubuntu-22.04.3-live-server-amd64.iso /srv/tftp/ubuntu22.04/
+mount ubuntu-20.04.6-live-server-amd64.iso /srv/tftp/ubuntu20.04/
 ```
 
 ```bash
@@ -423,9 +430,16 @@ boot
 </details>
 
 ### 테스트
+1. iPXE 사용자 정의 부트 메뉴
+2. iPXE를 사용하여 Clonezilla Live 환경의 커널(vmlinuz) 및 초기 RAM 디스크(initrd.img) 다운로드
+3. Clonezilla 라이브 환경으로 전환, DHCP로 네트워크 설정 후 NFS를 통해 파일 시스템을 로드하여 부팅 준비
 
-![iPXE](/assets/img/2025-01-02/iPXE.png)
+![iPXE](/assets/img/2025-01-02/iPXE_1.png)
 _iPXE boot menu_
+![iPXE](/assets/img/2025-01-02/iPXE_2.png)
+_iPXE boot 커널 다운로드_
+![iPXE](/assets/img/2025-01-02/iPXE_3.png)
+_iPXE boot img 다운로드_
 
 ## 참조
 - [iPXE 공식 사이트](https://ipxe.org/)

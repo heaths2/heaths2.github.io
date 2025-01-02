@@ -299,8 +299,6 @@ cp -rfpv inventory/sample inventory/awx
     펼치기/접기
   </summary>
 
-**~/kubespray/inventory/awx/inventory.ini**
-
 ```bash
 # This inventory describe a HA typology with stacked etcd (== same nodes as control plane)
 # and 3 worker nodes

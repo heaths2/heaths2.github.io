@@ -301,20 +301,19 @@ cp -rfpv inventory/sample inventory/awx
   </summary>
 
 ```bash
-# This inventory describe a HA typology with stacked etcd (== same nodes as control plane)
-# and 3 worker nodes
-# See https://docs.ansible.com/ansible/latest/inventory_guide/intro_inventory.html
-# for tips on building your # inventory
-
-# Configure 'ip' variable to bind kubernetes services on a different ip than the default iface
-# We should set etcd_member_name for etcd cluster. The node that are not etcd members do not need to set the value,
-# or can set the empty string value.
+# ## Configure 'ip' variable to bind kubernetes services on a
+# ## different ip than the default iface
+# ## We should set etcd_member_name for etcd cluster. The node that is not a etcd member do not need to set the value, or can set the empty string value.
 [all]
 control-node01 ansible_host=10.1.81.241 ip=10.1.81.241 etcd_member_name=etcd1
 control-node02 ansible_host=10.1.81.242 ip=10.1.81.242 etcd_member_name=etcd2
 control-node03 ansible_host=10.1.81.243 ip=10.1.81.243 etcd_member_name=etcd3
 worker-node01  ansible_host=10.1.81.244 ip=10.1.81.244
 worker-node02  ansible_host=10.1.81.245 ip=10.1.81.245
+
+# ## configure a bastion host if your nodes are not directly reachable
+# [bastion]
+# bastion ansible_host=x.x.x.x ansible_user=some_user
 
 [kube_control_plane]
 control-node01
@@ -330,12 +329,12 @@ control-node03
 worker-node01
 worker-node02
 
-[calico-rr]
+[calico_rr]
 
 [k8s_cluster:children]
 kube_control_plane
 kube_node
-calico-rr
+calico_rr
 ```
 
 </details>

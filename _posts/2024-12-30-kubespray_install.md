@@ -278,8 +278,8 @@ ssh-copy-id -i /root/.ssh/id_ed25519.pub localhost
 ```
 
 ```bash
-git ls-remote --heads https://github.com/kubernetes-sigs/kubespray.git
-git clone -b release-2.26 https://github.com/kubernetes-sigs/kubespray.git
+git ls-remote --heads --tags https://github.com/kubernetes-sigs/kubespray.git
+git clone -b v2.26.0 https://github.com/kubernetes-sigs/kubespray.git
 cd kubespray
 ```
 

@@ -147,7 +147,8 @@ echo "nameserver 8.8.8.8" > /etc/resolv.conf
 ```
 
 ```bash
-apt update && apt-get install -y pdns-server pdns-backend-pgsql
+sudo apt update
+sudo apt-get install -y pdns-server pdns-backend-pgsql
 ```
 
 ```bash
@@ -186,11 +187,8 @@ sed -i "s/.*webserver=\(yes\|no\)+$/webserver=yes/" "/etc/powerdns/pdns.conf"
 
 </details>
 
-- Stop and start the service
-
 ```bash
-systemctl stop pdns
-systemctl start pdns
+systemctl restart pdns
 ```
 
 ```bash
@@ -234,12 +232,11 @@ dig google.com @192.168.0.40
   </summary>
 
 ```bash
-su postgres
-postgres@PowerDNS-admin:/opt/pdns_install$ psql
-psql (16.0 (Ubuntu 16.0-1.pgdg20.04+1))
-Type "help" for help.
+sudo -u postgres psql -c "\l"
+sudo -u postgres psql -d pdns -c "\d"
+```
 
-postgres=# \l
+```bash
                                                          List of databases
    Name    |   Owner   | Encoding | Locale Provider |   Collate   |    Ctype    | ICU Locale | ICU Rules |    Access privileges
 -----------+-----------+----------+-----------------+-------------+-------------+------------+-----------+-------------------------
@@ -251,10 +248,9 @@ postgres=# \l
  template1 | postgres  | UTF8     | libc            | en_US.UTF-8 | en_US.UTF-8 |            |           | =c/postgres            +
            |           |          |                 |             |             |            |           | postgres=CTc/postgres
 (4 rows)
+```
 
-postgres=# \c pdns
-You are now connected to database "pdns" as user "postgres".
-pdns=# \d         
+```bash
                    List of relations
  Schema |         Name          |   Type   |   Owner
 --------+-----------------------+----------+-----------
@@ -272,15 +268,9 @@ pdns=# \d
  public | tsigkeys              | table    | pdnsadmin
  public | tsigkeys_id_seq       | sequence | pdnsadmin
 (13 rows)
-
-pdns=# \q
-postgres@PowerDNS-admin:/opt/pdns_install$ exit
-exit
 ```
 
 </details>
-
-- Stop PostgreSQL Service
 
 ```bash
 systemctl stop pdns
@@ -301,12 +291,6 @@ systemctl start pdns
 ```bash
 ss -alnp4 | grep pdns
 ```
-
-#### 
-
-
-
-- Install PowerDNS Admin Dependencies
 
 ```bash
 apt-get install nginx \

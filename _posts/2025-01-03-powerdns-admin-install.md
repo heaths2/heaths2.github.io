@@ -45,70 +45,36 @@ PowerDNS-Admin은 PowerDNS 서버의 관리 인터페이스를 제공하는 웹 
 - 사용자 인증을 위해 필요한 보안 설정이 필요합니다 (예: SSL 설정).
 
 ## 환경구성
+1. 로케일 설정
+2. 패키지 설치
 
 ```bash
-apt-get update && apt-get install software-properties-common gnupg2 lsb-release curl -y
+localectl set-locale LANG=en_US.UTF-8
 ```
-
-### PostgreSQL 설치
-
-- `en_US.UTF-8` Locale Settings
-
-```bash
-localectl set-locale en_US.UTF-8
-sed -i 's/# ko_KR.UTF-8 UTF-8/ko_KR.UTF-8 UTF-8/' /etc/locale.gen
-locale-gen
-```
-
-<details markdown="block">
-  <summary>
-    코드
-  </summary>
-  {: .label .label-green }
-  
-```bash
-Generating locales (this might take a while)...
-  en_US.UTF-8... done
-  ko_KR.UTF-8... done
-Generation complete.
-```
-
-</details>
-
-- Create the file repository configuration:
-
-```bash
-sudo sh -c 'echo "deb [ arch=$(dpkg --print-architecture) ] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-```
-
-- Import the repository signing key:
-
-```bash
-wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-```
-
-- Update the package lists:
 
 ```bash
 sudo apt-get update
+sudo apt-get install software-properties-common gnupg2 lsb-release curl
 ```
 
-- Install the latest version of PostgreSQL.
-- If you want a specific version, use 'postgresql-12' or similar instead of 'postgresql':
+## 설치
 
+### PostgreSQL
+1. PostgreSQL 설치
+2. PostgreSQL 서버 서비스 등록
+3. `/opt/pdns_install/db_credentials`{: .filepath} 환경변수 파일 생성
 ```bash
-sudo apt-get -y install postgresql-15
+sudo apt install curl ca-certificates
+sudo install -d /usr/share/postgresql-common/pgdg
+sudo curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail https://www.postgresql.org/media/keys/ACCC4CF8.asc
+sudo sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+sudo apt update
+sudo apt -y install postgresql
 ```
-
-- Enable & Start PostgreSQL Service
 
 ```bash
 systemctl enable --now postgresql
 ```
-
-#### PostgreSQL 데이터베이스 생성
-
-- `/opt/pdns_install/db_credentials` Setting Environmental Variables
 
 ```bash
 #!/usr/bin/env bash
@@ -151,9 +117,13 @@ GRANT ALL PRIVILEGES ON DATABASE pdns TO pdns;" > "/opt/pdns_install/pdns-create
 sudo -u postgres psql < "/opt/pdns_install/pdns-createdb-pg.sql"
 ```
 
-### PowerDNS 저장소 추가
-
-- PowerDNS Authoritative Repository
+### PowerDNS
+1. PowerDNS 저장소 추가 및 Pinning 설정
+2. 저장소 서명 키 추가
+3. 시스템 DNS Resolver 비활성화 및 기 DNS 설정
+4. PowerDNS 설치 및 PostgreSQL 데이터베이스 PowerDNS 모듈 설치
+5. PostgreSQL 데이터베이스 데이터 넣기
+6. PowerDNS API 키 설정
 
 ```bash
 echo "deb [signed-by=/etc/apt/keyrings/auth-49-pub.asc arch=amd64] http://repo.powerdns.com/ubuntu jammy-auth-49 main" | sudo tee /etc/apt/sources.list.d/pdns.list
@@ -164,28 +134,44 @@ Pin: origin repo.powerdns.com
 Pin-Priority: 600" > /etc/apt/preferences.d/pdns
 ```
 
-- Get the `Stable Branch` key from the PowerDNS Repository
-
 ```bash
 # wget --quiet -O - https://repo.powerdns.com/FD380FBB-pub.asc | sudo apt-key add -
 sudo install -d /etc/apt/keyrings; curl https://repo.powerdns.com/FD380FBB-pub.asc | sudo tee /etc/apt/keyrings/auth-49-pub.asc
 ```
 
-#### PowerDNS/DNSDist 설치
-
-- Disable systemd-resolved
-
 ```bash
 systemctl disable --now systemd-resolved
 
-rm -rf /etc/resolv.conf
+unlink /etc/resolv.conf
 echo "nameserver 8.8.8.8" > /etc/resolv.conf
 ```
 
-- Update the package lists && PowerDNS Authoritative Server For PostgreSQL
-
 ```bash
 apt update && apt-get install -y pdns-server pdns-backend-pgsql
+```
+
+```bash
+current_pgsql_ver=$(psql -V|awk -F " " '{print $NF}'|awk -F "." '{print $1}')
+export PGPASSWORD="$pdns_pwd"
+psql -U pdns -h 127.0.0.1 -d pdns < "/usr/share/pdns-backend-pgsql/schema/schema.pgsql.sql"
+unset PGPASSWORD
+
+# Copy the example config file
+cp -av /usr/share/doc/pdns-backend-pgsql/examples/gpgsql.conf /etc/powerdns/pdns.d/
+
+# Change the values in your PowerDNS Config file to match your saved credentials
+sed -i "s/\(^gpgsql-dbname=\).*/\1pdns/" /etc/powerdns/pdns.d/gpgsql.conf
+sed -i "s/\(^gpgsql-host=\).*/\1127.0.0.1/" /etc/powerdns/pdns.d/gpgsql.conf
+sed -i "s/\(^gpgsql-port=\).*/\15432/" /etc/powerdns/pdns.d/gpgsql.conf
+sed -i "s/\(^gpgsql-user=\).*/\1pdnsadmin/" /etc/powerdns/pdns.d/gpgsql.conf
+sed -i "s/\(^gpgsql-password=\).*/\1$pdns_pwd/" /etc/powerdns/pdns.d/gpgsql.conf
+chmod 640 /etc/powerdns/pdns.d/gpgsql.conf
+chown root:pdns /etc/powerdns/pdns.d/gpgsql.conf
+```
+
+```bash
+sed -i '/\(.*api-key=\)/a api=yes' /etc/powerdns/pdns.conf
+sed -i '/\(.*api-key=\).*/a api-key=$pdns_apikey' /etc/powerdns/pdns.conf
 ```
 
 <details markdown="block">
@@ -193,6 +179,59 @@ apt update && apt-get install -y pdns-server pdns-backend-pgsql
     코드
   </summary>
   {: .label .label-green }
+
+```bash
+sed -i "s/.*webserver=\(yes\|no\)+$/webserver=yes/" "/etc/powerdns/pdns.conf"
+```
+
+</details>
+
+- Stop and start the service
+
+```bash
+systemctl stop pdns
+systemctl start pdns
+```
+
+```bash
+dig google.com @192.168.0.40
+```
+
+<details markdown="block">
+  <summary>
+    코드
+  </summary>
+  {: .label .label-green }
+  
+```bash
+; <<>> DiG 9.16.1-Ubuntu <<>> google.com @192.168.0.40
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: REFUSED, id: 53684
+;; flags: qr rd; QUERY: 1, ANSWER: 0, AUTHORITY: 0, ADDITIONAL: 1
+;; WARNING: recursion requested but not available
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 1232
+;; QUESTION SECTION:
+;google.com.                    IN      A
+
+;; Query time: 0 msec
+;; SERVER: 192.168.0.40#53(192.168.0.40)
+;; WHEN: Wed Oct 25 23:51:48 KST 2023
+;; MSG SIZE  rcvd: 39
+```
+
+</details>
+
+### PowerDNS-Admin
+### Node.js 및 Yarn
+### Nginx
+
+<details markdown="block" style="margin: 1em 0; padding: 0.8em; border: 2px solid #007acc; border-radius: 10px; background-color: #f5faff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
+  <summary>
+    펼치기/접기
+  </summary>
 
 ```bash
 su postgres
@@ -263,85 +302,9 @@ systemctl start pdns
 ss -alnp4 | grep pdns
 ```
 
-#### PostgreSQL 데이터베이스 데이터 넣기
+#### 
 
-```bash
-current_pgsql_ver=$(psql -V|awk -F " " '{print $NF}'|awk -F "." '{print $1}')
-export PGPASSWORD="$pdns_pwd"
-psql -U pdns -h 127.0.0.1 -d pdns < "/usr/share/pdns-backend-pgsql/schema/schema.pgsql.sql"
-unset PGPASSWORD
 
-# Copy the example config file
-cp -av /usr/share/doc/pdns-backend-pgsql/examples/gpgsql.conf /etc/powerdns/pdns.d/
-
-# Change the values in your PowerDNS Config file to match your saved credentials
-sed -i "s/\(^gpgsql-dbname=\).*/\1pdns/" /etc/powerdns/pdns.d/gpgsql.conf
-sed -i "s/\(^gpgsql-host=\).*/\1127.0.0.1/" /etc/powerdns/pdns.d/gpgsql.conf
-sed -i "s/\(^gpgsql-port=\).*/\15432/" /etc/powerdns/pdns.d/gpgsql.conf
-sed -i "s/\(^gpgsql-user=\).*/\1pdnsadmin/" /etc/powerdns/pdns.d/gpgsql.conf
-sed -i "s/\(^gpgsql-password=\).*/\1$pdns_pwd/" /etc/powerdns/pdns.d/gpgsql.conf
-chmod 640 /etc/powerdns/pdns.d/gpgsql.conf
-chown root:pdns /etc/powerdns/pdns.d/gpgsql.conf
-```
-
-#### PowerDNS API 키 설정
-
-- Set the API Key to your generated key and API Parameter to "Yes"
-
-```bash
-sed -i '/\(.*api-key=\)/a api=yes' /etc/powerdns/pdns.conf
-sed -i '/\(.*api-key=\).*/a api-key=$pdns_apikey' /etc/powerdns/pdns.conf
-```
-
-<details markdown="block">
-  <summary>
-    코드
-  </summary>
-  {: .label .label-green }
-
-```bash
-sed -i "s/.*webserver=\(yes\|no\)+$/webserver=yes/" "/etc/powerdns/pdns.conf"
-```
-
-</details>
-
-- Stop and start the service
-
-```bash
-systemctl stop pdns
-systemctl start pdns
-```
-
-```bash
-dig google.com @192.168.0.40
-```
-
-<details markdown="block">
-  <summary>
-    코드
-  </summary>
-  {: .label .label-green }
-  
-```bash
-; <<>> DiG 9.16.1-Ubuntu <<>> google.com @192.168.0.40
-;; global options: +cmd
-;; Got answer:
-;; ->>HEADER<<- opcode: QUERY, status: REFUSED, id: 53684
-;; flags: qr rd; QUERY: 1, ANSWER: 0, AUTHORITY: 0, ADDITIONAL: 1
-;; WARNING: recursion requested but not available
-
-;; OPT PSEUDOSECTION:
-; EDNS: version: 0, flags:; udp: 1232
-;; QUESTION SECTION:
-;google.com.                    IN      A
-
-;; Query time: 0 msec
-;; SERVER: 192.168.0.40#53(192.168.0.40)
-;; WHEN: Wed Oct 25 23:51:48 KST 2023
-;; MSG SIZE  rcvd: 39
-```
-
-</details>
 
 - Install PowerDNS Admin Dependencies
 

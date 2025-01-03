@@ -8,11 +8,7 @@ tags: [powerdns, powerdns-admin, bind9]
 
 ## 개요
 
-> - PowerDNS-Admin
-> - [Repo PowerDNS](http://repo.powerdns.com/#ubuntu)
-> - [docs powerdns installation](https://docs.brconsulting.info/en/docs/network/powerdns/02-pdns-installation/)
-> - [Postgresql](https://www.postgresql.org/download/linux/ubuntu/)
-> - [Nodejs](https://deb.nodesource.com/node_20.x/pool/main/n/nodejs)
+
 {: .new }
 
 ### 기본 종속성 설치
@@ -583,3 +579,9 @@ chown -R pdns: "/var/www/html/pdns/powerdnsadmin/"
 ```bash
 systemctl daemon-reload && systemctl enable --now pdnsadmin.service pdnsadmin.socket
 ```
+
+## 참조
+- [PowerDNS 공식 리포지토리](http://repo.powerdns.com/#ubuntu)
+- [PowerDNS 설치 가이](https://docs.brconsulting.info/en/docs/network/powerdns/02-pdns-installation/)
+- [PostgreSQL 공식 문서](https://www.postgresql.org/download/linux/ubuntu/)
+- [NodeJS 공식 문서](https://deb.nodesource.com/node_20.x/pool/main/n/nodejs)

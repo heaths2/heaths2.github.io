@@ -2,7 +2,7 @@
 title: Cisco Catalyst 2960 스위치 공장 초기화
 author: G.G
 date: 2025-01-03 20:50:00 +0900
-categories: [Blog, Switch]
+categories: [Blog, Provisioning]
 tags: [cisco, switch, c2960, catalyst 2960, L2]
 ---
 

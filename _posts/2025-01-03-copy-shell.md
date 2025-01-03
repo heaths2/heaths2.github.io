@@ -3,7 +3,7 @@ title: Kubernetes 설치방법
 author: G.G
 date: 2025-01-01 08:55:00 +0900
 categories: [Blog, Bash Shell]
-tags: [Bash, script]
+tags: [bash, script]
 ---
 
 ## 개요

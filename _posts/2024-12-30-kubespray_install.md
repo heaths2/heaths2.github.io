@@ -359,3 +359,4 @@ echo "source <(kubeadm completion bash)" >> ~/.bashrc
 
 ## 참조
 - [Kubespray 공식 리포지토리](https://github.com/kubernetes-sigs/kubespray)
+- [Kubespray 공식 문서](https://kubespray.io/)

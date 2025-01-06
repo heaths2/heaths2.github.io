@@ -993,7 +993,19 @@ ETCDCTL_API=3 etcdctl --endpoints=https://10.1.81.241:2379,https://10.1.81.242:2
   --cacert=/etc/ssl/etcd/ssl/ca.pem \
   --cert=/etc/ssl/etcd/ssl/member-control-node01.pem \
   --key=/etc/ssl/etcd/ssl/member-control-node01-key.pem \
-  endpoint health
+  endpoint health -w=table
+
+ETCDCTL_API=3 etcdctl --endpoints=https://10.1.81.241:2379,https://10.1.81.242:2379,https://10.1.81.243:2379 \
+  --cacert=/etc/ssl/etcd/ssl/ca.pem \
+  --cert=/etc/ssl/etcd/ssl/member-control-node01.pem \
+  --key=/etc/ssl/etcd/ssl/member-control-node01-key.pem \
+  member list -w=table
+
+ETCDCTL_API=3 etcdctl --endpoints=https://10.1.81.241:2379,https://10.1.81.242:2379,https://10.1.81.243:2379 \
+  --cacert=/etc/ssl/etcd/ssl/ca.pem \
+  --cert=/etc/ssl/etcd/ssl/member-control-node01.pem \
+  --key=/etc/ssl/etcd/ssl/member-control-node01-key.pem \
+  endpoint status --cluster -w=table
 ```
 
 ### Kubectl 자동완성 설정

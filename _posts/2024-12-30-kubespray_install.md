@@ -352,10 +352,10 @@ EOF
   - `all.yml`{: .filepath} HAProxy로 설정된 Load Balancer의 IP와 포트 지정
   - `addons.yml`{: .filepath} 추가 애드온(대시보드, Helm, Metrics Server 등)을 활성화
   - `inventory.ini`{: .filepath} Inventory 구성
-5. Kubernetes 클러스터 배포
+5. Kubernetes 단일 클러스터 배포
   - 클러스터 설정이 정상적인지 확인
   - Kubernetes 클러스터를 생성
-6. Kubernetes 클러스터 배포
+6. Kubernetes HA 클러스터 배포
   - 클러스터 설정이 정상적인지 확인
   - Kubernetes 클러스터를 생성
 7. etcd 및 apiserver 구성

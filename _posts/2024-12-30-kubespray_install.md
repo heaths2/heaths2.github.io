@@ -1008,6 +1008,18 @@ ETCDCTL_API=3 etcdctl --endpoints=https://10.1.81.241:2379,https://10.1.81.242:2
   endpoint status --cluster -w=table
 ```
 
+### 클러스터 노드 상태 확인
+
+```bash
+kubectl get nodes -o wide
+NAME             STATUS   ROLES           AGE     VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE           KERNEL-VERSION       CONTAINER-RUNTIME
+control-node01   Ready    control-plane   6h54m   v1.30.4   10.1.81.241   <none>        Ubuntu 22.04 LTS   5.15.0-130-generic   containerd://1.7.21
+control-node02   Ready    control-plane   4h5m    v1.30.4   10.1.81.242   <none>        Ubuntu 22.04 LTS   5.15.0-130-generic   containerd://1.7.21
+control-node03   Ready    control-plane   4h4m    v1.30.4   10.1.81.243   <none>        Ubuntu 22.04 LTS   5.15.0-130-generic   containerd://1.7.21
+worker-node01    Ready    <none>          6h53m   v1.30.4   10.1.81.244   <none>        Ubuntu 22.04 LTS   5.15.0-130-generic   containerd://1.7.21
+worker-node02    Ready    <none>          6h53m   v1.30.4   10.1.81.245   <none>        Ubuntu 22.04 LTS   5.15.0-130-generic   containerd://1.7.21
+```
+
 ### Kubectl 자동완성 설정
 
 ```bash

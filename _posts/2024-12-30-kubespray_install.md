@@ -99,7 +99,7 @@ vrrp_script chk_haproxy {
 # Internal VRRP 인스턴스
 vrrp_instance K8s-VIP {
     state MASTER                    # MASTER/BACKUP 중 선택 (주 서버에서는 MASTER)
-    interface eth0                  # VIP를 할당할 네트워크 인터페이스
+    interface enX0                  # VIP를 할당할 네트워크 인터페이스
     virtual_router_id 240           # VRRP 그룹 ID (범위: 1 ~255, 같은 그룹에서는 동일해야 함)
     priority 101                    # 우선순위 (숫자가 높을수록 우선)
     smtp_alert                      # VRRP 인스턴스 상태 변화 시 이메일로 알림 전송
@@ -169,7 +169,7 @@ vrrp_script chk_haproxy {
 # Internal VRRP 인스턴스
 vrrp_instance K8s-VIP {
     state BACKUP                    # MASTER/BACKUP 중 선택 (주 서버에서는 MASTER)
-    interface eth0                  # VIP를 할당할 네트워크 인터페이스
+    interface enX0                  # VIP를 할당할 네트워크 인터페이스
     virtual_router_id 240           # VRRP 그룹 ID (범위: 1 ~255, 같은 그룹에서는 동일해야 함)
     priority 100                    # 우선순위 (숫자가 높을수록 우선)
     smtp_alert                      # VRRP 인스턴스 상태 변화 시 이메일로 알림 전송
@@ -181,9 +181,9 @@ vrrp_instance K8s-VIP {
         auth_pass 1234              # VRRP 인증 비밀번호
     }
 
-    unicast_src_ip 10.1.81.246      # 현재 노드의 소스 IP
+    unicast_src_ip 10.1.81.247      # 현재 노드의 소스 IP
     unicast_peer {
-        10.1.81.247                 # 다른 Keepalived 인스턴스의 IP 주소
+        10.1.81.246                 # 다른 Keepalived 인스턴스의 IP 주소
     }
 
     virtual_ipaddress {
@@ -251,9 +251,9 @@ defaults
 #--------------------------------------------------------------------#
 # Frontend Configuration                                             #
 #--------------------------------------------------------------------#
-frontend tcp_api
+frontend k8s_api_front
         mode    tcp
-        bind    *:6443
+        bind    *:8383
 #        bind    *:6443 ssl crt /etc/haproxy/ssl/server.pem alpn h2,http/1.1
         option  tcplog
 
@@ -263,27 +263,27 @@ frontend tcp_api
         tcp-request connection reject
 
         # Backend Access Control List
-        use_backend tcp_k8s_api
+        use_backend k8s_api_back
 
 #--------------------------------------------------------------------#
 # BackEnd Platform Configuration                                     #
 #--------------------------------------------------------------------#
-backend tcp_k8s_api
+backend k8s_api_back
         mode    tcp
         balance source
         option log-health-checks
-        default-server inter 5s downinter 5s fastinter 1s rise 2 fall 3 slowstart 60s maxconn 250 maxqueue 256 weight 100
+        default-server check inter 5s fastinter 1s rise 2 fall 3
 
-        server control-node01 10.1.81.241:6443 check
-        server control-node02 10.1.81.242:6443 check
-        server control-node03 10.1.81.243:6443 check
+        server control-node01 10.1.81.241:6443
+        server control-node02 10.1.81.242:6443
+        server control-node03 10.1.81.243:6443
 
 #--------------------------------------------------------------------#
 # HAProxy Monitoring Configuration                                   #
 #--------------------------------------------------------------------#
 listen stats
 	mode	http
-        bind :32000
+        bind    *:32000
         stats enable
         stats realm Kubernetes Haproxy       # 브라우저 타이틀
         stats uri /                          # stat 를 제공할 URI

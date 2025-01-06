@@ -345,32 +345,16 @@ EOF
 </details>
 
 ## Kubespray 설치
-1. Kubespray 클론 및 준비
-2. Python 환경 설정 및 의존성 설치
-3. Kubespray Inventory 복사
-4. Inventory 파일 구성
-  - `all.yml`{: .filepath} HAProxy로 설정된 Load Balancer의 IP와 포트 지정
-  - `addons.yml`{: .filepath} 추가 애드온(대시보드, Helm, Metrics Server 등)을 활성화
-  - `inventory.ini`{: .filepath} Inventory 구성
-5. Kubernetes 단일 클러스터 배포
-  - 클러스터 설정이 정상적인지 확인
-  - Kubernetes 클러스터를 생성
-6. Kubernetes HA 클러스터 배포
-  - 클러스터 설정이 정상적인지 확인
-  - Kubernetes 클러스터를 생성
-7. etcd 및 apiserver 구성
-  - 인증서 재생성: VIP와 SAN을 포함하여 인증서를 재생성
-  - API Server 구성 파일 수정: API Server가 모든 etcd 노드와 통신하도록 구성
-  - 인증서 동기화: 다른 Control Plane 노드에 인증서 복사
-  - kubelet 서비스 재시작: 변경 사항을 반영하기 위해 kubelet을 재시작
-8. etcd 상태 확인
-9. Kubectl 자동완성 설정
+
+### Kubespray 클론 및 준비
 
 ```bash
 git ls-remote --heads --tags https://github.com/kubernetes-sigs/kubespray.git
 git clone -b v2.25.0 https://github.com/kubernetes-sigs/kubespray.git
 cd kubespray
 ```
+
+### Python 환경 설정 및 의존성 설치
 
 ```bash
 sudo apt install python3-pip
@@ -380,9 +364,14 @@ source venv/bin/activate
 python3 -m pip install -r requirements.txt
 ```
 
+### Kubespray Inventory 복사
+
 ```bash
 cp -rfpv inventory/sample inventory/awx
 ```
+
+### Inventory 파일 구성
+1. `all.yml`{: .filepath} HAProxy로 설정된 Load Balancer의 IP와 포트 지정
 
 <details markdown="block" style="margin: 1em 0; padding: 0.8em; border: 2px solid #007acc; border-radius: 10px; background-color: #f5faff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
   <summary>
@@ -533,6 +522,8 @@ allow_unsupported_distribution_setup: false
 {: file='inventory/awx/group_vars/all/all.yml'}
 
 </details>
+
+2. `addons.yml`{: .filepath} 추가 애드온(대시보드, Helm, Metrics Server 등)을 활성화
 
 <details markdown="block" style="margin: 1em 0; padding: 0.8em; border: 2px solid #007acc; border-radius: 10px; background-color: #f5faff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
   <summary>
@@ -838,6 +829,9 @@ Taints:             <none>
 >  - 마스터 노드(Control Plane)에 일반 워크로드 Pod가 생성되지 않도록 Control plane 노드 격리
 {: .prompt-info }
 
+### Kubernetes 단일 클러스터 배포
+1. `inventory.ini`{: .filepath} Inventory 구성
+
 <details markdown="block" style="margin: 1em 0; padding: 0.8em; border: 2px solid #007acc; border-radius: 10px; background-color: #f5faff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
   <summary>
     펼치기/접기
@@ -883,10 +877,16 @@ calico_rr
 
 </details>
 
+2. 클러스터 설정이 정상적인지 확인
+3. Kubernetes 클러스터를 생성
+
 ```bash
 ansible all -m ping -i inventory/awx/inventory.ini
 ansible-playbook -i inventory/awx/inventory.ini --become --become-user=root cluster.yml
 ```
+
+### Kubernetes HA 클러스터 배포
+1. `inventory.ini`{: .filepath} Inventory 구성
 
 <details markdown="block" style="margin: 1em 0; padding: 0.8em; border: 2px solid #007acc; border-radius: 10px; background-color: #f5faff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
   <summary>
@@ -933,10 +933,16 @@ calico_rr
 
 </details>
 
+2. 클러스터 설정이 정상적인지 확인
+3. Kubernetes 클러스터를 생성
+
 ```bash
 ansible all -m ping -i inventory/awx/inventory.ini
 ansible-playbook -i inventory/awx/inventory.ini --become --become-user=root cluster.yml
 ```
+
+### etcd 및 apiserver 구성
+1. 인증서 재생성: VIP와 SAN을 포함하여 인증서를 재생성
 
 ```bash
 cd /etc/kubernetes/ssl/
@@ -954,6 +960,8 @@ kubeadm init phase certs apiserver \
 openssl x509 -in /etc/kubernetes/pki/apiserver.crt -text -noout | grep "Subject Alternative Name"
 ```
 
+2. API Server 구성 파일 수정: API Server가 모든 etcd 노드와 통신하도록 구성
+
 <details markdown="block" style="margin: 1em 0; padding: 0.8em; border: 2px solid #007acc; border-radius: 10px; background-color: #f5faff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
   <summary>
     펼치기/접기
@@ -966,13 +974,19 @@ openssl x509 -in /etc/kubernetes/pki/apiserver.crt -text -noout | grep "Subject 
 
 </details>
 
+3. 인증서 동기화: 다른 Control Plane 노드에 인증서 복사
+
 ```bash
 rsync -avhP 10.1.81.241:/etc/kubernetes/ssl/apiserver.{crt,key} /etc/kubernetes/ssl/
 ```
 
+4. kubelet 서비스 재시작: 변경 사항을 반영하기 위해 kubelet을 재시작
+
 ```bash
 systemctl restart kubelet.service
 ```
+
+### etcd 상태 확인
 
 ```bash
 ETCDCTL_API=3 etcdctl --endpoints=https://10.1.81.241:2379,https://10.1.81.242:2379,https://10.1.81.243:2379 \
@@ -981,6 +995,8 @@ ETCDCTL_API=3 etcdctl --endpoints=https://10.1.81.241:2379,https://10.1.81.242:2
   --key=/etc/ssl/etcd/ssl/member-control-node01-key.pem \
   endpoint health
 ```
+
+### Kubectl 자동완성 설정
 
 ```bash
 source <(kubectl completion bash)

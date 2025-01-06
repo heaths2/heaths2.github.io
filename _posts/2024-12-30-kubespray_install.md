@@ -6,6 +6,50 @@ categories: [Blog, Orchestration]
 tags: [kubernetes, k8s, kubespray]
 ---
 
+## 개요
+Kubespray는 Ansible 기반의 오픈소스 프로젝트로, Kubernetes 클러스터를 빠르고 쉽게 설치하고 관리할 수 있도록 도와줍니다. 특히 고가용성(High Availability, HA) 클러스터를 구축하는 데 적합하며, 다양한 클라우드 및 베어메탈 환경에서 동작할 수 있습니다.
+
+## 특징
+1. 고가용성(HA)
+- Control Plane과 etcd 클러스터의 고가용성을 보장.
+- 다중 Control Plane 노드를 통해 장애 시에도 Kubernetes API 서버가 지속적으로 동작.
+- 다중 etcd 노드 구성으로 데이터 안정성과 복구 능력을 보장.
+
+2. 확장성
+- 노드 추가 및 제거를 쉽게 수행 가능.
+- 다양한 네트워크 플러그인(Calico, Flannel, Cilium 등) 지원.
+
+3. 유연성
+- 다양한 운영체제(Ubuntu, CentOS, RHEL 등) 지원.
+- 사용자 정의가 용이하며, 설정 파일을 통해 네트워크, 인증 등 커스터마이징 가능.
+
+4. 자동화
+- Ansible 플레이북을 기반으로 설치 및 관리 자동화.
+- Kubernetes와 관련된 모든 컴포넌트(apiserver, scheduler, controller-manager, etcd 등)를 자동 설정.
+
+## 구성요소
+1. Control Plane
+- Kubernetes 클러스터의 중심 컴포넌트.
+- 주요 구성 요소:
+  - kube-apiserver: Kubernetes API 요청을 처리.
+  - kube-controller-manager: 클러스터 상태를 조정.
+  - kube-scheduler: 워크로드를 적절한 노드에 스케줄링.
+  - etcd: 클러스터 상태 데이터를 저장하는 분산 키-값 저장소.
+- HA를 위한 구성
+  - Load Balancer(Haproxy/Keepalived 등)와 VIP를 통해 Control Plane 노드 간 로드 분산.
+2. etcd
+- Kubernetes 클러스터 상태 데이터를 저장하는 분산 키-값 저장소.
+- HA를 위해 다중 노드로 구성
+  - --etcd-servers에 다수의 etcd 노드를 지정하여 장애 시에도 데이터 복구 가능.
+3. Load Balancer
+- Control Plane 노드로 트래픽을 분산.
+- VIP(Virtual IP)를 활용하여 클라이언트가 단일 엔드포인트로 접속 가능.
+
+4. Kubespray 구성 파일
+- inventory.ini: 노드 역할 정의(Control Plane, etcd, Worker 등).
+- group_vars/all.yml: 글로벌 변수 정의(Kubernetes 버전, 네트워크 설정 등).
+- group_vars/k8s_cluster/addons.yml: 추가 컴포넌트(dashboard, metrics-server 등) 설정.
+
 ## HA 설정
 
 Haproxy + Keepalived

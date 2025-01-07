@@ -145,6 +145,11 @@ awx-server-task-9fdc7f546-hcn5h                  4/4     Running     0          
 awx-server-web-5454d457b6-bfprt                  3/3     Running     0          84m   10.233.85.10   worker-node01   <none>           <none>
 ```
 
+<details markdown="block" style="margin: 1em 0; padding: 0.8em; border: 2px solid #007acc; border-radius: 10px; background-color: #f5faff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
+  <summary>
+    펼치기/접기
+  </summary>
+
 ```bash
 #--------------------------------------------------------------------#
 # Haproxy settings                                                   #
@@ -257,6 +262,8 @@ listen stats
 userlist crdentials
         user k8s_mon password $5$Ku7NZ.d3iw6zGckc$hHJ0RV.rjwhKDjhpdzAaJcZeOsFphxynEfguUK9OG99
 ```
+
+</details>
 
 ```bash
 haproxy -c -f /etc/haproxy/haproxy.cfg

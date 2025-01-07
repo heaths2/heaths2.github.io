@@ -65,4 +65,55 @@ ssh -T git@github.com
 Hi infra! You've successfully authenticated, but GitHub does not provide shell access.
 ```
 
-## 
+## AWX Github 연동
+
+### AWX에서 자격 증명 추가
+1. 인증 정보: AWX에서 인증 정보 메뉴로 이동.
+2. 추가: 새로운 인증 정보를 추가하기 위해 버튼 클릭.
+
+![AWX-Github_3](/assets/img/2025-01-07/AWX-Github_3.jpg)
+__Github 인증정보 추가_
+
+### 새 인증 정보 생성
+1. 이름: 인증 정보를 구별할 이름 입력 (예: "Github SSH-KEY").
+2. 인증 정보 유형: "소스 제어"를 선택.
+3. SSH 키: 생성한 개인 키를 입력.
+4. 저장: 입력을 완료하고 저장 버튼 클릭.
+
+![AWX-Github_4](/assets/img/2025-01-07/AWX-Github_4.jpg)
+__Github 인증정보 생성_
+
+### 프로젝트 추가
+1. 프로젝트: AWX에서 프로젝트 메뉴로 이동.
+2. 추가: 새로운 프로젝트 추가를 위해 버튼 클릭.
+
+![AWX-Github_5](/assets/img/2025-01-07/AWX-Github_5.jpg)
+__Github 프로젝트 추가_
+
+### 새 프로젝트 생성
+1. 이름: 프로젝트 이름을 입력 (예: "Ansible-AWX")
+2. 소스 제어 유형: Git을 선택.
+3. 소스 제어 URL: 연결할 GitHub 저장소의 URL 입력 (예: git@github.com:infra/Ansible-AWX.git).
+4. 소스 제어 인증 정보: 이전에 생성한 인증 정보(예: "Github SSH-KEY")를 선택.
+5. 옵션:
+  - [x] 정리: 기존의 불필요한 파일 제거.
+  - [ ] 삭제: 현재 저장소를 삭제 후 다시 클론.
+  - [ ] 하위 모듈 추적: Git 서브모듈 사용 시 체크.
+  - [x] 시작 시 버전 업데이트: 시작 시 저장소 업데이트 수행.
+6. 소스 제어 분기/태그 설정 (선택 사항)
+- 소스 제어 분기/태그/커밋: 특정 분기(예: "main"), 태그 또는 커밋을 지정(선택 사항)
+![AWX-Github_6](/assets/img/2025-01-07/AWX-Github_6.jpg)
+__Github 프로젝트 생성_
+
+### 소스 제어 인증 정보 연결
+1. 인증 정보: 프로젝트에서 사용할 인증 정보 선택 (예: "Github SSH-KEY").
+2. 선택: 원하는 인증 정보를 선택하고 확인.
+
+![AWX-Github_7](/assets/img/2025-01-07/AWX-Github_7.jpg)
+__Github 소스 제어 인증 정보 연결_
+
+### 프로젝트 성공 확인
+프로젝트 상태: 프로젝트 상태가 성공으로 표시되면 GitHub 연동 완료.
+
+![AWX-Github_8](/assets/img/2025-01-07/AWX-Github_8.jpg)
+__Github 연동 동기화_

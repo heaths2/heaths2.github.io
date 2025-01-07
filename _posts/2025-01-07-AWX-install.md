@@ -144,3 +144,125 @@ awx-server-postgres-15-0                         1/1     Running     0          
 awx-server-task-9fdc7f546-hcn5h                  4/4     Running     0          84m   10.233.94.7    worker-node02   <none>           <none>
 awx-server-web-5454d457b6-bfprt                  3/3     Running     0          84m   10.233.85.10   worker-node01   <none>           <none>
 ```
+
+```bash
+#--------------------------------------------------------------------#
+# Haproxy settings                                                   #
+#--------------------------------------------------------------------#
+
+#--------------------------------------------------------------------#
+# Global settings                                                    #
+#--------------------------------------------------------------------#
+global
+	log /dev/log	local0
+	log /dev/log	local1 notice
+	chroot /var/lib/haproxy
+	stats socket /run/haproxy/admin.sock mode 660 level admin expose-fd listeners
+	stats timeout 30s
+	user haproxy
+	group haproxy
+	daemon
+
+	# Default SSL material locations
+	ca-base /etc/ssl/certs
+	crt-base /etc/ssl/private
+
+	# See: https://ssl-config.mozilla.org/#server=haproxy&server-version=2.0.3&config=intermediate
+        ssl-default-bind-ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384
+        ssl-default-bind-ciphersuites TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256
+        ssl-default-bind-options ssl-min-ver TLSv1.2 no-tls-tickets
+
+#--------------------------------------------------------------------#
+# Default Configuration                                              #
+#--------------------------------------------------------------------#
+defaults
+        balance source
+	log	global
+#	mode	http
+	option	httplog
+	option	dontlognull
+        timeout connect 5s
+        timeout client  5m
+        timeout server  30m
+        timeout tunnel  24d
+
+#--------------------------------------------------------------------#
+# Frontend Configuration                                             #
+#--------------------------------------------------------------------#
+frontend k8s_api_front
+        mode    tcp
+        bind    *:8383
+#        bind    *:6443 ssl crt /etc/haproxy/ssl/server.pem alpn h2,http/1.1
+        option  tcplog
+
+        # Access Control List
+        tcp-request connection accept if { src 127.0.0.1 }
+        tcp-request connection accept if { src 10.1.81.0/24 }
+        tcp-request connection reject
+
+        # Backend Access Control List
+        use_backend k8s_api_back
+
+frontend k8s_awx_front
+        mode    http
+        bind    *:80
+#        bind    *:6443 ssl crt /etc/haproxy/ssl/server.pem alpn h2,http/1.1
+        option  httplog
+        option  forwardfor
+        option  http-server-close
+
+        # Access Control List
+        http-request deny if !{ src 127.0.0.1 } !{ src 10.1.81.0/24 } !{ src 220.85.21.35/32 } !{ src 172.16.0.0/24 }
+
+        # Backend Access Control List
+        use_backend k8s_awx_back
+#--------------------------------------------------------------------#
+# BackEnd Platform Configuration                                     #
+#--------------------------------------------------------------------#
+backend k8s_api_back
+        mode    tcp
+        balance source
+        option log-health-checks
+        default-server check inter 5s fastinter 1s rise 2 fall 3
+
+        server control-node01 10.1.81.241:6443
+        server control-node02 10.1.81.242:6443
+        server control-node03 10.1.81.243:6443
+
+backend k8s_awx_back
+        mode    http
+        balance roundrobin
+        option log-health-checks
+        default-server check inter 5s fastinter 1s rise 2 fall 3
+
+        server control-node01 10.1.81.241:30080
+        server control-node02 10.1.81.242:30080
+        server control-node03 10.1.81.243:30080
+#--------------------------------------------------------------------#
+# HAProxy Monitoring Configuration                                   #
+#--------------------------------------------------------------------#
+listen stats
+	mode	http
+        bind    *:32000
+        stats enable
+        stats realm Kubernetes Haproxy       # 브라우저 타이틀
+        stats uri /                          # stat 를 제공할 URI
+        # 접근 제한 설정
+        http-request deny if !{ src 127.0.0.1 } !{ src 10.1.81.0/24 } !{ src 220.85.21.35/32 } !{ src 172.16.0.0/24 }
+        # 사용자 인증 ACL 설정
+        acl Auth http_auth(crdentials)
+        http-request auth if !Auth
+
+# 사용자 목록
+userlist crdentials
+        user k8s_mon password $5$Ku7NZ.d3iw6zGckc$hHJ0RV.rjwhKDjhpdzAaJcZeOsFphxynEfguUK9OG99
+```
+
+```bash
+haproxy -c -f /etc/haproxy/haproxy.cfg
+```
+
+```bash
+systemctl restart haproxy.service
+```
+

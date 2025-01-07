@@ -71,6 +71,11 @@ Ansible AWX는 Ansible의 CLI 중심 관리에 GUI 기반의 대시보드, REST 
 
 ## 설치
 
+### AWX Operator 설치
+1. 최신 LTS 태그 가져오기
+2. Kustomization 파일 생성
+3. AWX Operator 설치
+
 ```bash
 LTS_TAG=$(curl -s https://api.github.com/repos/ansible/awx-operator/releases/latest | grep tag_name | cut -d '"' -f 4)
 ```
@@ -97,6 +102,11 @@ EOF
 kubectl apply -k ~/awx
 ```
 
+### AWX 인스턴스 생성
+1. Kustomization에 `awx-server.yaml`{: .filepath} 추가
+2. AWX 서버 YAML 파일 생성
+3. AWX 서버 배포
+
 ```yaml
 sed -i '6a\  - awx-server.yaml' ./kustomization.yaml
 ```
@@ -120,12 +130,18 @@ EOF
 kubectl apply -k ~/awx
 ```
 
+### Service 설정 변경(선택사항 ※ nodePort 미설정시)
+1. AWX 서버 서비스 YAML 파일 내보내기
+2. NodePort 포트 변경 (예: 30080)
+3. 변경된 YAML 파일 테스트
+4. 변경된 YAML 파일 적용
+
 ```bash
 kubectl get svc awx-server-service -o yaml > awx-server-service.yaml
 ```
 
 ```bash
-sed -i '/nodePort:/s/[0-9]\+/32000/' awx-server-service.yaml
+sed -i '/nodePort:/s/[0-9]\+/30080/' awx-server-service.yaml
 ```
 
 ```bash
@@ -136,14 +152,26 @@ kubectl apply --dry-run=client -f awx-server-service.yaml
 kubectl apply -f awx-server-service.yaml
 ```
 
+### AWX Pod 확인
+1. AWX Pod 상태 확인
+2. 정상 출력 화면
+
 ```bash
 kubectl get pods -n awx -o wide --watch
+```
+
+```bash
 awx-operator-controller-manager-79dbd7fd-9fx47   2/2     Running     0          66m   10.233.85.12   worker-node01   <none>           <none>
 awx-server-migration-24.6.1-krz8m                0/1     Completed   0          82m   10.233.85.11   worker-node01   <none>           <none>
 awx-server-postgres-15-0                         1/1     Running     0          85m   10.233.94.6    worker-node02   <none>           <none>
 awx-server-task-9fdc7f546-hcn5h                  4/4     Running     0          84m   10.233.94.7    worker-node02   <none>           <none>
 awx-server-web-5454d457b6-bfprt                  3/3     Running     0          84m   10.233.85.10   worker-node01   <none>           <none>
 ```
+
+### HAProxy 설정
+1. `/etc/haproxy/haproxy.cfg`{: .filepath} HAProxy 설정
+2. HAProxy 설정 확인
+3. HAProxy 재시작
 
 <details markdown="block" style="margin: 1em 0; padding: 0.8em; border: 2px solid #007acc; border-radius: 10px; background-color: #f5faff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
   <summary>
@@ -272,6 +300,11 @@ haproxy -c -f /etc/haproxy/haproxy.cfg
 ```bash
 systemctl restart haproxy.service
 ```
+
+### AWX Secrets 확인
+1. Secrets 목록 확인
+2. 관리자 비밀번호 확인 (JSON + jq 사용)
+3. AWX Web UI 확인
 
 ```bash
 kubectl get secrets -n awx

@@ -33,4 +33,32 @@ GitHub 연동을 통해 다음과 같은 작업이 가능합니다.
 3. 다양한 브랜치 및 태그 선택
 - 특정 브랜치 또는 태그를 선택하여 AWX에서 실행.
 
+## 환경설정
+
+### SSH 키 생성 및 등록
+1. SSH 키 생성
+2. SSH 공개 키 확인 및 복사
+3. GitHub의 [SSH and GPG keys](https://github.com/settings/keys) 페이지로 이동
+4. Add SSH key 버튼을 클릭하여 저장
+5. 연결 테스트
+
+```bash
+echo "yes" | ssh-keygen -t rsa -N "" -f /root/.ssh/id_rsa -C Github
+```
+
+```bash
+cat /root/.ssh/id_rsa.pub
+```
+
+![AWX-Github_1](/assets/img/2025-01-07/AWX-Github_1.jpg)
+_Github SSH and GPG keys_
+
+![AWX-Github_2](/assets/img/2025-01-07/AWX-Github_2.jpg)
+__Github Add SSH key_
+
+```bash
+ssh -T git@github.com
+Hi infra! You've successfully authenticated, but GitHub does not provide shell access.
+```
+
 ## 

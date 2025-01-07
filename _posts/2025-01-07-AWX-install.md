@@ -6,6 +6,9 @@ categories: [Blog, Orchestration]
 tags: [ansible, awx]
 ---
 
+> 관련글 :
+> [ Kubespray 설치방법 (1)](https://heaths2.github.io/posts/kubespray_install/)
+
 ## 개요
 Ansible AWX는 Ansible의 CLI 중심 관리에 GUI 기반의 대시보드, REST API, 작업 스케줄링 등의 기능을 추가한 플랫폼입니다. 이는 팀과 조직이 공동으로 자동화 워크플로우를 설계하고 실행하며, 작업의 상태를 모니터링할 수 있는 강력한 도구를 제공합니다.
 
@@ -65,3 +68,79 @@ Ansible AWX는 Ansible의 CLI 중심 관리에 GUI 기반의 대시보드, REST 
 7. 사용자와 팀
 - RBAC를 기반으로 작업 템플릿, 인벤토리, 프로젝트에 대한 접근 권한 관리.
 - 팀 단위로 그룹화하여 관리.
+
+## 설치
+
+```bash
+LTS_TAG=$(curl -s https://api.github.com/repos/ansible/awx-operator/releases/latest | grep tag_name | cut -d '"' -f 4)
+```
+
+```yaml
+tee ./kustomization.yaml << EOF
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization 
+resources:
+  # Find the latest tag here: https://github.com/ansible/awx-operator/releases
+  - github.com/ansible/awx-operator/config/default?ref=$LTS_TAG
+# Set the image tags to match the git version from above 
+images:
+  - name: quay.io/ansible/awx-operator 
+    newTag: $LTS_TAG
+# Specify a custom namespace in which to install AWX
+namespace: awx
+EOF
+```
+{: file='kustomization.yaml'}
+
+```bash
+kubectl apply -k ~/awx
+```
+
+```yaml
+sed -i '6a\  - awx-server.yaml' ./kustomization.yaml
+```
+{: file='kustomization.yaml'}
+
+```yaml
+tee ./awx-server.yaml << EOF
+---
+apiVersion: awx.ansible.com/v1beta1
+kind: AWX
+metadata:
+  name: awx-server
+spec:
+  service_type: nodeport
+  nodeport_port: 30080
+EOF
+```
+{: file='awx-server.yaml'}
+
+```bash
+kubectl apply -k ~/awx
+```
+
+```bash
+kubectl get svc awx-server-service -o yaml > awx-server-service.yaml
+```
+
+```bash
+sed -i '/nodePort:/s/[0-9]\+/32000/' awx-server-service.yaml
+```
+
+```bash
+kubectl apply --dry-run=client -f awx-server-service.yaml
+```
+
+```bash
+kubectl apply -f awx-server-service.yaml
+```
+
+```bash
+kubectl get pods -n awx -o wide --watch
+awx-operator-controller-manager-79dbd7fd-9fx47   2/2     Running     0          66m   10.233.85.12   worker-node01   <none>           <none>
+awx-server-migration-24.6.1-krz8m                0/1     Completed   0          82m   10.233.85.11   worker-node01   <none>           <none>
+awx-server-postgres-15-0                         1/1     Running     0          85m   10.233.94.6    worker-node02   <none>           <none>
+awx-server-task-9fdc7f546-hcn5h                  4/4     Running     0          84m   10.233.94.7    worker-node02   <none>           <none>
+awx-server-web-5454d457b6-bfprt                  3/3     Running     0          84m   10.233.85.10   worker-node01   <none>           <none>
+```

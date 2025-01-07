@@ -953,11 +953,13 @@ mv -v apiserver.key apiserver.key.old
 ```bash
 kubeadm init phase certs apiserver \
   --apiserver-advertise-address=10.1.81.240 \
-  --apiserver-cert-extra-sans="lb-apiserver.kubernetes.local"
+  --apiserver-cert-extra-sans="10.96.0.1,10.233.0.1,10.1.81.240,lb-apiserver.kubernetes.local"
 ```
 
 ```bash
-openssl x509 -in /etc/kubernetes/pki/apiserver.crt -text -noout | grep "Subject Alternative Name"
+openssl x509 -in /etc/kubernetes/pki/apiserver.crt -text -noout | grep "Subject Alternative Name" -A 1
+            X509v3 Subject Alternative Name: 
+                DNS:control-node01, DNS:kubernetes, DNS:kubernetes.default, DNS:kubernetes.default.svc, DNS:kubernetes.default.svc.cluster.local, DNS:lb-apiserver.kubernetes.local, IP Address:10.96.0.1, IP Address:10.1.81.240, IP Address:10.233.0.1
 ```
 
 2. API Server 구성 파일 수정: API Server가 모든 etcd 노드와 통신하도록 구성

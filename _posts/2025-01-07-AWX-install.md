@@ -273,3 +273,12 @@ haproxy -c -f /etc/haproxy/haproxy.cfg
 systemctl restart haproxy.service
 ```
 
+```bash
+kubectl get secrets -n awx
+```
+
+```bash
+kubectl get secret -n awx awx-server-admin-password -o jsonpath='{.data.password}' | base64 -d
+# 또는
+kubectl get secrets -n awx awx-server-admin-password -o json | jq '.data.password' | xargs | base64 -d
+```

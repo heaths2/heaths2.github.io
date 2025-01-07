@@ -282,3 +282,6 @@ kubectl get secret -n awx awx-server-admin-password -o jsonpath='{.data.password
 # 또는
 kubectl get secrets -n awx awx-server-admin-password -o json | jq '.data.password' | xargs | base64 -d
 ```
+
+![AWX](/assets/img/2025-01-07/AWX.png)
+_AWX Web UI_

@@ -22,7 +22,10 @@ Cisco 스위치에서 **직렬 포트(Serial Port)**를 활용하여 XMODEM, YMO
 | 오류 검출            | 체크섬 또는 CRC                  | CRC                                 | CRC                                |
 | 비고                | 가장 기본적인 프로토콜            | XMODEM의 기능 향상 버전               | 전송 효율과 신뢰성이 높은 고급 기능 제공 |
 
-- 현재 직렬 포트 전송 속도 `9600` 확인
+## 직렬포트 전송
+
+### 직렬 포트 전송 속도 세팅
+1. 현재 직렬 포트 전송 속도 `9600` 확인
 
 ```bash
 switch: set
@@ -55,7 +58,7 @@ VERSION_ID=V02
 
 </details>
 
-- 직렬 포트 전송 속도 `115200`으로 변경
+2. 직렬 포트 전송 속도 `115200`으로 변경
 
 ```bash
 siwtch: set BAUD 115200
@@ -111,18 +114,27 @@ File "xmodem:" successfully copied to "flash:c2960-lanbasek9-mz.150-2.SE11.bin"
 
 </details>
 
-### TeraTerm 도구 Serial Port `9600` → `115200` 설정 변경
+### Serial Port 설정
+1. TeraTerm 도구 Serial Port `9600` → `115200` 설정 변경
 
-![image](https://github.com/heaths2/heaths2.github.io/assets/36792594/eec5dec3-29a2-400c-960f-a415193780d7)
+![TeraTerm_1](/assets/img/2025-01-08/TeraTerm_1.png)
+_TeraTerm 도구 Serial Port 선택_
 
-- `Setup` → `Serial Port` → Seed: 115200 → New open
+2. `Setup` → `Serial Port` → Seed: 115200 → New open 
 
-![image](https://github.com/heaths2/heaths2.github.io/assets/36792594/d63975e8-92d1-41e6-9c4b-ecbf5c9bdb0e)
+![TeraTerm_2](/assets/img/2025-01-08/TeraTerm_2.png)
+_TeraTerm 도구 Serial Port 변경_
 
-### TeraTerm 도구 XMODEM Send 설정
+### XMODEM Send 설정
+1. TeraTerm 도구 XMODEM Send 설정
 
-- `File` → `Transfer` → XMODEM → Send
+![TeraTerm_3](/assets/img/2025-01-08/TeraTerm_3.png)
+_TeraTerm 도구 Send 선택_
+  
+2. `File` → `Transfer` → XMODEM → Send
 
-![image](https://github.com/heaths2/heaths2.github.io/assets/36792594/2e088727-c985-44d8-8699-4ef4ff09a354)
+![TeraTerm_4](/assets/img/2025-01-08/TeraTerm_4.png)
+_TeraTerm 도구 Send 파일 선택_
 
-![image](https://github.com/heaths2/heaths2.github.io/assets/36792594/128338aa-b31b-495e-a9d9-80695822d9b2)
+## 참조
+- [TeraTerm 도구 다운로드](https://github.com/TeraTermProject/teraterm/releases)

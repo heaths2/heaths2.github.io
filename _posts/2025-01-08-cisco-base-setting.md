@@ -9,7 +9,40 @@ tags: [provisioning, cisco, ntp, snmp, banner, scp, acl, aaa model]
 ## 개요
 Cisco 스위치는 네트워크의 중심 장비로, 보안 및 효율성을 높이기 위해 초기 설정을 신중히 수행해야 합니다. 이 매뉴얼은 스위치의 기본 설정 항목과 보안 및 관리에 필수적인 설정 방법을 제공합니다.
 
-## 
+## 설정 요약 표
+
+| **구분**                     | **명령어**                                                                                       | **설명**                                                                                            |
+|-----------------------------|------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|
+| **호스트 이름 설정**          | `hostname SW`                                                                                | 스위치의 호스트 이름을 `SW`로 설정.                                                               |
+| **Enable 비밀번호 설정**      | `enable algorithm-type scrypt secret cisco`                                                 | Enable 모드 비밀번호를 Scrypt 알고리즘을 사용하여 `cisco`로 설정.                                 |
+| **사용자 계정 생성**          | `username cisco privilege 15 algorithm-type scrypt secret cisco`                             | 사용자 `cisco` 계정을 Privileged 모드로 생성.                                                    |
+| **AAA 모델 비활성화**         | `no aaa new-model`                                                                           | AAA 모델 비활성화.                                                                               |
+| **도메인 이름 조회 비활성화** | `no ip domain-lookup`                                                                        | 잘못된 명령 입력 시 DNS 조회를 방지.                                                             |
+| **시간대 설정**               | `clock timezone KST 9 0`                                                                     | 시간대를 KST로 설정.                                                                              |
+| **NTP 서버 추가**             | `ntp server 216.239.35.x`                                                                    | NTP 서버 설정으로 시간 동기화.                                                                   |
+| **도메인 이름 설정**          | `ip domain-name infra.com`                                                                   | 스위치의 도메인 이름을 설정.                                                                      |
+| **SSH 활성화**               | `crypto key generate rsa general-keys modulus 2048` <br> `ip ssh version 2` <br> `ip ssh time-out 120` | SSH를 활성화하고 키를 생성하며, 인증 타임아웃을 설정.                                             |
+| **SCP 활성화**               | `ip scp server enable`                                                                        | SCP 파일 전송 활성화.                                                                             |
+| **SNMP 설정**                | `snmp-server community nms_mailplug RO SNMP` <br> `ip access-list standard SNMP permit 10.1.1.100` | SNMP 커뮤니티와 ACL을 설정.                                                                       |
+| **로깅 서버 설정**            | `logging host 10.1.1.100` <br> `logging trap debugging`                                       | 로깅 서버를 추가하고 디버깅 레벨 설정.                                                            |
+| **VTY 라인 설정**             | `line vty 0 15` <br> `transport input ssh` <br> `login local` <br> `exec-timeout 5 0`        | SSH만 허용하고 5분 비활성 시 타임아웃 설정.                                                       |
+| **SSH 공개 키 등록**          | `ip ssh pubkey-chain` <br> `username cisco` <br> `key-hash ssh-rsa [hash-value]`             | 공개 키 인증을 위한 사용자와 키 등록.                                                             |
+| **VLAN 설정**                | `vlan 100` <br> `name Zone_10.1.1.0/24` <br> `interface Vlan100` <br> `ip address 10.1.1.10 255.255.255.0` | VLAN 생성 및 IP 설정.                                                                             |
+| **기본 게이트웨이 설정**       | `ip default-gateway 10.1.255.1`                                                              | 디폴트 게이트웨이를 설정.                                                                         |
+| **포트 채널 설정**            | `interface range Gi1/0/47 - 48` <br> `switchport mode trunk` <br> `channel-group 1 mode active` | 트렁크 포트를 본딩하여 Port-Channel로 설정.                                                       |
+| **포트 설명 추가**            | `description bb-in-A02#Gi1/0/1`                                                              | 인터페이스에 설명을 추가하여 관리 용이.                                                           |
+| **8비트 문자 세트 활성화**     | `default-value exec-character-bits 8`                                                       | 한글 및 특수 문자 처리를 위해 UTF-8 활성화.                                                      |
+| **배너 메시지 설정**          | `banner motd`                                                                                | 한글 및 경고 메시지를 포함한 배너 생성.                                                          |
+| **설정 저장**                | `write memory`                                                                               | 설정 내용을 저장.                                                                                 |
+
+---
+
+## 참고 사항
+- 위 명령어는 **Cisco IOS** 기반 장비에서 테스트된 표준 설정입니다.
+- 한글 배너 사용 시 반드시 `default-value exec-character-bits 8`을 먼저 설정한 뒤 재로그인해야 정상 동작합니다.
+- 보안 강화 및 효율적인 관리가 필요할 경우 AAA 모델을 사용하는 것이 권장됩니다.
+
+## 기본 설정
 
 ### 호스트 이름 설정
 
@@ -18,7 +51,7 @@ Switch# configure terminal
 Switch(config)# hostname SW
 ```
 
-### ** Enable 및 사용자 비밀번호 설정**
+### **Enable 및 사용자 비밀번호 설정**
 1. Enable 비밀번호 (Scrypt 알고리즘)
 
 ```bash

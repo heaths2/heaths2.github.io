@@ -23,7 +23,7 @@ Cisco 스위치는 네트워크의 중심 장비로, 보안 및 효율성을 높
 | **도메인 이름 설정**          | `ip domain-name infra.com`                                                                   | 스위치의 도메인 이름을 설정.                                                                      |
 | **SSH 활성화**               | `crypto key generate rsa general-keys modulus 2048` <br> `ip ssh version 2` <br> `ip ssh time-out 120` | SSH를 활성화하고 키를 생성하며, 인증 타임아웃을 설정.                                             |
 | **SCP 활성화**               | `ip scp server enable`                                                                        | SCP 파일 전송 활성화.                                                                             |
-| **SNMP 설정**                | `snmp-server community nms_mailplug RO SNMP` <br> `ip access-list standard SNMP permit 10.1.1.100` | SNMP 커뮤니티와 ACL을 설정.                                                                       |
+| **SNMP 설정**                | `snmp-server community nms RO SNMP` <br> `ip access-list standard SNMP permit 10.1.1.100` | SNMP 커뮤니티와 ACL을 설정.                                                                       |
 | **로깅 서버 설정**            | `logging host 10.1.1.100` <br> `logging trap debugging`                                       | 로깅 서버를 추가하고 디버깅 레벨 설정.                                                            |
 | **VTY 라인 설정**             | `line vty 0 15` <br> `transport input ssh` <br> `login local` <br> `exec-timeout 5 0`        | SSH만 허용하고 5분 비활성 시 타임아웃 설정.                                                       |
 | **SSH 공개 키 등록**          | `ip ssh pubkey-chain` <br> `username cisco` <br> `key-hash ssh-rsa [hash-value]`             | 공개 키 인증을 위한 사용자와 키 등록.                                                             |
@@ -127,7 +127,7 @@ Switch(config-std-nacl)# permit 10.1.1.100
 2. SNMP 커뮤니티 설정
 
 ```bash
-Switch(config)# snmp-server community nms_mailplug RO SNMP
+Switch(config)# snmp-server community nms RO SNMP
 ```
 
 ### 로깅 서버 설정

@@ -103,17 +103,17 @@ kubectl apply -k ~/awx
 ```
 
 ### AWX 인스턴스 생성
-1. Kustomization에 `awx-server.yaml`{: .filepath} 추가
+1. Kustomization에 `awx.yaml`{: .filepath} 추가
 2. AWX 서버 YAML 파일 생성
 3. AWX 서버 배포
 
 ```yaml
-sed -i '6a\  - awx-server.yaml' ./kustomization.yaml
+sed -i '6a\  - awx.yaml' ./kustomization.yaml
 ```
 {: file='kustomization.yaml'}
 
 ```yaml
-tee ./awx-server.yaml << EOF
+tee ./awx.yaml << EOF
 ---
 apiVersion: awx.ansible.com/v1beta1
 kind: AWX
@@ -124,7 +124,7 @@ spec:
   nodeport_port: 30080
 EOF
 ```
-{: file='awx-server.yaml'}
+{: file='awx.yaml'}
 
 ```bash
 kubectl apply -k ~/awx
@@ -137,19 +137,19 @@ kubectl apply -k ~/awx
 4. 변경된 YAML 파일 적용
 
 ```bash
-kubectl get svc awx-server-service -o yaml > awx-server-service.yaml
+kubectl get svc awx-service -o yaml > awx-service.yaml
 ```
 
 ```bash
-sed -i '/nodePort:/s/[0-9]\+/30080/' awx-server-service.yaml
+sed -i '/nodePort:/s/[0-9]\+/30080/' awx-service.yaml
 ```
 
 ```bash
-kubectl apply --dry-run=client -f awx-server-service.yaml
+kubectl apply --dry-run=client -f awx-service.yaml
 ```
 
 ```bash
-kubectl apply -f awx-server-service.yaml
+kubectl apply -f awx-service.yaml
 ```
 
 ### AWX Pod 확인
@@ -311,9 +311,9 @@ kubectl get secrets -n awx
 ```
 
 ```bash
-kubectl get secret -n awx awx-server-admin-password -o jsonpath='{.data.password}' | base64 -d
+kubectl get secret -n awx awx-admin-password -o jsonpath='{.data.password}' | base64 -d
 # 또는
-kubectl get secrets -n awx awx-server-admin-password -o json | jq '.data.password' | xargs | base64 -d
+kubectl get secrets -n awx awx-admin-password -o json | jq '.data.password' | xargs | base64 -d
 ```
 
 ![AWX_1](/assets/img/2025-01-07/AWX_1.png)

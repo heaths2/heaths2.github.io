@@ -95,5 +95,33 @@ kubectl apply -f awx-pgsql-configuration.yaml
 kubectl apply -k .
 ```
 
+```bash
+sudo -u postgres psql -c "
+ALTER DATABASE awx ALLOW_CONNECTIONS false;
+SELECT pg_terminate_backend(pid)
+FROM pg_stat_activity
+WHERE datname = 'awx'
+  AND pid <> pg_backend_pid();"
+```
+
+```bash
+sudo -u postgres psql -c "
+DROP DATABASE awx;"
+```
+
+```bash
+sudo -u postgres psql -c "
+CREATE DATABASE awx;
+GRANT ALL PRIVILEGES ON DATABASE awx TO awx;"
+```
+
+```bash
+sudo -u postgres psql -d awx -f awx.sql
+```
+
+```bash
+kubectl exec -it awx-web-97bbcdc66-dfk2p -n awx -- awx-manage changepassword admin
+```
+
 ## 참조
 - [Ansible AWX Operator 공식 문서](https://ansible.readthedocs.io/projects/awx-operator/en/latest/user-guide/advanced-configuration/custom-volume-and-volume-mount-options.html#custom-awx-configuration)

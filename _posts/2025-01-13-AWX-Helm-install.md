@@ -7,8 +7,8 @@ tags: [kubernetes, k8s]
 ---
 
 > 관련글 :
-> [ Kubespray 설치방법 (1)](https://heaths2.github.io/posts/kubespray_install/)
-> [ Ansible AWX 설치방법 (2)](https://heaths2.github.io/posts/AWX-install/)
+> - [ Kubespray 설치방법 (1)](https://heaths2.github.io/posts/kubespray_install/)
+> - [ Ansible AWX 설치방법 (2)](https://heaths2.github.io/posts/AWX-install/)
 > 
 
 ## 개요

@@ -81,6 +81,56 @@ sudo -u postgres psql -d awx -c "\dt"
 sudo -u postgres psql -c "\du"
 ```
 
+
+### AWX 데이터베이스 초기화
+1. AWX 웹 및 작업 디플로이먼트 중단
+
+```bash
+kubectl scale deployment awx-web --replicas=0 -n awx
+kubectl scale deployment awx-task --replicas=0 -n awx
+```
+
+2. PostgreSQL 데이터베이스 설정 변경 및 사용자 삭제
+
+```bash
+sudo -u postgres psql -c "
+-- 새 세션 차단
+ALTER DATABASE awx CONNECTION LIMIT 0;
+
+-- 기존 세션 종료
+SELECT pg_terminate_backend(pg_stat_activity.pid)
+FROM pg_stat_activity
+WHERE pg_stat_activity.datname = 'awx'
+    AND pid <> pg_backend_pid();
+
+-- 모든 권한 제거 및 재할당
+REASSIGN OWNED BY awx TO postgres;
+DROP OWNED BY awx;
+
+-- 사용자 삭제
+DROP USER awx;
+"
+```
+
+3. 데이터베이스 삭제
+
+```bash
+sudo -u postgres psql -c "
+-- 데이터베이스 삭제
+DROP DATABASE awx;
+"
+```
+
+4. AWX 웹 및 작업 디플로이먼트 서비스 재개
+
+```bash
+kubectl scale deployment awx-web --replicas=2 -n awx
+kubectl scale deployment awx-task --replicas=2 -n awx
+```
+{: .prompt-tip }
+
+
+
 ## Helm AWX Operator 설치 매뉴얼
 
 ### Helm 명령어어 정의
@@ -153,7 +203,18 @@ my-chart/
 └── tests/                    # 차트 테스트 스크립트
 ```
 
-### Helm 설치치
+```bash
+awx-operator/
+├── Chart.yaml       # 차트 메타데이터 정의
+├── values.yaml      # 기본값 정의
+├── templates/       # Kubernetes 리소스 템플릿
+├── charts/          # 서브 차트
+└── README.md        # 차트 설명 파일
+```
+- `awx-operator` 차트 구조
+{: .prompt-tip }
+
+### Helm 설치
 
 ### Helm Bash 자동 완성 활성화
 

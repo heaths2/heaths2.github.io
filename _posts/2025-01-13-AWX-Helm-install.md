@@ -17,18 +17,6 @@ AWX는 Ansible의 웹 기반 관리 툴로, Ansible 작업을 자동화하고 �
 ## 환경구성
 이 작업은 외부 PostgreSQL 데이터베이스 서버를 설정하고, 기존 AWX 데이터를 백업 파일을 통해 복원하는 과정을 포함합니다.
 
-### AWX 데이터베이스 백업
-
-```bash
-kubectl exec -it awx-server-postgres-15-0 -- pg_dump -U awx -w -Fp -b -v -f /tmp/awx.sql -d awx
-```
-
-### AWX 데이터베이스 백업 파일 로컬로 복사
-
-```bash
-kubectl cp -n awx awx-server-postgres-15-0:/tmp/awx.sql ~/awx/awx.sql
-```
-
 ### 새 사용자 및 데이터베이스 생성 스크립트 생성
 
 ```bash
@@ -50,30 +38,6 @@ EOF
 sudo -u postgres psql -f /tmp/awx-generation.sql
 ```
 
-### AWX 테이블 및 데이터 생성 PostgreSQL 스크립트 실행
-
-```bash
-sudo -u postgres psql -f /tmp/awx.sql
-```
-
-### 마이그레이션 적용
-
-```bash
-kubectl exec -it deployment/awx-web -n awx -- awx-manage migrate
-```
-
-### 마이그레이션 상태 확인
-
-```
-kubectl exec -it deployment/awx-web -n awx -- awx-manage showmigrations
-```
-
-### `admin` 사용자 비밀번호 변경
-
-```bash
-kubectl exec -it deployment/awx-web -n awx -- awx-manage changepassword admin
-```
-
 ### PostgreSQL 데이터베이스 테이블 및 사용자 목록 확인
 
 ```bash
@@ -81,6 +45,61 @@ sudo -u postgres psql -d awx -c "\dt"
 sudo -u postgres psql -c "\du"
 ```
 
+### A. 마이그레이션
+1. 마이그레이션 적용
+
+```bash
+kubectl exec -it deployment/awx-web -n awx -- awx-manage migrate
+```
+
+2. 마이그레이션 상태 확인
+
+```
+kubectl exec -it deployment/awx-web -n awx -- awx-manage showmigrations
+```
+
+3. 관리자 계정 생성
+
+```bash
+kubectl exec -it deployment/awx-web -n awx -- awx-manage createsuperuser --username admin
+```
+
+```bash
+kubectl exec -it deployment/awx-web -n awx -- awx-manage changepassword admin
+```
+> - 비밀번호 변경
+{: .prompt-tip }
+
+4. 기본 데이터를 생성
+
+```bash
+kubectl exec -it deployment/awx-web -n awx -- awx-manage provision_instance --hostname=awx-server-web
+```
+
+### B. AWX 데이터베이스 덤프
+1. AWX 데이터베이스 백업
+
+```bash
+kubectl exec -it awx-server-postgres-15-0 -- pg_dump -U awx -w -Fp -b -v -f /tmp/awx.sql -d awx
+```
+
+2. AWX 데이터베이스 백업 파일 로컬로 복사
+
+```bash
+kubectl cp -n awx awx-server-postgres-15-0:/tmp/awx.sql ~/awx/awx.sql
+```
+
+3. AWX 테이블 및 데이터 생성 PostgreSQL 스크립트 실행
+
+```bash
+sudo -u postgres psql -f /tmp/awx.sql
+```
+
+4. `admin` 사용자 비밀번호 변경
+
+```bash
+kubectl exec -it deployment/awx-web -n awx -- awx-manage changepassword admin
+```
 
 ### AWX 데이터베이스 초기화
 1. AWX 웹 및 작업 디플로이먼트 중단

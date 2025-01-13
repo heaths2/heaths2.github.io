@@ -235,6 +235,150 @@ awx-operator/
 
 ### Helm 설치
 
+## AWX Operator 설치
+
+### AWX Operator Helm 저장소 추가
+1. AWX Operator Helm 저장소 추가
+
+```bash
+helm repo add awx-operator https://ansible-community.github.io/awx-operator-helm/
+```
+
+2. Helm 저장소 업데이트
+
+```bash
+helm repo update
+```
+
+3. 현재 Helm 저장소 목록 확인
+
+```bash
+helm repo list
+```
+
+4. 사용 가능한 버전 목록 확인
+
+```bash
+helm search repo awx-operator --versions
+```
+
+### AWX Operator Helm 차트 다운로드
+
+
+```bash
+mkdirp -pv /data/helm
+cd /data/helm
+helm pull awx-operator/awx-operator --untar --destination /data/helm
+```
+
+```bash
+sudo mkdir -p /data/postgres-15
+sudo mkdir -p /data/projects
+sudo chmod 755 /data/postgres-15
+sudo chown 1000:0 /data/projects
+```
+
+```bash
+cd /data/helm
+helm lint /data/helm/awx-operator -f /data/helm/awx-operator/values.yaml
+```
+
+```bash
+helm template awx /data/helm/awx-operator -n awx -f /data/helm/awx-operator/values.yaml
+```
+
+```bash
+helm install awx /data/helm/awx-operator -n awx --create-namespace \
+  -f awx-operator/values.yaml \
+  --set postgres.password="awx" \
+  --dry-run --debug
+```
+
+```bash
+Error: INSTALLATION FAILED: unable to build kubernetes objects from release manifest: resource mapping not found for name: "awx" namespace: "awx" from "": no matches for kind "AWX" in version "awx.ansible.com/v1beta1"
+ensure CRDs are installed first
+helm.go:86: 2025-01-13 10:03:57.496756904 +0900 KST m=+1.617647312 [debug] resource mapping not found for name: "awx" namespace: "awx" from "": no matches for kind "AWX" in version "awx.ansible.com/v1beta1"
+ensure CRDs are installed first
+unable to build kubernetes objects from release manifest
+helm.sh/helm/v3/pkg/action.(*Install).RunWithContext
+        helm.sh/helm/v3/pkg/action/install.go:334
+main.runInstall
+        helm.sh/helm/v3/cmd/helm/install.go:316
+main.newInstallCmd.func2
+        helm.sh/helm/v3/cmd/helm/install.go:156
+github.com/spf13/cobra.(*Command).execute
+        github.com/spf13/cobra@v1.8.1/command.go:985
+github.com/spf13/cobra.(*Command).ExecuteC
+        github.com/spf13/cobra@v1.8.1/command.go:1117
+github.com/spf13/cobra.(*Command).Execute
+        github.com/spf13/cobra@v1.8.1/command.go:1041
+main.main
+        helm.sh/helm/v3/cmd/helm/helm.go:85
+runtime.main
+        runtime/proc.go:271
+runtime.goexit
+        runtime/asm_amd64.s:1695
+INSTALLATION FAILED
+main.newInstallCmd.func2
+        helm.sh/helm/v3/cmd/helm/install.go:158
+github.com/spf13/cobra.(*Command).execute
+        github.com/spf13/cobra@v1.8.1/command.go:985
+github.com/spf13/cobra.(*Command).ExecuteC
+        github.com/spf13/cobra@v1.8.1/command.go:1117
+github.com/spf13/cobra.(*Command).Execute
+        github.com/spf13/cobra@v1.8.1/command.go:1041
+main.main
+        helm.sh/helm/v3/cmd/helm/helm.go:85
+runtime.main
+        runtime/proc.go:271
+runtime.goexit
+        runtime/asm_amd64.s:1695
+```
+
+```bash
+helm install awx /data/helm/awx-operator -n awx --create-namespace \
+  -f awx-operator/values.yaml \
+  --set postgres.password="awx"
+```
+
+```bash
+helm uninstall awx -n awx
+```
+
+```bash
+kubectl apply --server-side -f /data/helm/awx-operator/crds/
+```
+
+```bash
+helm list -n awx
+```
+
+```bash
+kubectl get pods -n awx
+```
+
+```bash
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
+helm repo list
+helm search repo ingress-nginx --versions
+helm pull ingress-nginx/ingress-nginx --untar --destination /data/helm
+helm install ingress-nginx /data/helm/ingress-nginx -n awx --create-namespace -f /data/helm/ingress-nginx/values.yaml
+helm uninstall ingress-nginx -n ingress-nginx
+```
+
+```bash
+helm upgrade awx /data/helm/awx-operator -n awx \
+  -f /data/helm/awx-operator/values.yaml \
+  --dry-run --debug
+```
+
+```bash
+helm upgrade awx /data/helm/awx-operator -n awx \
+  -f /data/helm/awx-operator/values.yaml \
+  --set postgres.password="awx"
+```
+
 ### Helm Bash 자동 완성 활성화
 
 ```bash
@@ -243,3 +387,5 @@ echo "source <(helm completion bash)" >> ~/.bashrc
 ```
 
 ## 참조
+- [Helm 공식 사이트](https://helm.sh)
+- [Helm Chart 저장소](https://bitnami.com/stacks/helm)

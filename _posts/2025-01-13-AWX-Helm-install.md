@@ -80,34 +80,21 @@ kubectl scale deployment awx-web --replicas=0 -n awx
 kubectl scale deployment awx-task --replicas=0 -n awx
 ```
 
-2. PostgreSQL 데이터베이스 설정 변경 및 사용자 삭제
-
-```bash
-sudo -u postgres psql -c "
--- 새 세션 차단
-ALTER DATABASE awx CONNECTION LIMIT 0;
-
--- 기존 세션 종료
-SELECT pg_terminate_backend(pg_stat_activity.pid)
-FROM pg_stat_activity
-WHERE pg_stat_activity.datname = 'awx'
-    AND pid <> pg_backend_pid();
-
--- 모든 권한 제거 및 재할당
-REASSIGN OWNED BY awx TO postgres;
-DROP OWNED BY awx;
-
--- 사용자 삭제
-DROP USER awx;
-"
-```
-
-3. 데이터베이스 삭제
+2. 데이터베이스 삭제
 
 ```bash
 sudo -u postgres psql -c "
 -- 데이터베이스 삭제
 DROP DATABASE awx;
+"
+```
+
+3. 사용자 삭제
+
+```bash
+sudo -u postgres psql -c "
+-- 사용자 삭제
+DROP USER awx;
 "
 ```
 
@@ -117,8 +104,8 @@ DROP DATABASE awx;
 kubectl scale deployment awx-web --replicas=2 -n awx
 kubectl scale deployment awx-task --replicas=2 -n awx
 ```
-{: .prompt-tip }
 
+- [새 사용자 및 데이터베이스 생성 스크립트 생성](#새-사용자-및-데이터베이스-생성-스크립트-생성)
 
 
 ## Helm AWX Operator 설치 매뉴얼

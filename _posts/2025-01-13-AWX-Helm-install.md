@@ -9,7 +9,6 @@ tags: [kubernetes, k8s]
 > 관련글 :
 > - [ Kubespray 설치방법 (1)](https://heaths2.github.io/posts/kubespray_install/)
 > - [ Ansible AWX 설치방법 (2)](https://heaths2.github.io/posts/AWX-install/)
-> 
 
 ## 개요
 AWX는 Ansible의 웹 기반 관리 툴로, Ansible 작업을 자동화하고 관리할 수 있는 강력한 기능을 제공합니다. Helm 차트를 사용하면 Kubernetes 클러스터에 AWX를 쉽고 일관되게 배포할 수 있습니다.
@@ -107,8 +106,7 @@ kubectl scale deployment awx-task --replicas=2 -n awx
 
 - [새 사용자 및 데이터베이스 생성 스크립트 생성](#새-사용자-및-데이터베이스-생성-스크립트-생성)
 
-
-## Helm AWX Operator 설치 매뉴얼
+## Helm 구조
 
 ### Helm 명령어어 정의
 1. Helm 명령어 정리
@@ -191,7 +189,22 @@ awx-operator/
 - `awx-operator` 차트 구조
 {: .prompt-tip }
 
+## Helm 설치 매뉴얼
+
 ### Helm 설치
+
+```bash
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh
+```
+
+### Helm Bash 자동 완성 활성화
+
+```bash
+source <(helm completion bash)
+echo "source <(helm completion bash)" >> ~/.bashrc
+```
 
 ## AWX Operator 설치
 
@@ -221,13 +234,15 @@ helm search repo awx-operator --versions
 ```
 
 ### AWX Operator Helm 차트 다운로드
-
+1. AWX Operator Helm 차트 다운로드
 
 ```bash
 mkdirp -pv /data/helm
 cd /data/helm
 helm pull awx-operator/awx-operator --untar --destination /data/helm
 ```
+
+2. 데이터 디렉토리 생성 및 권한 설정
 
 ```bash
 sudo mkdir -p /data/postgres-15
@@ -236,14 +251,19 @@ sudo chmod 755 /data/postgres-15
 sudo chown 1000:0 /data/projects
 ```
 
+3. Helm 차트 유효성 검사
+
 ```bash
 cd /data/helm
 helm lint /data/helm/awx-operator -f /data/helm/awx-operator/values.yaml
 ```
 
+4. Helm 템플릿 생성
 ```bash
 helm template awx /data/helm/awx-operator -n awx -f /data/helm/awx-operator/values.yaml
 ```
+
+5. Helm 차트 설치 (Dry Run)
 
 ```bash
 helm install awx /data/helm/awx-operator -n awx --create-namespace \
@@ -292,6 +312,16 @@ runtime.main
 runtime.goexit
         runtime/asm_amd64.s:1695
 ```
+- `--set postgres.password="awx"` DB 비밀번호 입력 후 오류 해결
+{: .prompt-tip }
+
+6. Custom Resource Definition(CRD) 적용
+
+```bash
+kubectl apply --server-side -f /data/helm/awx-operator/crds/
+```
+
+7. Helm 차트 설치
 
 ```bash
 helm install awx /data/helm/awx-operator -n awx --create-namespace \
@@ -299,21 +329,41 @@ helm install awx /data/helm/awx-operator -n awx --create-namespace \
   --set postgres.password="awx"
 ```
 
-```bash
-helm uninstall awx -n awx
-```
-
-```bash
-kubectl apply --server-side -f /data/helm/awx-operator/crds/
-```
+8. Helm 설치 확인
 
 ```bash
 helm list -n awx
 ```
 
+9. AWX Pod 상태 확인
+
 ```bash
 kubectl get pods -n awx
 ```
+
+10. Helm 차트 업그레이드 (Dry Run)
+
+```bash
+helm upgrade awx /data/helm/awx-operator -n awx \
+  -f /data/helm/awx-operator/values.yaml \
+  --dry-run --debug
+```
+
+11. Helm 차트 업그레이드
+
+```bash
+helm upgrade awx /data/helm/awx-operator -n awx \
+  -f /data/helm/awx-operator/values.yaml \
+  --set postgres.password="awx"
+```
+
+12. Helm 차트 삭제(옵션)
+
+```bash
+helm uninstall awx -n awx
+```
+
+13. Ingress 설정(옵션)
 
 ```bash
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
@@ -323,25 +373,6 @@ helm search repo ingress-nginx --versions
 helm pull ingress-nginx/ingress-nginx --untar --destination /data/helm
 helm install ingress-nginx /data/helm/ingress-nginx -n awx --create-namespace -f /data/helm/ingress-nginx/values.yaml
 helm uninstall ingress-nginx -n ingress-nginx
-```
-
-```bash
-helm upgrade awx /data/helm/awx-operator -n awx \
-  -f /data/helm/awx-operator/values.yaml \
-  --dry-run --debug
-```
-
-```bash
-helm upgrade awx /data/helm/awx-operator -n awx \
-  -f /data/helm/awx-operator/values.yaml \
-  --set postgres.password="awx"
-```
-
-### Helm Bash 자동 완성 활성화
-
-```bash
-source <(helm completion bash)
-echo "source <(helm completion bash)" >> ~/.bashrc
 ```
 
 ## 참조

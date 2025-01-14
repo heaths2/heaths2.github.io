@@ -29,13 +29,6 @@ CREATE DATABASE awx OWNER awx;
 
 -- awx 사용자에게 데이터베이스에 대한 모든 권한 부여
 GRANT ALL PRIVILEGES ON DATABASE awx TO awx;
-
--- public 스키마에 대한 모든 권한 부여
-GRANT ALL PRIVILEGES ON SCHEMA public TO awx;
-
--- public 스키마에서 생성되는 모든 테이블에 대해 기본 권한 부여
-ALTER DEFAULT PRIVILEGES IN SCHEMA public
-GRANT ALL ON TABLES TO awx;
 EOF
 ```
 

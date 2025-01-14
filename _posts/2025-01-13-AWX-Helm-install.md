@@ -68,6 +68,7 @@ sudo -u postgres psql -d awx -f /tmp/awx.sql
 ```bash
 kubectl exec -it deployment/awx-web -n awx -- awx-manage changepassword admin
 ```
+
 > - 비밀번호 변경
 {: .prompt-tip }
 
@@ -186,6 +187,7 @@ awx-operator/
 ├── charts/          # 서브 차트
 └── README.md        # 차트 설명 파일
 ```
+
 - `awx-operator` 차트 구조
 {: .prompt-tip }
 
@@ -312,6 +314,7 @@ runtime.main
 runtime.goexit
         runtime/asm_amd64.s:1695
 ```
+
 - `--set postgres.password="awx"` DB 비밀번호 입력 후 오류 해결
 {: .prompt-tip }
 

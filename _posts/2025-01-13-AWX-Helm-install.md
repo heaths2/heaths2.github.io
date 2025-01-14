@@ -188,7 +188,7 @@ awx-operator/
 └── README.md        # 차트 설명 파일
 ```
 
-- `awx-operator` 차트 구조
+> - `awx-operator` 차트 구조
 {: .prompt-tip }
 
 ## Helm 설치 매뉴얼
@@ -315,7 +315,7 @@ runtime.goexit
         runtime/asm_amd64.s:1695
 ```
 
-- `--set postgres.password="awx"` DB 비밀번호 입력 후 오류 해결
+> - `--set postgres.password="awx"` DB 비밀번호 입력 후 오류 해결
 {: .prompt-tip }
 
 6. Custom Resource Definition(CRD) 적용

@@ -61,7 +61,7 @@ kubectl cp -n awx awx-server-postgres-15-0:/tmp/awx.sql ~/awx/awx.sql
 3. AWX 테이블 및 데이터 생성 PostgreSQL 스크립트 실행
 
 ```bash
-sudo -u postgres psql -f /tmp/awx.sql
+sudo -u postgres psql -d awx -f /tmp/awx.sql
 ```
 
 4. `admin` 사용자 비밀번호 변경

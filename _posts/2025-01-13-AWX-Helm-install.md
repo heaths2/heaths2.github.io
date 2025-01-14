@@ -45,38 +45,7 @@ sudo -u postgres psql -d awx -c "\dt"
 sudo -u postgres psql -c "\du"
 ```
 
-### A. 마이그레이션
-1. 마이그레이션 적용
-
-```bash
-kubectl exec -it deployment/awx-web -n awx -- awx-manage migrate
-```
-
-2. 마이그레이션 상태 확인
-
-```
-kubectl exec -it deployment/awx-web -n awx -- awx-manage showmigrations
-```
-
-3. 관리자 계정 생성
-
-```bash
-kubectl exec -it deployment/awx-web -n awx -- awx-manage createsuperuser --username admin
-```
-
-```bash
-kubectl exec -it deployment/awx-web -n awx -- awx-manage changepassword admin
-```
-> - 비밀번호 변경
-{: .prompt-tip }
-
-4. 기본 데이터를 생성
-
-```bash
-kubectl exec -it deployment/awx-web -n awx -- awx-manage provision_instance --hostname=awx-server-web
-```
-
-### B. AWX 데이터베이스 덤프
+### AWX 데이터베이스 덤프
 1. AWX 데이터베이스 백업
 
 ```bash
@@ -100,6 +69,8 @@ sudo -u postgres psql -f /tmp/awx.sql
 ```bash
 kubectl exec -it deployment/awx-web -n awx -- awx-manage changepassword admin
 ```
+> - 비밀번호 변경
+{: .prompt-tip }
 
 ### AWX 데이터베이스 초기화
 1. AWX 웹 및 작업 디플로이먼트 중단

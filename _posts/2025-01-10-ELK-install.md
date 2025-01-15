@@ -6,10 +6,6 @@ categories: [Blog, Provisioning]
 tags: [elasticsearch, logstash, kibana, filebeat, fortigate]
 ---
 
-> 관련글 :
-> [ Kubespray 설치방법 (1)](https://heaths2.github.io/posts/kubespray_install/)
-> [ Kubespray 설치방법 (1)](https://heaths2.github.io/posts/kubespray_install/)
-
 ## 개요
 ELK Stack(Elasticsearch, Logstash, Kibana)은 로그 데이터를 수집, 저장, 분석, 시각화하는 데 최적화된 오픈 소스 소프트웨어 스택입니다. 본 매뉴얼은 여러 대의 FortiGate 방화벽에서 생성되는 로그를 중앙 집중식으로 관리하고 시각화하기 위한 ELK Stack 시스템의 구성과 설정 방법을 다룹니다.
 

@@ -2,8 +2,8 @@
 title: ELK Stack 구성
 author: G.G
 date: 2025-01-10 16:01:00 +0900
-categories: [Blog, Orchestration]
-tags: [ansible, awx, postgresql]
+categories: [Blog, Provisioning]
+tags: [elasticsearch, logstash, kibana, filebeat, fortigate]
 ---
 
 > 관련글 :

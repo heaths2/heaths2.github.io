@@ -520,6 +520,314 @@ sudo systemctl enable filebeat
 sudo systemctl start filebeat
 ```
 
+## 튜닝
+튜닝된 매핑 설정은 로그 데이터를 효율적으로 처리하고, 검색 및 집계 성능을 향상시키는 데 중점을 둡니다. 아래는 FortiGate 로그 매핑을 튜닝하는 방법과 출력 예시입니다.
+
+### 튜닝 목표
+1. 필드 자료형 최적화: text, keyword, ip, long, date 등을 적절히 사용.
+2. 불필요한 필드 제외: 로그에서 자주 사용되지 않는 필드는 제거.
+3. 동적 매핑 제한: 동적 필드 생성 방지로 불필요한 리소스 사용 방지.
+
+### 매핑 튜닝 설정
+
+```bash
+PUT /fortigate-logs-template
+{
+  "index_patterns": ["fortigate-logs-*"],
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 1
+  },
+  "mappings": {
+    "properties": {
+      "@timestamp": { "type": "date" },
+      "action": { "type": "keyword" },
+      "appcat": { "type": "keyword" },
+      "device": { "type": "keyword" },
+      "devid": { "type": "keyword" },
+      "devname": { "type": "keyword" },
+      "dstcountry": { "type": "keyword" },
+      "dstintf": { "type": "keyword" },
+      "dstintfrole": { "type": "keyword" },
+      "dstip": { "type": "ip" },
+      "dstport": { "type": "integer" },
+      "duration": { "type": "long" },
+      "eventtime": { "type": "date" },
+      "level": { "type": "keyword" },
+      "logid": { "type": "keyword" },
+      "mastersrcmac": { "type": "keyword" },
+      "policyid": { "type": "long" },
+      "policytype": { "type": "keyword" },
+      "poluuid": { "type": "keyword" },
+      "proto": { "type": "keyword" },
+      "rcvdbyte": { "type": "long" },
+      "rcvdpkt": { "type": "long" },
+      "sentbyte": { "type": "long" },
+      "sentpkt": { "type": "long" },
+      "service": { "type": "keyword" },
+      "sessionid": { "type": "keyword" },
+      "srccountry": { "type": "keyword" },
+      "srcintf": { "type": "keyword" },
+      "srcintfrole": { "type": "keyword" },
+      "srcip": { "type": "ip" },
+      "srcmac": { "type": "keyword" },
+      "srcport": { "type": "integer" },
+      "subtype": { "type": "keyword" },
+      "trandisp": { "type": "keyword" },
+      "transip": { "type": "ip" },
+      "transport": { "type": "integer" },
+      "type": { "type": "keyword" },
+      "tz": { "type": "keyword" },
+      "vd": { "type": "keyword" }
+    }
+  }
+}
+```
+
+3. 튜닝된 매핑 출력 예시
+
+```bash
+{
+  "fortigate-logs-2025.01.10" : {
+    "mappings" : {
+      "properties" : {
+        "@timestamp" : {
+          "type" : "date"
+        },
+        "action" : {
+          "type" : "keyword"
+        },
+        "appcat" : {
+          "type" : "keyword"
+        },
+        "device" : {
+          "type" : "keyword"
+        },
+        "devid" : {
+          "type" : "keyword"
+        },
+        "devname" : {
+          "type" : "text"
+        },
+        "dstcountry" : {
+          "type" : "text"
+        },
+        "dstintf" : {
+          "type" : "text"
+        },
+        "dstintfrole" : {
+          "type" : "keyword"
+        },
+        "dstip" : {
+          "type" : "text"
+        },
+        "dstport" : {
+          "type" : "long"
+        },
+        "duration" : {
+          "type" : "keyword"
+        },
+        "eventtime" : {
+          "type" : "keyword"
+        },
+        "level" : {
+          "type" : "keyword"
+        },
+        "logid" : {
+          "type" : "keyword"
+        },
+        "mastersrcmac" : {
+          "type" : "keyword"
+        },
+        "policyid" : {
+          "type" : "long"
+        },
+        "policytype" : {
+          "type" : "keyword"
+        },
+        "poluuid" : {
+          "type" : "keyword"
+        },
+        "proto" : {
+          "type" : "keyword"
+        },
+        "rcvdbyte" : {
+          "type" : "long"
+        },
+        "rcvdpkt" : {
+          "type" : "keyword"
+        },
+        "sentbyte" : {
+          "type" : "long"
+        },
+        "sentpkt" : {
+          "type" : "keyword"
+        },
+        "service" : {
+          "type" : "text"
+        },
+        "sessionid" : {
+          "type" : "keyword"
+        },
+        "srccountry" : {
+          "type" : "text"
+        },
+        "srcintf" : {
+          "type" : "text"
+        },
+        "srcintfrole" : {
+          "type" : "keyword"
+        },
+        "srcip" : {
+          "type" : "text"
+        },
+        "srcmac" : {
+          "type" : "keyword"
+        },
+        "srcport" : {
+          "type" : "long"
+        },
+        "srcserver" : {
+          "type" : "keyword"
+        },
+        "subtype" : {
+          "type" : "keyword"
+        },
+        "timestamp" : {
+          "type" : "text"
+        },
+        "trandisp" : {
+          "type" : "keyword"
+        },
+        "transip" : {
+          "type" : "text"
+        },
+        "transport" : {
+          "type" : "long"
+        },
+        "type" : {
+          "type" : "keyword"
+        },
+        "tz" : {
+          "type" : "text"
+        },
+        "vd" : {
+          "type" : "text"
+        }
+      }
+    }
+  }
+}
+```
+
+> - 튜닝된 매핑 출력 예시
+{: .prompt-tip }
+
+### 주요 변경 사항
+1. 필드 자료형 최적화:
+- srcip, dstip, transip → ip 자료형.
+- dstport, srcport, transport → integer.
+- rcvdbyte, sentbyte, duration → long.
+- devname, dstcountry → keyword (텍스트 분석이 필요하지 않음).
+2. 사용하지 않는 필드 제거:
+- 필요하지 않은 필드는 매핑에서 제거.
+3. 일관성 유지:
+- 동일한 데이터 유형은 동일한 자료형으로 통합.
+
+
+### 템플릿 적용
+1. 템플릿 적용
+
+```bash
+curl -X PUT "http://localhost:9200/_template/fortigate-logs-template" -H 'Content-Type: application/json' -d '
+PUT /fortigate-logs-template
+{
+  "index_patterns": ["fortigate-logs-*"],
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 1
+  },
+  "mappings": {
+    "properties": {
+      "@timestamp": { "type": "date" },
+      "action": { "type": "keyword" },
+      "appcat": { "type": "keyword" },
+      "device": { "type": "keyword" },
+      "devid": { "type": "keyword" },
+      "devname": { "type": "keyword" },
+      "dstcountry": { "type": "keyword" },
+      "dstintf": { "type": "keyword" },
+      "dstintfrole": { "type": "keyword" },
+      "dstip": { "type": "ip" },
+      "dstport": { "type": "integer" },
+      "duration": { "type": "long" },
+      "eventtime": { "type": "date" },
+      "level": { "type": "keyword" },
+      "logid": { "type": "keyword" },
+      "mastersrcmac": { "type": "keyword" },
+      "policyid": { "type": "long" },
+      "policytype": { "type": "keyword" },
+      "poluuid": { "type": "keyword" },
+      "proto": { "type": "keyword" },
+      "rcvdbyte": { "type": "long" },
+      "rcvdpkt": { "type": "long" },
+      "sentbyte": { "type": "long" },
+      "sentpkt": { "type": "long" },
+      "service": { "type": "keyword" },
+      "sessionid": { "type": "keyword" },
+      "srccountry": { "type": "keyword" },
+      "srcintf": { "type": "keyword" },
+      "srcintfrole": { "type": "keyword" },
+      "srcip": { "type": "ip" },
+      "srcmac": { "type": "keyword" },
+      "srcport": { "type": "integer" },
+      "subtype": { "type": "keyword" },
+      "trandisp": { "type": "keyword" },
+      "transip": { "type": "ip" },
+      "transport": { "type": "integer" },
+      "type": { "type": "keyword" },
+      "tz": { "type": "keyword" },
+      "vd": { "type": "keyword" }
+    }
+  }
+}'
+```
+
+2. 새로운 인덱스 생성
+
+```bash
+curl -X PUT "http://localhost:9200/fortigate-logs-2025.01.10"
+```
+
+3. 기존 데이터 재색인(옵션: 필요 시)
+
+```bash
+curl -X POST "http://localhost:9200/_reindex" -H 'Content-Type: application/json' -d '
+{
+  "source": { "index": "fortigate-logs-old" },
+  "dest": { "index": "fortigate-logs-new" }
+}'
+```
+
+### 최종 확인
+1. 템플릿 조회
+
+```bash
+curl -X GET "http://localhost:9200/_template/fortigate-logs-template?pretty"
+```
+
+2. 인덱스 매핑 확인
+
+```bash
+curl -X GET "http://localhost:9200/fortigate-logs-2025.01.10/_mapping?pretty"
+```
+
+3. 재색인 상태 확인
+
+```bash
+curl -X GET "http://localhost:9200/_tasks?pretty"
+```
+
 ## 참조
 > - [JVM 버전 호환](https://www.elastic.co/kr/support/matrix#matrix_jvm)
 > - [logstash 공식문서](https://www.elastic.co/guide/en/beats/filebeat/current/logstash-output.html)

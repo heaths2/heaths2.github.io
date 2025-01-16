@@ -146,6 +146,141 @@ curl http://localhost:9200
 > - Elasticsearch 클러스터 정보 확인 출력 예시
 {: .prompt-tip }
 
+6. Elasticsearch 클러스터 HA(선택사항)
+
+```yaml
+# ======================== Elasticsearch Configuration =========================
+#
+# NOTE: Elasticsearch comes with reasonable defaults for most settings.
+#       Before you set out to tweak and tune the configuration, make sure you
+#       understand what are you trying to accomplish and the consequences.
+#
+# The primary way of configuring a node is via this file. This template lists
+# the most important settings you may want to configure for a production cluster.
+#
+# Please consult the documentation for further information on configuration options:
+# https://www.elastic.co/guide/en/elasticsearch/reference/index.html
+#
+# ---------------------------------- Cluster -----------------------------------
+#
+# Use a descriptive name for your cluster:
+#
+cluster.name: Network-ELS
+#
+# ------------------------------------ Node ------------------------------------
+#
+# Use a descriptive name for the node:
+#
+node.name: nt-els01
+#
+# Add custom attributes to the node:
+#
+#node.attr.rack: r1
+#
+# ----------------------------------- Paths ------------------------------------
+#
+# Path to directory where to store the data (separate multiple locations by comma):
+#
+path.data: /data/elasticsearch
+#
+# Path to log files:
+#
+path.logs: /var/log/elasticsearch
+#
+# ----------------------------------- Memory -----------------------------------
+#
+# Lock the memory on startup:
+#
+bootstrap.memory_lock: true
+#
+# Make sure that the heap size is set to about half the memory available
+# on the system and that the owner of the process is allowed to use this
+# limit.
+#
+# Elasticsearch performs poorly when the system is swapping the memory.
+#
+# ---------------------------------- Network -----------------------------------
+#
+# By default Elasticsearch is only accessible on localhost. Set a different
+# address here to expose this node on the network:
+#
+network.host: 0.0.0.0
+#
+# By default Elasticsearch listens for HTTP traffic on the first free port it
+# finds starting at 9200. Set a specific HTTP port here:
+#
+http.port: 9200
+#
+# For more information, consult the network module documentation.
+#
+# --------------------------------- Discovery ----------------------------------
+#
+# Pass an initial list of hosts to perform discovery when this node is started:
+# The default list of hosts is ["127.0.0.1", "[::1]"]
+#
+discovery.seed_hosts: ["nt-els01", "nt-els02", "nt-els03"]
+#
+# Bootstrap the cluster using an initial set of master-eligible nodes:
+#
+cluster.initial_master_nodes: ["nt-els01", "nt-els02", "nt-els03"]
+#
+# For more information, consult the discovery and cluster formation module documentation.
+#
+# ---------------------------------- Various -----------------------------------
+#
+# Allow wildcard deletion of indices:
+#
+#action.destructive_requires_name: false
+
+#----------------------- BEGIN SECURITY AUTO CONFIGURATION -----------------------
+#
+# The following settings, TLS certificates, and keys have been automatically      
+# generated to configure Elasticsearch security features on 19-06-2024 06:23:22
+#
+# --------------------------------------------------------------------------------
+
+# Optimizing resource management and stability of your Elasticsearch cluster
+node.roles: ["data", "master", "ingest", "ml", "remote_cluster_client"]
+indices.fielddata.cache.size: 80%
+indices.breaker.fielddata.limit: 90%
+indices.breaker.total.limit: 90%
+indices.breaker.request.limit: 60%
+indices.memory.index_buffer_size: 50%
+indices.query.bool.max_clause_count: 2048
+
+# Enable security features
+xpack.security.enabled: false
+
+xpack.security.enrollment.enabled: false
+
+# Enable encryption for HTTP API client connections, such as Kibana, Logstash, and Agents
+xpack.security.http.ssl:
+  enabled: false
+  keystore.path: certs/http.p12
+
+# Enable encryption and mutual authentication between cluster nodes
+xpack.security.transport.ssl:
+  enabled: false
+  verification_mode: certificate
+  keystore.path: certs/transport.p12
+  truststore.path: certs/transport.p12
+# Create a new cluster with the current node only
+# Additional nodes can still join the cluster later
+cluster.initial_master_nodes: ["nt-els01", "nt-els02", "nt-els03"]
+
+# Allow HTTP API connections from anywhere
+# Connections are encrypted and require user authentication
+http.host: 0.0.0.0
+
+# Allow other nodes to join the cluster from anywhere
+# Connections are encrypted and mutually authenticated
+#transport.host: 0.0.0.0
+transport.port: 9300
+
+#----------------------- END SECURITY AUTO CONFIGURATION -------------------------
+```
+{: file='elasticsearch.yml'}
+
 ### Kibana 구성 설정
 1. Kibana 환경 변수 설정
 

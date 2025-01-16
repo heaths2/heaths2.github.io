@@ -136,6 +136,29 @@ Infra #
 > - `show full-configuration vpn ssl web portal Infra-SSLVPN` 명령어
 {: .prompt-tip }
 
+### SSLVPN 서버 설정
+- SSL 인증서 및 사용자, 인증 그룹추가
+
+```bash
+config vpn ssl settings
+    set servercert "Fortinet_Factory"
+    set tunnel-ip-pools "SSLVPN address"
+    set dns-server1 168.126.63.1
+    set dns-server2 168.126.63.2
+    set port 443
+    set source-interface "External"
+    set source-address "all"
+    set source-address6 "all"
+    set default-portal "tunnel-access"
+    config authentication-rule
+        edit 1
+            set groups "Radius Authentication" "SSL-VPN"
+            set portal "Infra-SSLVPN"
+        next
+    end
+end
+```
+
 ### 디버깅 명령어
 - SSLVPN 디버깅을 위한 명령어입니다.
 - 디버그 로그를 활성화하여 문제를 진단할 수 있습니다.

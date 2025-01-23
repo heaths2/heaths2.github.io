@@ -189,17 +189,29 @@ File "xmodem:" successfully copied to "flash:c2960-lanbasek9-mz.150-2.SE11.bin"
 _Tera Term Console XMODEM 전송 완료_
 
 1. 복구된 이미지를 기본 부팅 이미지로 설정합니다.
+
 ```bash
 set BOOT flash:c2960-lanbasek9-mz.150-2.SE11.bin
 ```
+
 2. 복구된 이미지를 기본 부팅 이미지로 스위치를 재부팅 합니다.
+
 ```bash
 boot
 ```
-3. fff
+
+3. 복구된 이미지를 기본 부팅 이미지로 설정합니다.
+
 ```bash
-conf
+configure terminal
 boot system flash:c2960-lanbasek9-mz.150-2.SE11.bin
 ```
+
+4. 변경 사항 저장합니다.
+
+```bash
+write memory
+```
+
 ## 참조
 - [TeraTerm 도구 다운로드](https://github.com/TeraTermProject/teraterm/releases)

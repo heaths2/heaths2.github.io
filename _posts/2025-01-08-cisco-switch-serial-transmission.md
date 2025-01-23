@@ -43,12 +43,21 @@ Cisco 스위치에서 **직렬 포트(Serial Port)**를 활용하여 XMODEM, YMO
 1. USB-Serial 어댑터를 통해 스위치의 콘솔 포트와 PC를 연결합니다.
 2. Tera Term을 실행하고, Serial을 선택한 후 적절한 포트를 지정합니다 (예: COM11).
 
+![Cisco_1](/assets/img/2025-01-13/Cisco-1.jpg)
+_Tera Term Console COM11 선택_
+
+![Cisco_2](/assets/img/2025-01-13/Cisco-2.jpg)
+_Tera Term Console COM11 연결_
+
 ### BAUD 속도 설정
 1.  스위치의 기본 BAUD 속도를 확인합니다.
 
 ```bash
 switch: set
 ```
+
+![Cisco_3](/assets/img/2025-01-13/Cisco-3.jpg)
+_Tera Term Console set 확인_
 
 <details markdown="block" style="margin: 1em 0; padding: 0.8em; border: 2px solid #007acc; border-radius: 10px; background-color: #f5faff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
   <summary>
@@ -81,8 +90,30 @@ VERSION_ID=V02
 
 ```bash
 siwtch: set BAUD 115200
+```
+
+![Cisco_4](/assets/img/2025-01-13/Cisco-4.jpg)
+_Tera Term Console set 설정_
+
+3. Tera Term에서 시리얼 포트 설정을 변경합니다.
+
+![Cisco_5](/assets/img/2025-01-13/Cisco-5.jpg)
+_Tera Term Console 인코딩 깨짐 확인_
+
+![TeraTerm_1](/assets/img/2025-01-08/TeraTerm_1.png)
+_Tera Term Console Serial Port 선택_
+
+![Cisco_6](/assets/img/2025-01-13/Cisco-6.jpg)
+_Tera Term Console 인코딩 설정_
+
+4. 변경 후 Tera Term을 다시 연결하여 설정이 적용되었는지 확인합니다.
+
+```bash
 switch: set
 ```
+
+![Cisco_7](/assets/img/2025-01-13/Cisco-7.jpg)
+_Tera Term Console 정상 출력 확인_
 
 <details markdown="block" style="margin: 1em 0; padding: 0.8em; border: 2px solid #007acc; border-radius: 10px; background-color: #f5faff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
   <summary>
@@ -111,16 +142,35 @@ VERSION_ID=V02
 
 </details>
 
-3. Tera Term에서 시리얼 포트 설정을 변경합니다.
-
-4. 변경 후 Tera Term을 다시 연결하여 설정이 적용되었는지 확인합니다.
-
 ### 복구 모드에서 XMODEM 전송 준비
 1. 스위치에서 복구 명령을 입력하여 XMODEM 전송 준비를 활성화합니다.
 
 ```bash
 copy xmodem: flash:c2960-lanbasek9-mz.150-2.SE11.bin
 ```
+
+![Cisco_8](/assets/img/2025-01-13/Cisco-8.jpg)
+_Tera Term Console XMODEM 전송 준비_
+
+### Tera Term에서 XMODEM 파일 전송
+
+### Serial Port 설정
+1. Tera Term 상단 메뉴에서 File > Transfer > XMODEM > Send를 선택합니다.
+2. 복구할 Cisco IOS 이미지 파일을 선택합니다 (예: c2960-lanbasek9-mz.150-2.SE11.bin).
+3. 전송 진행 상황 창이 나타나며 파일이 전송됩니다.
+- 전송 속도는 BAUD 속도에 따라 달라질 수 있습니다.
+- BAUD 속도가 9600bps라면 전송 속도가 느리기 때문에 115200bps 설정이 추천됩니다.
+
+![TeraTerm_3](/assets/img/2025-01-08/TeraTerm_3.png)
+_Tera Term Console Send 선택_
+
+![Cisco_9](/assets/img/2025-01-13/Cisco-9.jpg)
+_Tera Term Console bin 파일 선택_
+
+### 이미지 전송 완료
+
+![Cisco_10](/assets/img/2025-01-13/Cisco-10.jpg)
+_Tera Term Console XMODEM 전송 완료_
 
 <details markdown="block" style="margin: 1em 0; padding: 0.8em; border: 2px solid #007acc; border-radius: 10px; background-color: #f5faff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
   <summary>
@@ -135,35 +185,21 @@ File "xmodem:" successfully copied to "flash:c2960-lanbasek9-mz.150-2.SE11.bin"
 
 </details>
 
-### Tera Term에서 XMODEM 파일 전송
+![Cisco_11](/assets/img/2025-01-13/Cisco-11.jpg)
+_Tera Term Console XMODEM 전송 완료_
 
-### Serial Port 설정
-1. Tera Term 상단 메뉴에서 File > Transfer > XMODEM > Send를 선택합니다.
-2. 복구할 Cisco IOS 이미지 파일을 선택합니다 (예: c2960-lanbasek9-mz.150-2.SE11.bin).
-3. 전송 진행 상황 창이 나타나며 파일이 전송됩니다.
-- 전송 속도는 BAUD 속도에 따라 달라질 수 있습니다.
-- BAUD 속도가 9600bps라면 전송 속도가 느리기 때문에 115200bps 설정이 추천됩니다.
-
-### 이미지 전송 완료
-
-![TeraTerm_1](/assets/img/2025-01-08/TeraTerm_1.png)
-_TeraTerm 도구 Serial Port 선택_
-
-2. `Setup` → `Serial Port` → Seed: 115200 → New open 
-
-![TeraTerm_2](/assets/img/2025-01-08/TeraTerm_2.png)
-_TeraTerm 도구 Serial Port 변경_
-
-### XMODEM Send 설정
-1. TeraTerm 도구 XMODEM Send 설정
-
-![TeraTerm_3](/assets/img/2025-01-08/TeraTerm_3.png)
-_TeraTerm 도구 Send 선택_
-  
-2. `File` → `Transfer` → XMODEM → Send
-
-![TeraTerm_4](/assets/img/2025-01-08/TeraTerm_4.png)
-_TeraTerm 도구 Send 파일 선택_
-
+1. 복구된 이미지를 기본 부팅 이미지로 설정합니다.
+```bash
+set BOOT flash:c2960-lanbasek9-mz.150-2.SE11.bin
+```
+2. 복구된 이미지를 기본 부팅 이미지로 스위치를 재부팅 합니다.
+```bash
+boot
+```
+3. fff
+```bash
+conf
+boot system flash:c2960-lanbasek9-mz.150-2.SE11.bin
+```
 ## 참조
 - [TeraTerm 도구 다운로드](https://github.com/TeraTermProject/teraterm/releases)

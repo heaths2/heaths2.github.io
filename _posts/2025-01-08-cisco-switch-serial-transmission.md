@@ -100,11 +100,10 @@ VERSION_ID=V02
 switch: copy xmodem: flash:c2960-lanbasek9-mz.150-2.SE11.bin
 ```
 
-<details markdown="block">
+<details markdown="block" style="margin: 1em 0; padding: 0.8em; border: 2px solid #007acc; border-radius: 10px; background-color: #f5faff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
   <summary>
-    코드
+    펼치기/접기
   </summary>
-  {: .text-delta .label .label-green }
   
 ```bash
 Begin the Xmodem or Xmodem-1K transfer now...

@@ -1,5 +1,5 @@
 ---
-title: Cisco Switch X/Y/Z MODEOM 전송
+title: Cisco Switch 복구 X/Y/Z MODEOM
 author: G.G
 date: 2025-01-08 10:56:00 +0900
 categories: [Blog, Provisioning]
@@ -22,13 +22,29 @@ Cisco 스위치에서 **직렬 포트(Serial Port)**를 활용하여 XMODEM, YMO
 | 오류 검출            | 체크섬 또는 CRC                  | CRC                                 | CRC                                |
 | 비고                | 가장 기본적인 프로토콜            | XMODEM의 기능 향상 버전               | 전송 효율과 신뢰성이 높은 고급 기능 제공 |
 
-## 직렬포트 전송
+## 사전 준비
+1. 필요 장비
+- Cisco 스위치
+- USB-Serial 어댑터
+- PC (Tera Term과 XMODEM 프로토콜 지원)
+- 복구할 Cisco IOS 이미지 파일 (.bin)
+2. 필요 소프트웨어
+- Tera Term: 시리얼 통신 및 XMODEM 파일 전송 지원.
+3. 시리얼 포트 설정 정보
+- BAUD 속도: 기본 9600bps (필요 시 115200bps로 변경)
+- Data Bits: 8
+- Parity: None
+- Stop Bits: 1
+- Flow Control: None
 
-### TeraTerm 접속
-직렬포트 선택 `File` → 
+## 복구 매뉴얼
 
-### 직렬 포트 전송 속도 세팅
-1. 현재 직렬 포트 전송 속도 `9600` 확인
+### 스위치 연결
+1. USB-Serial 어댑터를 통해 스위치의 콘솔 포트와 PC를 연결합니다.
+2. Tera Term을 실행하고, Serial을 선택한 후 적절한 포트를 지정합니다 (예: COM11).
+
+### BAUD 속도 설정
+1.  스위치의 기본 BAUD 속도를 확인합니다.
 
 ```bash
 switch: set
@@ -61,7 +77,7 @@ VERSION_ID=V02
 
 </details>
 
-2. 직렬 포트 전송 속도 `115200`으로 변경
+2. BAUD 속도를 더 빠른 115200bps로 변경합니다.
 
 ```bash
 siwtch: set BAUD 115200
@@ -95,12 +111,15 @@ VERSION_ID=V02
 
 </details>
 
-### Switch XMODEM 프로토콜 전송 받기
+3. Tera Term에서 시리얼 포트 설정을 변경합니다.
 
-- Console 명령어 입력 후 TeraTerm XMODEM 보내기 설정
+4. 변경 후 Tera Term을 다시 연결하여 설정이 적용되었는지 확인합니다.
+
+### 복구 모드에서 XMODEM 전송 준비
+1. 스위치에서 복구 명령을 입력하여 XMODEM 전송 준비를 활성화합니다.
 
 ```bash
-switch: copy xmodem: flash:c2960-lanbasek9-mz.150-2.SE11.bin
+copy xmodem: flash:c2960-lanbasek9-mz.150-2.SE11.bin
 ```
 
 <details markdown="block" style="margin: 1em 0; padding: 0.8em; border: 2px solid #007acc; border-radius: 10px; background-color: #f5faff; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
@@ -116,8 +135,16 @@ File "xmodem:" successfully copied to "flash:c2960-lanbasek9-mz.150-2.SE11.bin"
 
 </details>
 
+### Tera Term에서 XMODEM 파일 전송
+
 ### Serial Port 설정
-1. TeraTerm 도구 Serial Port `9600` → `115200` 설정 변경
+1. Tera Term 상단 메뉴에서 File > Transfer > XMODEM > Send를 선택합니다.
+2. 복구할 Cisco IOS 이미지 파일을 선택합니다 (예: c2960-lanbasek9-mz.150-2.SE11.bin).
+3. 전송 진행 상황 창이 나타나며 파일이 전송됩니다.
+- 전송 속도는 BAUD 속도에 따라 달라질 수 있습니다.
+- BAUD 속도가 9600bps라면 전송 속도가 느리기 때문에 115200bps 설정이 추천됩니다.
+
+### 이미지 전송 완료
 
 ![TeraTerm_1](/assets/img/2025-01-08/TeraTerm_1.png)
 _TeraTerm 도구 Serial Port 선택_

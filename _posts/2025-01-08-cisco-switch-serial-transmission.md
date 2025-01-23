@@ -128,7 +128,7 @@ _TeraTerm 도구 Serial Port 변경_
 1. TeraTerm 도구 XMODEM Send 설정
 
 ![TeraTerm_3](/assets/img/2025-01-08/TeraTerm_3.png)
-_TeraTerm 도구 Send 선택_
+_TeraTerm 도구 Send 선택_
   
 2. `File` → `Transfer` → XMODEM → Send
 

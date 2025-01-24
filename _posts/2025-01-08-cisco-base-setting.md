@@ -216,6 +216,22 @@ Switch(config)# end
 Switch# exit
 ```
 
+### ACL 설정
+1. ACL 정책 수립
+
+```bash
+Switch(config)# ip access-list standard ALLOW_LOGIN
+Switch(config-std-nacl)# permit 10.1.1.0 0.0.0.255
+Switch(config-std-nacl)# deny any log
+```
+
+2. Login 정책 적용
+
+```bash
+Switch(config)# line vty 0 15
+Switch(config-line)# access-class ALLOW_LOGIN in
+```
+
 ### 배너 메시지 설정
 1. **8비트 문자 세트(UTF-8)** 활성화
 - 특수 문자나 한글 같은 비ASCII 문자를 정상적으로 표시하고 처리하기 위해 필수적인 설정.

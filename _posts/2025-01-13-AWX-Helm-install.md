@@ -52,19 +52,16 @@ kubectl exec -it awx-server-postgres-15-0 -- pg_dump -U awx -w -Fp -b -v -f /tmp
 ```
 
 2. AWX 데이터베이스 백업 파일 로컬로 복사
-
 ```bash
 kubectl cp -n awx awx-server-postgres-15-0:/tmp/awx.sql ~/awx/awx.sql
 ```
 
 3. AWX 테이블 및 데이터 생성 PostgreSQL 스크립트 실행
-
 ```bash
 sudo -u postgres psql -d awx -f /tmp/awx.sql
 ```
 
 4. `admin` 사용자 비밀번호 변경
-
 ```bash
 kubectl exec -it deployment/awx-web -n awx -- awx-manage changepassword admin
 ```
@@ -81,7 +78,6 @@ kubectl scale deployment awx-task --replicas=0 -n awx
 ```
 
 2. 데이터베이스 삭제
-
 ```bash
 sudo -u postgres psql -c "
 -- 데이터베이스 삭제
@@ -90,7 +86,6 @@ DROP DATABASE awx;
 ```
 
 3. 사용자 삭제
-
 ```bash
 sudo -u postgres psql -c "
 -- 사용자 삭제
@@ -99,7 +94,6 @@ DROP USER awx;
 ```
 
 4. AWX 웹 및 작업 디플로이먼트 서비스 재개
-
 ```bash
 kubectl scale deployment awx-web --replicas=2 -n awx
 kubectl scale deployment awx-task --replicas=2 -n awx
@@ -111,7 +105,6 @@ kubectl scale deployment awx-task --replicas=2 -n awx
 
 ### Helm 명령어어 정의
 1. Helm 명령어 정리
-
 | **명령어**                  | **설명**                                                                                     |
 |-----------------------------|---------------------------------------------------------------------------------------------|
 | `helm repo add`            | Helm 저장소를 추가합니다.                                                                   |
@@ -147,7 +140,6 @@ kubectl scale deployment awx-task --replicas=2 -n awx
 | `helm plugin uninstall`    | 설치된 Helm 플러그인을 제거합니다.                                                           |
 
 2. Helm 차트의 레이아웃 구성요소
-
 | **경로/파일명**                  | **설명**                                                                                     |
 |-----------------------------|---------------------------------------------------------------------------------------------|
 | `Chart.yaml`                | 차트에 대한 메타데이터를 포함합니다. (예: 이름, 버전, 설명 등)                                  |
@@ -163,7 +155,6 @@ kubectl scale deployment awx-task --replicas=2 -n awx
 | `tests/`                    | 차트의 기능을 테스트하기 위한 스크립트를 포함합니다.                                             |
 
 3. Helm 차트의 레이아웃 Tree 구조
-
 ```bash
 my-chart/
 ├── Chart.yaml                # 차트에 대한 메타데이터

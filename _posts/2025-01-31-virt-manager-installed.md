@@ -30,6 +30,7 @@ grep -E "vmx|svm" /proc/cpuinfo
 # Software
 lscpu | grep Virtualization
 ```
+
 2. 패키지 설치
 ```bash
 sudo apt update

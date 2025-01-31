@@ -45,8 +45,8 @@ sudo -u postgres psql -c "\du"
 ```
 
 ### AWX 데이터베이스 덤프
-1. AWX 데이터베이스 백업
 
+1. AWX 데이터베이스 백업
 ```bash
 kubectl exec -it awx-server-postgres-15-0 -- pg_dump -U awx -w -Fp -b -v -f /tmp/awx.sql -d awx
 ```
@@ -70,8 +70,8 @@ kubectl exec -it deployment/awx-web -n awx -- awx-manage changepassword admin
 {: .prompt-tip }
 
 ### AWX 데이터베이스 초기화
-1. AWX 웹 및 작업 디플로이먼트 중단
 
+1. AWX 웹 및 작업 디플로이먼트 중단
 ```bash
 kubectl scale deployment awx-web --replicas=0 -n awx
 kubectl scale deployment awx-task --replicas=0 -n awx
@@ -104,7 +104,9 @@ kubectl scale deployment awx-task --replicas=2 -n awx
 ## Helm 구조
 
 ### Helm 명령어어 정의
+
 1. Helm 명령어 정리
+
 | **명령어**                  | **설명**                                                                                     |
 |-----------------------------|---------------------------------------------------------------------------------------------|
 | `helm repo add`            | Helm 저장소를 추가합니다.                                                                   |
@@ -140,6 +142,7 @@ kubectl scale deployment awx-task --replicas=2 -n awx
 | `helm plugin uninstall`    | 설치된 Helm 플러그인을 제거합니다.                                                           |
 
 2. Helm 차트의 레이아웃 구성요소
+
 | **경로/파일명**                  | **설명**                                                                                     |
 |-----------------------------|---------------------------------------------------------------------------------------------|
 | `Chart.yaml`                | 차트에 대한 메타데이터를 포함합니다. (예: 이름, 버전, 설명 등)                                  |
@@ -202,33 +205,30 @@ echo "source <(helm completion bash)" >> ~/.bashrc
 ## AWX Operator 설치
 
 ### AWX Operator Helm 저장소 추가
-1. AWX Operator Helm 저장소 추가
 
+1. AWX Operator Helm 저장소 추가
 ```bash
 helm repo add awx-operator https://ansible-community.github.io/awx-operator-helm/
 ```
 
 2. Helm 저장소 업데이트
-
 ```bash
 helm repo update
 ```
 
 3. 현재 Helm 저장소 목록 확인
-
 ```bash
 helm repo list
 ```
 
 4. 사용 가능한 버전 목록 확인
-
 ```bash
 helm search repo awx-operator --versions
 ```
 
 ### AWX Operator Helm 차트 다운로드
-1. AWX Operator Helm 차트 다운로드
 
+1. AWX Operator Helm 차트 다운로드
 ```bash
 mkdirp -pv /data/helm
 cd /data/helm
@@ -236,7 +236,6 @@ helm pull awx-operator/awx-operator --untar --destination /data/helm
 ```
 
 2. 데이터 디렉토리 생성 및 권한 설정
-
 ```bash
 sudo mkdir -p /data/postgres-15
 sudo mkdir -p /data/projects
@@ -245,7 +244,6 @@ sudo chown 1000:0 /data/projects
 ```
 
 3. Helm 차트 유효성 검사
-
 ```bash
 cd /data/helm
 helm lint /data/helm/awx-operator -f /data/helm/awx-operator/values.yaml
@@ -257,7 +255,6 @@ helm template awx /data/helm/awx-operator -n awx -f /data/helm/awx-operator/valu
 ```
 
 5. Helm 차트 설치 (Dry Run)
-
 ```bash
 helm install awx /data/helm/awx-operator -n awx --create-namespace \
   -f awx-operator/values.yaml \
@@ -310,13 +307,11 @@ runtime.goexit
 {: .prompt-tip }
 
 6. Custom Resource Definition(CRD) 적용
-
 ```bash
 kubectl apply --server-side -f /data/helm/awx-operator/crds/
 ```
 
 7. Helm 차트 설치
-
 ```bash
 helm install awx /data/helm/awx-operator -n awx --create-namespace \
   -f awx-operator/values.yaml \
@@ -324,19 +319,16 @@ helm install awx /data/helm/awx-operator -n awx --create-namespace \
 ```
 
 8. Helm 설치 확인
-
 ```bash
 helm list -n awx
 ```
 
 9. AWX Pod 상태 확인
-
 ```bash
 kubectl get pods -n awx
 ```
 
 10. Helm 차트 업그레이드 (Dry Run)
-
 ```bash
 helm upgrade awx /data/helm/awx-operator -n awx \
   -f /data/helm/awx-operator/values.yaml \
@@ -344,7 +336,6 @@ helm upgrade awx /data/helm/awx-operator -n awx \
 ```
 
 11. Helm 차트 업그레이드
-
 ```bash
 helm upgrade awx /data/helm/awx-operator -n awx \
   -f /data/helm/awx-operator/values.yaml \
@@ -352,13 +343,11 @@ helm upgrade awx /data/helm/awx-operator -n awx \
 ```
 
 12. Helm 차트 삭제(옵션)
-
 ```bash
 helm uninstall awx -n awx
 ```
 
 13. Ingress 설정(옵션)
-
 ```bash
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm repo update

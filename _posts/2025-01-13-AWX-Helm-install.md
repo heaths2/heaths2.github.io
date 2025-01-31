@@ -172,7 +172,6 @@ my-chart/
 ├── crds/                     # 사용자 정의 리소스 정의(CRDs)
 └── tests/                    # 차트 테스트 스크립트
 ```
-
 ```bash
 awx-operator/
 ├── Chart.yaml       # 차트 메타데이터 정의

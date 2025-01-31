@@ -132,3 +132,46 @@ kolla-ansible install-deps
 kolla-genpwd
 sed -i 's/^keystone_admin_password: .*/keystone_admin_password: admin' /etc/kolla/passwords.yml
 ```
+
+2. OpenStack 환경 변수 설정
+```bash
+sed -i -e 's/^#network_interface: .*/network_interface: "xenbr1"/' \
+       -e 's/^#kolla_base_distro: .*/kolla_base_distro: "ubuntu"/' \
+       -e 's/^#kolla_internal_vip_address: .*/kolla_internal_vip_address: "10.1.1.100"/' \
+       -e 's/^#kolla_external_vip_interface: .*/kolla_external_vip_interface: "xenbr0"/' \
+       -e 's/^#neutron_external_interface: .*/neutron_external_interface: "xenbr0"/' \
+       -e 's/^#enable_cinder: .*/enable_cinder: "yes"/' \
+       -e 's/^#enable_cinder_backend_nfs: .*/enable_cinder_backend_nfs: "yes"/' \
+       -e 's/^#enable_neutron_dvr: .*/enable_neutron_dvr: "yes"/' \
+       -e 's/^#enable_neutron_provider_networks: .*/enable_neutron_provider_networks: "yes"/' \
+       -e 's/^#enable_skyline: .*/enable_skyline: "yes"/' \
+       -e 's/^#nova_compute_virt_type: .*/nova_compute_virt_type: "qemu"/' \
+       /etc/kolla/globals.yml
+```
+
+3. 설정 확인
+```bash
+grep -v "#" /etc/kolla/globals.yml | grep -v "^$"
+```
+
+### OpenStack 배포
+
+1. 서버 기본 설정
+```bash
+kolla-ansible bootstrap-servers -i multinode
+```
+
+2. 설치 전 점검 (네트워크, 패키지, 설정 오류 확인)
+```bash
+kolla-ansible prechecks -i multinode
+```
+
+3. OpenStack 컨테이너 이미지 다운로드
+```bash
+kolla-ansible pull -i multinode
+```
+
+4. OpenStack 배포 실행
+```bash
+kolla-ansible deploy -i multinode
+```

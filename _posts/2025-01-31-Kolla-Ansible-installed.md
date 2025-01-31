@@ -23,3 +23,112 @@ Kolla-Ansible은 OpenStack을 컨테이너 기반으로 배포하고 관리하�
 4. Inventory 파일: 배포할 노드 및 역할을 정의하는 설정 파일
 5. Global Configuration (globals.yml): OpenStack의 전반적인 설정을 정의하는 파일
 6. Container Registry: OpenStack 컨테이너 이미지를 저장하는 저장소 (Docker Hub, 프라이빗 레지스트리 등)
+
+## 환경 구성
+### 사전 준비 
+nscd(Name Service Cache Daemon) 비활성화 (DNS 캐시 충돌 방지)
+
+```bash
+systemctl disable --now nscd.service
+systemctl mask nscd.service
+```
+
+### NFS 설정
+
+1. 스토리지 노드에서 LVM 볼륨 그룹 및 논리 볼륨 생성
+```bash
+vgcreate Volumes /dev/sdb
+lvcreate -l 100%FREE -n cinder-volumes Volumes
+```
+
+2. 마운트 및 fstab 설정
+```bash
+mkfs.ext4 /dev/Volumes/cinder-volumes
+mkdir -pv /data
+
+cat <<EOF >> /etc/fstab
+# Storage node
+/dev/Volumes/cinder-volumes /data ext4 defaults 0 1
+EOF
+
+mount -a
+```
+
+3. NFS 서버 설치 및 설정
+```bash
+apt install -y nfs-kernel-server
+mkdir -pv /data/cinder-volumes
+```
+
+4. NFS 익스포트 설정(/etc/exports)
+```bash
+cat <<EOF >> /etc/exports
+/data/cinder-volumes 10.1.1.101/32(rw,sync,no_subtree_check,no_root_squash)
+EOF
+```
+
+5. NFS 서비스 적용
+```bash
+NFS 서비스 적용
+exportfs -rv
+showmount -e 10.1.1.104
+```
+
+6. Control node NFS 마운트 설정 (/etc/fstab)
+```bash
+cat <<EOF >> /etc/fstab
+
+# Storage node
+10.1.1.104:/data/cinder-volumes /data/cinder-volumes nfs4 rw,relatime,vers=4.2,rsize=524288,wsize=524288,namlen=255,hard,proto=tcp,timeo=600,retrans=2,sec=sys,nofail 0 0
+EOF
+mkdir -pv /data/cinder-volumes
+mount -a
+```
+
+## 설치
+### Kolla-Ansible 설치
+
+1. 필수 패키지 설치
+```bash
+sudo apt update
+sudo apt install -y git python3-dev python3-pip python3-venv libffi-dev gcc libssl-dev
+```
+
+2. Python 가상 환경 설정
+```bash
+cd /opt
+python3 -m venv kolla-ansible/venv
+source kolla-ansible/venv/bin/activate
+```
+
+3. Kolla-Ansible 설치
+```bash
+pip install -U pip
+pip install 'ansible-core>=2.16,<2.17.99'
+pip install git+https://opendev.org/openstack/kolla-ansible@stable/2024.2
+```
+
+4. 설정 디렉터리 생성 및 권한 변경
+```bash
+sudo mkdir -pv /etc/kolla
+sudo chown -v $USER:$USER /etc/kolla
+```
+
+5. 기본 설정 파일 복사
+```bash
+cp -rv /opt/kolla-ansible/venv/share/kolla-ansible/etc_examples/kolla/* /etc/kolla
+cp -rv /opt/kolla-ansible/venv/share/kolla-ansible/ansible/inventory/* /etc/kolla
+```
+
+6. 필수 의존성 설치
+```bash
+kolla-ansible install-deps
+```
+
+### OpenStack 설정
+
+1. 관리자 비밀번호 설정 (keystone_admin_password)
+```bash
+kolla-genpwd
+sed -i 's/^keystone_admin_password: .*/keystone_admin_password: admin' /etc/kolla/passwords.yml
+```

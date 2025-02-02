@@ -76,6 +76,7 @@ showmount -e 10.1.1.104
 ```
 
 6. Control node NFS 마운트 설정 (/etc/fstab)
+
 ```bash
 cat <<EOF >> /etc/fstab
 

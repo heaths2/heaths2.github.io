@@ -47,7 +47,7 @@ mkfs.ext4 /dev/Volumes/cinder-volumes
 mkdir -pv /data
 cat <<EOF >> /etc/fstab
 # Storage node
-/dev/Volumes/cinder-volumes /data ext4 defaults 0 1
+/dev/Volumes/cinder-volumes /data ext4 defaults 0 0
 EOF
 mount -a
 ```

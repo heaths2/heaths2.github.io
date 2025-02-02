@@ -42,13 +42,16 @@ lvcreate -l 100%FREE -n cinder-volumes Volumes
 ```
 
 2. 마운트 및 fstab 설정
+
 ```bash
 mkfs.ext4 /dev/Volumes/cinder-volumes
 mkdir -pv /data
+
 cat <<EOF >> /etc/fstab
 # Storage node
 /dev/Volumes/cinder-volumes /data ext4 defaults 0 0
 EOF
+
 mount -a
 ```
 

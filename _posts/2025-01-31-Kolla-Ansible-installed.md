@@ -45,12 +45,10 @@ lvcreate -l 100%FREE -n cinder-volumes Volumes
 ```bash
 mkfs.ext4 /dev/Volumes/cinder-volumes
 mkdir -pv /data
-
 cat <<EOF >> /etc/fstab
 # Storage node
 /dev/Volumes/cinder-volumes /data ext4 defaults 0 1
 EOF
-
 mount -a
 ```
 

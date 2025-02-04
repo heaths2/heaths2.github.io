@@ -119,8 +119,8 @@ ldap.conf 설정 (LDAP 서버 URI 및 Base DN 추가)
 
 ```bash
 sed -i -e '/^#URI[[:space:]]*ldap:\/\//a\
-BASE   dc=localdomain,dc=com\
-URI    ldap://ldap.localdomain.com' /etc/ldap/ldap.conf
+BASE   dc=infra,dc=com\
+URI    ldap://ldap.infra.com' /etc/ldap/ldap.conf
 ```
 
 ### OpenLDAP 서비스 활성화 및 상태 확인
@@ -146,6 +146,53 @@ sudo ldapsearch -Q -LLL -Y EXTERNAL -H ldapi:///
 
 ```bash
 sudo slapcat
+```
+
+### 기본 그룹 설정 (LDIF 파일 생성 및 적용)
+- ou=groups,dc=infra,dc=com → 그룹을 저장할 OU(조직 단위)
+- cn=admins → 관리자 그룹 (gidNumber=2000)
+- cn=developers → 개발자 그룹 (gidNumber=2001)
+- cn=guests → 게스트 그룹 (gidNumber=2002)
+- objectClass: posixGroup → POSIX 환경에서 사용 가능한 그룹으로 설정됨.
+
+```bash
+cat <<EOF | sudo tee ~/base-groups.ldif
+dn: ou=groups,dc=infra,dc=com
+objectClass: organizationalUnit
+ou: groups
+
+dn: cn=admins,ou=groups,dc=infra,dc=com
+objectClass: posixGroup
+cn: admins
+gidNumber: 2000
+
+dn: cn=developers,ou=groups,dc=infra,dc=com
+objectClass: posixGroup
+cn: developers
+gidNumber: 2001
+
+dn: cn=guests,ou=groups,dc=infra,dc=com
+objectClass: posixGroup
+cn: guests
+gidNumber: 2002
+EOF
+```
+
+### LDAP에 그룹 추가
+위에서 생성한 base-groups.ldif 파일을 사용하여 LDAP에 그룹을 추가합니다.
+- x → 단순 인증(Simple authentication) 사용
+- D "cn=admin,dc=infra,dc=com" → LDAP 관리자 계정
+- W → 비밀번호 입력 프롬프트 표시
+- f ~/base-groups.ldif → LDIF 파일을 사용하여 그룹 추가
+
+```bash
+ldapadd -x -D "cn=admin,dc=infra,dc=com" -W -f ~/base-groups.ldif
+```
+
+### 추가된 그룹 확인
+
+```bash
+ldapsearch -x -LLL -b "ou=groups,dc=infra,dc=com"
 ```
 
 ```bash

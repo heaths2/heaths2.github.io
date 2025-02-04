@@ -79,3 +79,54 @@ TLSCertificateKeyFile /etc/ssl/private/ldap.key
 ```
 
 📌 정리
+
+✅ OpenLDAP은 중앙 인증 및 디렉터리 서비스 관리에 최적화된 오픈소스 솔루션
+✅ LDAP 표준을 준수하며, 다양한 보안 및 인증 기능 제공
+✅ 멀티 서버 환경을 지원하며, 기업 환경에서 널리 사용 가능
+✅ CLI 도구 및 GUI(LAM, phpLDAPadmin)와 연동 가능하여 편리한 관리 가능
+
+다음 단계에서는 OpenLDAP의 설치 방법, 기본 설정, 사용자 및 그룹 관리에 대해 다룰 예정입니다. 🚀
+
+###
+
+```bash
+cat <<EOF >> /etc/hosts
+10.1.1.100    ldap.
+EOF
+```
+
+```bash
+sudo apt update
+sudo apt install slapd ldap-utils
+```
+
+```bash
+sudo dpkg-reconfigure slapd
+```
+
+```bash
+sed -i.bak -e '/^#URI[[:space:]]*ldap:\/\//a\
+BASE   dc=localdomain,dc=com\
+URI    ldap://ldap.localdomain.com' /etc/ldap/ldap.conf
+```
+
+```bash
+systemctl enable --now slapd
+systemctl status slapd
+```
+
+```bash
+sudo ldapsearch -Q -LLL -Y EXTERNAL -H ldapi:///
+```
+
+```bash
+sudo slapcat
+```
+
+```bash
+sudo apt install ldap-account-manager php-fpm
+```
+
+```bash
+sudo a2enconf php*-fpm
+```

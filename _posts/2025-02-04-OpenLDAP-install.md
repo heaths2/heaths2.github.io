@@ -87,18 +87,28 @@ TLSCertificateKeyFile /etc/ssl/private/ldap.key
 
 다음 단계에서는 OpenLDAP의 설치 방법, 기본 설정, 사용자 및 그룹 관리에 대해 다룰 예정입니다. 🚀
 
-###
+## OpenLDAP 설치
+
+### FQDN 설정(정규화된 도메인 이름)
 
 ```bash
-cat <<EOF >> /etc/hosts
-10.1.1.100    ldap.
+sudo hostnamectl set-hostname ldap.infra.com
+
+cat <<EOF | sudo tee -a /etc/hosts
+
+# OpenLDAP FQDN 
+10.1.1.100    ldap.infra.com ldap 
 EOF
 ```
+
+### OpenLDAP 패키지 설치
 
 ```bash
 sudo apt update
 sudo apt install slapd ldap-utils
 ```
+
+### OpenLDAP 서버 구성
 
 ```bash
 sudo dpkg-reconfigure slapd
@@ -130,3 +140,65 @@ sudo apt install ldap-account-manager php-fpm
 ```bash
 sudo a2enconf php*-fpm
 ```
+
+### LDAP 트리 구조
+
+```bash
+dc=infra,dc=com               → 최상위 도메인(Base DN)
+├── ou=users                  → 사용자 정보 저장 (OU)
+│   ├── uid=admin             → 사용자 계정 (ID)
+│   ├── uid=testuser          → 사용자 계정 (ID)
+│   ├── uid=devuser           → 사용자 계정 (ID)
+│   ├── uid=guest             → 사용자 계정 (ID)
+│
+├── ou=groups                 → 그룹 정보 저장 (OU)
+│   ├── cn=admins             → 관리자 그룹 (CN)
+│   ├── cn=developers         → 개발자 그룹 (CN)
+│   ├── cn=guests             → 게스트 그룹 (CN)
+│
+├── ou=services               → 서비스 계정 (OU)
+│   ├── cn=PowerDNS           → PowerDNS 서비스 계정 (CN)
+│   ├── cn=Jenkins            → Jenkins 서비스 계정 (CN)
+│   ├── cn=GitLab             → GitLab 서비스 계정 (CN)
+│
+└── ou=machines               → 서버 장비 정보 저장 (OU)
+    ├── cn=server1            → 서버 장비 정보 (CN)
+    ├── cn=server2            → 서버 장비 정보 (CN)
+```
+
+| LDAP DN (Distinguished Name)                  | 역할                           |
+|-----------------------------------------------|--------------------------------|
+| `dc=infra,dc=com`                             | 최상위 도메인(Base DN)         |
+| `ou=users,dc=infra,dc=com`                    | 사용자 정보 저장               |
+| `uid=admin,ou=users,dc=infra,dc=com`          | 사용자 계정 (`admin`)          |
+| `uid=testuser,ou=users,dc=infra,dc=com`       | 사용자 계정 (`testuser`)       |
+| `uid=devuser,ou=users,dc=infra,dc=com`        | 사용자 계정 (`devuser`)        |
+| `uid=guest,ou=users,dc=infra,dc=com`          | 사용자 계정 (`guest`)          |
+| `ou=groups,dc=infra,dc=com`                   | 그룹 정보 저장                 |
+| `cn=admins,ou=groups,dc=infra,dc=com`         | 관리자 그룹                     |
+| `cn=developers,ou=groups,dc=infra,dc=com`     | 개발자 그룹                     |
+| `cn=guests,ou=groups,dc=infra,dc=com`        | 게스트 그룹                     |
+| `ou=services,dc=infra,dc=com`                 | 애플리케이션 서비스 계정       |
+| `cn=PowerDNS,ou=services,dc=infra,dc=com`     | PowerDNS 서비스 계정           |
+| `cn=Jenkins,ou=services,dc=infra,dc=com`      | Jenkins 서비스 계정            |
+| `cn=GitLab,ou=services,dc=infra,dc=com`       | GitLab 서비스 계정             |
+| `ou=machines,dc=infra,dc=com`                 | 서버 장비 정보 저장            |
+| `cn=server1,ou=machines,dc=infra,dc=com`      | 서버 장비 (`server1`)          |
+| `cn=server2,ou=machines,dc=infra,dc=com`      | 서버 장비 (`server2`)          |
+
+| 요소        | 설명                                         | 예시                                      |
+|------------|--------------------------------------------|-------------------------------------------|
+| `dc`       | 도메인 구성 요소 (최상위 도메인)            | `dc=infra,dc=com`                         |
+| `ou`       | 조직 단위 (사용자, 그룹, 서비스 등 구분)     | `ou=users,dc=infra,dc=com`                |
+| `cn`       | 공통 이름 (사용자, 그룹, 서비스 계정 등)     | `cn=admin,ou=users,dc=infra,dc=com`       |
+| `uid`      | 사용자 ID (로그인 계정)                     | `uid=testuser,ou=users,dc=infra,dc=com`   |
+| `sn`       | 성(Last Name)                              | `sn=Kim`                                  |
+| `givenName`| 이름(First Name)                           | `givenName=Jisoo`                         |
+| `mail`     | 이메일 주소                                | `mail=testuser@infra.com`                 |
+| `objectClass` | LDAP 객체 유형 (사용자, 그룹, 조직 등)   | `objectClass=inetOrgPerson`               |
+| `memberOf` | 사용자가 속한 그룹                         | `memberOf=cn=admins,ou=groups,dc=infra,dc=com` |
+| `gidNumber`| 그룹 ID (POSIX 그룹 ID)                    | `gidNumber=1001`                          |
+| `uidNumber`| 사용자 ID (POSIX 사용자 ID)                | `uidNumber=1001`                          |
+| `homeDirectory` | 사용자의 홈 디렉토리                 | `homeDirectory=/home/testuser`            |
+| `loginShell` | 로그인 시 사용할 기본 쉘                | `loginShell=/bin/bash`                    |
+| `description` | 설명 필드                               | `description=PowerDNS Service Account`    |

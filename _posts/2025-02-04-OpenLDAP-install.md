@@ -131,12 +131,18 @@ systemctl status slapd
 ```
 
 ### LDAP 서버 설정 확인 (ldapsearch)
+- ldapsearch 명령어를 사용하여 LDAP 서버 설정을 조회
+- Q → SASL 인증 사용
+- LLL → 불필요한 정보 생략하여 출력
+- Y EXTERNAL → root 권한으로 인증
+- H ldapi:/// → 로컬 UNIX 소켓을 통해 LDAP 서버에 접속
 
 ```bash
 sudo ldapsearch -Q -LLL -Y EXTERNAL -H ldapi:///
 ```
 
-### 현재 LDAP 데이터베이스 내용을 출력
+### OpenLDAP 데이터베이스 덤프 (slapcat 명령어)
+현재 LDAP 데이터베이스 내용을 출력
 
 ```bash
 sudo slapcat

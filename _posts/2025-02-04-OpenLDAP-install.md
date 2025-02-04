@@ -114,20 +114,29 @@ sudo apt install slapd ldap-utils
 sudo dpkg-reconfigure slapd
 ```
 
+### OpenLDAP 설정 및 초기 구성
+ldap.conf 설정 (LDAP 서버 URI 및 Base DN 추가)
+
 ```bash
-sed -i.bak -e '/^#URI[[:space:]]*ldap:\/\//a\
+sed -i -e '/^#URI[[:space:]]*ldap:\/\//a\
 BASE   dc=localdomain,dc=com\
 URI    ldap://ldap.localdomain.com' /etc/ldap/ldap.conf
 ```
+
+### OpenLDAP 서비스 활성화 및 상태 확인
 
 ```bash
 systemctl enable --now slapd
 systemctl status slapd
 ```
 
+### LDAP 서버 설정 확인 (ldapsearch)
+
 ```bash
 sudo ldapsearch -Q -LLL -Y EXTERNAL -H ldapi:///
 ```
+
+### 현재 LDAP 데이터베이스 내용을 출력
 
 ```bash
 sudo slapcat

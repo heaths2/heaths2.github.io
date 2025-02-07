@@ -117,3 +117,19 @@ __Github 소스 제어 인증 정보 연결_
 
 ![AWX-Github_8](/assets/img/2025-01-07/AWX-Github_8.jpg)
 __Github 연동 동기화_
+
+### 템플릿 추가
+![AWX-Github_9](/assets/img/2025-01-07/AWX-Github_9.png)
+__Github 템플릿 추가_
+
+### 새 템플릿 만들기
+![AWX-Github_10](/assets/img/2025-01-07/AWX-Github_10.png)
+__Github 새 템플릿 만들기_
+
+### 새 템플릿 만들기(선택사항)
+![AWX-Github_11](/assets/img/2025-01-07/AWX-Github_11.png)
+__Github 새 템플릿 만들기(선택사항)_
+
+### 템플릿 실행 확인
+![AWX-Github_12](/assets/img/2025-01-07/AWX-Github_12.png)
+__Github 템플릿 실행 확인_

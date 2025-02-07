@@ -7,8 +7,8 @@ tags: [ansible, awx, github]
 ---
 
 > 관련글 :
-> [ Kubespray 설치방법_(1)](https://heaths2.github.io/posts/kubespray_install/)
-> [ Ansible AWX 설치방법_(2)](https://heaths2.github.io/posts/AWX-install/)
+> - [ Kubespray 설치방법_(1)](https://heaths2.github.io/posts/kubespray_install/)
+> - [ Ansible AWX 설치방법_(2)](https://heaths2.github.io/posts/AWX-install/)
 
 ## 개요
 AWX는 Ansible Tower의 오픈 소스 프로젝트로, 자동화된 작업 스케줄링 및 관리에 유용합니다. AWX는 외부 버전 관리 시스템(VCS)과 통합하여 Playbook 및 프로젝트 파일을 관리할 수 있습니다. 이 매뉴얼에서는 GitHub를 AWX와 연동하여 프로젝트를 관리하는 방법에 대해 설명합니다.

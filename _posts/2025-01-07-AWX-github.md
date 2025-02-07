@@ -50,12 +50,12 @@ cat /root/.ssh/id_rsa.pub
 
 3. GitHub의 [SSH and GPG keys](https://github.com/settings/keys) 페이지로 이동
 
-![AWX-Github_1](/assets/img/2025-01-07/AWX-Github_1.jpg)
+![AWX-Github_1](/assets/img/2025-01-07/AWX-Github_1.png)
 _Github SSH and GPG keys_
 
 4. Add SSH key 버튼을 클릭하여 저장
 
-![AWX-Github_2](/assets/img/2025-01-07/AWX-Github_2.jpg)
+![AWX-Github_2](/assets/img/2025-01-07/AWX-Github_2.png)
 __Github Add SSH key_
 
 5. 연결 테스트

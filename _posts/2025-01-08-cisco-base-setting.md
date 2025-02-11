@@ -232,6 +232,13 @@ Switch(config)# line vty 0 15
 Switch(config-line)# access-class ALLOW_LOGIN in
 ```
 
+### Web UI 접근 비활성화 설정
+
+```bash
+Switch(config)# no ip http server
+Switch(config)# no ip http secure-server
+```
+
 ### 배너 메시지 설정
 1. **8비트 문자 세트(UTF-8)** 활성화
 - 특수 문자나 한글 같은 비ASCII 문자를 정상적으로 표시하고 처리하기 위해 필수적인 설정.

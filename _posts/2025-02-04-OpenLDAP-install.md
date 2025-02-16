@@ -271,6 +271,107 @@ sudo ldapsearch -x -LLL -H ldap://172.16.0.101 -b "dc=infra,dc=com" "(objectClas
 sudo ldapsearch -x -LLL -H ldap://172.16.0.101 -b "dc=infra,dc=com" "(objectClass=posixGroup)"
 ```
 
+## LDAP 사용자 계정 추가
+
+### 조직 단위(OU) 생성 및 적용
+
+```bash
+cat <<EOF | sudo tee ~/people.ldif
+dn: ou=People,dc=infra,dc=com
+objectClass: organizationalUnit
+ou: People
+EOF
+
+sudo ldapadd -x -D "cn=admin,dc=infra,dc=com" -W -f ~/people.ldif
+```
+
+### LDAP 사용자 계정 생성 및 적용
+
+```bash
+PW1=$(slappasswd -h {SSHA} -s "0200")
+PW2=$(slappasswd -h {SSHA} -s "0201")
+PW3=$(slappasswd -h {SSHA} -s "0202")
+PW4=$(slappasswd -h {SSHA} -s "0205")
+PW5=$(slappasswd -h {SSHA} -s "0206")
+
+cat <<EOF | sudo tee ~/account.ldif
+dn: uid=800250200,ou=People,dc=infra,dc=com
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: SuperUser
+sn: SuperUser
+uid: 800250200
+uidNumber: 10000
+gidNumber: 10000
+homeDirectory: /home/800250200
+loginShell: /bin/bash
+userPassword: $PW1
+
+dn: uid=801250201,ou=People,dc=infra,dc=com
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: NetworkUser
+sn: NetworkUser
+uid: 801250201
+uidNumber: 10001
+gidNumber: 10001
+homeDirectory: /home/801250201
+loginShell: /bin/bash
+userPassword: $PW2
+
+dn: uid=802250202,ou=People,dc=infra,dc=com
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: SystemUser
+sn: SystemUser
+uid: 802250202
+uidNumber: 10002
+gidNumber: 10002
+homeDirectory: /home/802250202
+loginShell: /bin/bash
+userPassword: $PW3
+
+dn: uid=811250205,ou=People,dc=infra,dc=com
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: BackendUser
+sn: BackendUser
+uid: 811250205
+uidNumber: 10003
+gidNumber: 10011
+homeDirectory: /home/811250205
+loginShell: /bin/bash
+userPassword: $PW4
+
+dn: uid=811250206,ou=People,dc=infra,dc=com
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: FrontendUser
+sn: FrontendUser
+uid: 811250206
+uidNumber: 10004
+gidNumber: 10012
+homeDirectory: /home/811250206
+loginShell: /bin/bash
+userPassword: $PW5
+EOF
+
+ldapadd -x -D "cn=admin,dc=infra,dc=com" -W -f ~/account.ldif
+```
+
+### 사용자 인증 테스트
+
+```bash
+sudo ldapwhoami -x -D "uid=800250200,ou=People,dc=infra,dc=com" -W
+sudo ldapsearch -x -LLL -H ldap://172.16.0.101 -b "ou=People,dc=infra,dc=com" "(objectClass=posixAccount)"
+sudo ldapsearch -x -LLL -H ldap://172.16.0.101 -b "dc=infra,dc=com" "uid=800250200"
+```
+
 ## 참조
 - [schema.OpenLDAP ](https://github.com/sudo-project/sudo/blob/main/docs/schema.OpenLDAP)
 

@@ -235,28 +235,28 @@ sudo apt install libnss-ldap libpam-ldap ldap-utils nslcd -y
 ```
 
 ![LDAP_10](/assets/img/2025-02-04/LDAP_10.png)
-_LDAP nslcd 오래된 데이터베이스 이동_
+_LDAP nslcd LDAP 서버 URI 설정_
 
 ![LDAP_11](/assets/img/2025-02-04/LDAP_11.png)
-_LDAP nslcd 오래된 데이터베이스 이동_
+_LDAP nslcd LDAP 서버 검색 base 설정_
 
 ![LDAP_12](/assets/img/2025-02-04/LDAP_12.png)
-_LDAP ldap-auth-config 오래된 데이터베이스 이동_
+_LDAP ldap-auth-config LDAP 서버 API 설정_
 
 ![LDAP_13](/assets/img/2025-02-04/LDAP_13.png)
-_LDAP ldap-auth-config 오래된 데이터베이스 이동_
+_LDAP ldap-auth-config LDAP 검색 기반 설정_
 
 ![LDAP_14](/assets/img/2025-02-04/LDAP_14.png)
-_LDAP ldap-auth-config 오래된 데이터베이스 이동_
+_LDAP ldap-auth-config LDAP 데이터베이스 관리자 만들기 _
 
 ![LDAP_15](/assets/img/2025-02-04/LDAP_15.png)
-_LDAP ldap-auth-config 오래된 데이터베이스 이동_
+_LDAP ldap-auth-config LDAP 데이터베이스 로그인 안함_
 
 ![LDAP_16](/assets/img/2025-02-04/LDAP_16.png)
-_LDAP ldap-auth-config 오래된 데이터베이스 이동_
+_LDAP ldap-auth-config LDAP root 계정 설정_
 
 ![LDAP_17](/assets/img/2025-02-04/LDAP_17.png)
-_LDAP ldap-auth-config 오래된 데이터베이스 이동_
+_LDAP ldap-auth-config LDAP root 비밀번호 설정_
 
 ![LDAP_18](/assets/img/2025-02-04/LDAP_18.png)
 _LDAP ldap-auth-config 오래된 데이터베이스 이동_

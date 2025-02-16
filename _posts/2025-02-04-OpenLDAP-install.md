@@ -234,6 +234,33 @@ sudo apt update
 sudo apt install libnss-ldap libpam-ldap ldap-utils nslcd -y
 ```
 
+![LDAP_10](/assets/img/2025-02-04/LDAP_10.png)
+_LDAP nslcd 오래된 데이터베이스 이동_
+
+![LDAP_11](/assets/img/2025-02-04/LDAP_11.png)
+_LDAP nslcd 오래된 데이터베이스 이동_
+
+![LDAP_12](/assets/img/2025-02-04/LDAP_12.png)
+_LDAP ldap-auth-config 오래된 데이터베이스 이동_
+
+![LDAP_13](/assets/img/2025-02-04/LDAP_13.png)
+_LDAP ldap-auth-config 오래된 데이터베이스 이동_
+
+![LDAP_14](/assets/img/2025-02-04/LDAP_14.png)
+_LDAP ldap-auth-config 오래된 데이터베이스 이동_
+
+![LDAP_15](/assets/img/2025-02-04/LDAP_15.png)
+_LDAP ldap-auth-config 오래된 데이터베이스 이동_
+
+![LDAP_16](/assets/img/2025-02-04/LDAP_16.png)
+_LDAP ldap-auth-config 오래된 데이터베이스 이동_
+
+![LDAP_17](/assets/img/2025-02-04/LDAP_17.png)
+_LDAP ldap-auth-config 오래된 데이터베이스 이동_
+
+![LDAP_18](/assets/img/2025-02-04/LDAP_18.png)
+_LDAP ldap-auth-config 오래된 데이터베이스 이동_
+
 ### NSS 설정 변경 (LDAP을 NSS에 추가) 및 확인
 
 ```bash

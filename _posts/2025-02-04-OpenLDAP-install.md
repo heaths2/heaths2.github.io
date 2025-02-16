@@ -47,7 +47,7 @@ OpenLDAP은 여러 가지 핵심 구성 요소로 이루어져 있으며, 각 �
 | 접근 제어 | ACL(Access Control List) 설정 가능 |
 | 스키마 확장 | 필요에 따라 데이터 구조(스키마) 변경 가능 |
 
-## OpenLDAP 설치
+## OpenLDAP Server
 
 ### FQDN 설정(정규화된 도메인 이름)
 
@@ -57,7 +57,7 @@ sudo hostnamectl set-hostname ldap.infra.com
 cat <<EOF | sudo tee -a /etc/hosts
 
 # OpenLDAP FQDN 
-10.1.1.100    ldap.infra.com ldap 
+172.16.0.101    ldap.infra.com ldap 
 EOF
 ```
 
@@ -83,11 +83,10 @@ BASE   dc=infra,dc=com\
 URI    ldap://ldap.infra.com' /etc/ldap/ldap.conf
 ```
 
-### OpenLDAP 서비스 활성화 및 상태 확인
+### OpenLDAP 서비스 활성화
 
 ```bash
 sudo systemctl enable --now slapd
-sudo systemctl status slapd
 ```
 
 ### LDAP 서버 설정 확인 (ldapsearch)
@@ -106,6 +105,13 @@ sudo ldapsearch -Q -LLL -Y EXTERNAL -H ldapi:///
 
 ```bash
 sudo slapcat
+```
+
+### LAM (LDAP Account Manager) 설치 및 PHP-FPM 활성화
+
+```bash
+sudo apt install ldap-account-manager php-fpm
+sudo a2enconf php*-fpm
 ```
 
 ### LDAP DN (Distinguished Name)
@@ -137,59 +143,47 @@ LDAP DN은 LDAP 디렉터리에서 각 항목(Entry)을 고유하게 식별하�
 | `description` | 사용자 또는 그룹에 대한 설명              | `John's account for development` |
 | `memberOf` | 사용자가 속한 그룹 정보                   | `cn=Developers,ou=Groups,dc=example,dc=com` |
 
-### 기본 그룹 설정 (LDIF 파일 생성 및 적용)
-- ou=groups,dc=infra,dc=com → 그룹을 저장할 OU(조직 단위)
-- cn=admins → 관리자 그룹 (gidNumber=2000)
-- cn=developers → 개발자 그룹 (gidNumber=2001)
-- cn=guests → 게스트 그룹 (gidNumber=2002)
-- objectClass: posixGroup → POSIX 환경에서 사용 가능한 그룹으로 설정됨.
+## OpenLDAP Client
+
+### /etc/hosts 파일에 OpenLDAP 서버 정보 추가
 
 ```bash
-cat <<EOF | sudo tee ~/base-groups.ldif
-dn: ou=groups,dc=infra,dc=com
-objectClass: organizationalUnit
-ou: groups
+cat <<EOF | sudo tee -a /etc/hosts
 
-dn: cn=admins,ou=groups,dc=infra,dc=com
-objectClass: posixGroup
-cn: admins
-gidNumber: 2000
-
-dn: cn=developers,ou=groups,dc=infra,dc=com
-objectClass: posixGroup
-cn: developers
-gidNumber: 2001
-
-dn: cn=guests,ou=groups,dc=infra,dc=com
-objectClass: posixGroup
-cn: guests
-gidNumber: 2002
+# OpenLDAP FQDN 
+172.16.0.101    ldap.infra.com ldap 
 EOF
 ```
 
-### LDAP에 그룹 추가
-위에서 생성한 base-groups.ldif 파일을 사용하여 LDAP에 그룹을 추가합니다.
-- x → 단순 인증(Simple authentication) 사용
-- D "cn=admin,dc=infra,dc=com" → LDAP 관리자 계정
-- W → 비밀번호 입력 프롬프트 표시
-- f ~/base-groups.ldif → LDIF 파일을 사용하여 그룹 추가
+### LDAP NSS, PAM 및 관련 유틸리티 패키지 설치
 
 ```bash
-ldapadd -x -D "cn=admin,dc=infra,dc=com" -W -f ~/base-groups.ldif
+sudo apt update
+sudo apt install libnss-ldap libpam-ldap ldap-utils nslcd -y
 ```
 
-### 추가된 그룹 확인
+### NSS 설정 변경 (LDAP을 NSS에 추가) 및 확인
 
 ```bash
-ldapsearch -x -LLL -b "ou=groups,dc=infra,dc=com"
+sudo sed -i -e 's/^passwd:.*/passwd:         compat systemd ldap/' \
+            -e 's/^group:.*/group:          compat systemd ldap/' \
+            -e 's/^shadow:.*/shadow:         compat ldap/' /etc/nsswitch.conf
+
+grep -wE "passwd|group|shadow|sudoers" /etc/nsswitch.conf
 ```
 
-```bash
-sudo apt install ldap-account-manager php-fpm
-```
+### 홈 디렉토리 자동 생성 활성화 및 기본 권한 설
 
 ```bash
-sudo a2enconf php*-fpm
+sudo pam-auth-update --enable mkhomedir
+sudo sed -i '/pam_mkhomedir.so/s/$/ skel=\/etc\/skel umask=077/' /etc/pam.d/common-session
+```
+
+### LDAP 서버 데이터 조회 (ldapsearch 명령어)
+LDAP 서버가 정상적으로 동작하는지 확인하고, 현재 저장된 사용자 및 그룹 데이터를 조회할 수 있는 명령어.
+
+```bash
+sudo ldapsearch -x -LLL -H ldap://172.16.0.101 -b "dc=infra,dc=com"
 ```
 
 ### LDAP 트리 구조

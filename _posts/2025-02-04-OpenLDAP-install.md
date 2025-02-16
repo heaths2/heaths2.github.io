@@ -270,3 +270,7 @@ sudo ldapadd -x -D "cn=admin,dc=infra,dc=com" -W -f ~/groups.ldif
 sudo ldapsearch -x -LLL -H ldap://172.16.0.101 -b "dc=infra,dc=com" "(objectClass=organizationalUnit)"
 sudo ldapsearch -x -LLL -H ldap://172.16.0.101 -b "dc=infra,dc=com" "(objectClass=posixGroup)"
 ```
+
+## 참조
+- [schema.OpenLDAP ](https://github.com/sudo-project/sudo/blob/main/docs/schema.OpenLDAP)
+

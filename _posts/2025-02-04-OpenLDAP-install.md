@@ -68,11 +68,38 @@ sudo apt update
 sudo apt install slapd ldap-utils
 ```
 
+![LDAP_1](/assets/img/2025-02-04/LDAP_1.png)
+_LDAP slapd 비밀번호 설정_
+
+![LDAP_2](/assets/img/2025-02-04/LDAP_2.png)
+_LDAP slapd 비밀번호 설정 확인_
+
 ### OpenLDAP 서버 구성
 
 ```bash
 sudo dpkg-reconfigure slapd
 ```
+
+![LDAP_3](/assets/img/2025-02-04/LDAP_3.png)
+_LDAP slapd 재구성_
+
+![LDAP_4](/assets/img/2025-02-04/LDAP_4.png)
+_LDAP slapd 도메인 설정_
+
+![LDAP_5](/assets/img/2025-02-04/LDAP_5.png)
+_LDAP slapd 조직 설정_
+
+![LDAP_6](/assets/img/2025-02-04/LDAP_6.png)
+_LDAP slapd 비밀번호 설정_
+
+![LDAP_7](/assets/img/2025-02-04/LDAP_7.png)
+_LDAP slapd 비밀번호 설정 확인_
+
+![LDAP_8](/assets/img/2025-02-04/LDAP_8.png)
+_LDAP slapd 데이터베이스 삭제 안함_
+
+![LDAP_9](/assets/img/2025-02-04/LDAP_9.png)
+_LDAP slapd 오래된 데이터베이스 이동_
 
 ### OpenLDAP 설정 및 초기 구성
 ldap.conf 설정 (LDAP 서버 URI 및 Base DN 추가)

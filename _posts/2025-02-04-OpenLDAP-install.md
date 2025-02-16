@@ -141,6 +141,51 @@ sudo apt install ldap-account-manager php-fpm
 sudo a2enconf php*-fpm
 ```
 
+![LDAP_21](/assets/img/2025-02-04/LDAP_21.png)
+_LDAP LAM 구성_
+
+![LDAP_22](/assets/img/2025-02-04/LDAP_22.png)
+_LDAP LAM 서버 프로파일 수정_
+
+![LDAP_23](/assets/img/2025-02-04/LDAP_23.png)
+_LDAP LAM 서버 로그인_
+
+![LDAP_24](/assets/img/2025-02-04/LDAP_24.png)
+_LDAP LAM 서버 일반 설정_1_
+
+![LDAP_25](/assets/img/2025-02-04/LDAP_25.png)
+_LDAP LAM 서버 일반 설정_2_
+
+![LDAP_26](/assets/img/2025-02-04/LDAP_26.png)
+_LDAP LAM 서버 계정 항목 설정_1_
+
+![LDAP_27](/assets/img/2025-02-04/LDAP_27.png)
+_LDAP LAM 서버 계정 항목 설정_2_
+
+![LDAP_28](/assets/img/2025-02-04/LDAP_28.png)
+_LDAP LAM 서버 설정 저장_
+
+![LDAP_29](/assets/img/2025-02-04/LDAP_29.png)
+_LDAP LAM 서버 admin 계정 로그인_
+
+![LDAP_30](/assets/img/2025-02-04/LDAP_30.png)
+_LDAP LAM 서버 사용자 계정 및 그룹 생성_
+
+![LDAP_30](/assets/img/2025-02-04/LDAP_30.png)
+_LDAP LAM 서버 사용자 계정 및 그룹 생성_
+
+![LDAP_31](/assets/img/2025-02-04/LDAP_31.png)
+_LDAP LAM 서버 사용자 계정 및 그룹 생성 완료_
+
+![LDAP_32](/assets/img/2025-02-04/LDAP_32.png)
+_LDAP LAM 서버 사용자 계정 또는 목록 확인_
+
+![LDAP_33](/assets/img/2025-02-04/LDAP_33.png)
+_LDAP LAM 서버 사용자 계정 또는 그룹 트리구조 선택_
+
+![LDAP_34](/assets/img/2025-02-04/LDAP_34.png)
+_LDAP LAM 서버 사용자 계정 또는 그룹 트리구조_
+
 ### LDAP DN (Distinguished Name)
 LDAP DN은 LDAP 디렉터리에서 각 항목(Entry)을 고유하게 식별하는 문자열입니다. 계층적인 구조를 가지며, 개별 객체를 고유하게 구분할 수 있도록 설계됩니다.
 

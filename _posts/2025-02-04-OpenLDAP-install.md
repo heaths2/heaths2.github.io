@@ -186,236 +186,87 @@ LDAP 서버가 정상적으로 동작하는지 확인하고, 현재 저장된 �
 sudo ldapsearch -x -LLL -H ldap://172.16.0.101 -b "dc=infra,dc=com"
 ```
 
-### LDAP 트리 구조
+## LDAP 조직 및 그룹 구조 생성
+
+### LDAP 조직(OU) 구조 생성 및 적용용
 
 ```bash
-dc=infra,dc=com  (조직: infra)
- ├── ou=departments,dc=infra,dc=com  (부서 전체)
- │     ├── ou=개발팀,ou=departments,dc=infra,dc=com  (개발팀)
- │     │     ├── ou=백엔드,ou=개발팀,ou=departments,dc=infra,dc=com  (백엔드 팀)
- │     │     │     ├── uid=user1
- │     │     │     ├── uid=user2
- │     │     ├── ou=프론트엔드,ou=개발팀,ou=departments,dc=infra,dc=com  (프론트엔드 팀)
- │     │           ├── uid=user14
- │     │           ├── uid=user15
- │     │
- │     ├── ou=마케팅,ou=departments,dc=infra,dc=com  (마케팅)
- │     │     ├── ou=디지털광고,ou=마케팅,ou=departments,dc=infra,dc=com  (디지털 광고 팀)
- │     │     │     ├── uid=user3
- │     │     │     ├── uid=user4
- │     │     ├── ou=콘텐츠기획,ou=마케팅,ou=departments,dc=infra,dc=com  (콘텐츠 기획 팀)
- │     │           ├── uid=user5
- │     │
- │     ├── ou=영업,ou=departments,dc=infra,dc=com  (영업)
- │     │     ├── ou=국내영업,ou=영업,ou=departments,dc=infra,dc=com  (국내 영업 팀)
- │     │     │     ├── uid=user6
- │     │     │     ├── uid=user7
- │     │     ├── ou=해외영업,ou=영업,ou=departments,dc=infra,dc=com  (해외 영업 팀)
- │     │           ├── uid=user8
- │     │
- │     ├── ou=인프라,ou=departments,dc=infra,dc=com  (인프라)
- │     │     ├── ou=서버관리,ou=인프라,ou=departments,dc=infra,dc=com  (서버 관리 팀)
- │     │     │     ├── uid=user1
- │     │     │     ├── uid=user9
- │     │     ├── ou=네트워크관리,ou=인프라,ou=departments,dc=infra,dc=com  (네트워크 관리 팀)
- │     │           ├── uid=user10
- │     │
- │     ├── ou=HR,ou=departments,dc=infra,dc=com  (HR / 경영지원팀)
- │           ├── ou=채용,ou=HR,ou=departments,dc=infra,dc=com  (채용팀)
- │           │     ├── uid=user11
- │           ├── ou=인사관리,ou=HR,ou=departments,dc=infra,dc=com  (인사관리팀)
- │                 ├── uid=user12
- │                 ├── uid=user13
-```
-
-### LDAP 그룹 생성 LDIF
-
-```bash
-dn: dc=infra,dc=com
-objectClass: top
-objectClass: domain
-dc: infra
-
-dn: ou=departments,dc=infra,dc=com
+cat <<EOF | sudo tee ~/base-groups.ldif
+dn: ou=Departments,dc=infra,dc=com
 objectClass: organizationalUnit
-ou: departments
+ou: Departments
 
-# 개발팀
-dn: ou=개발팀,ou=departments,dc=infra,dc=com
+# Development OU
+dn: ou=Development,ou=Departments,dc=infra,dc=com
 objectClass: organizationalUnit
-ou: 개발팀
+ou: Development
 
-dn: ou=백엔드,ou=개발팀,ou=departments,dc=infra,dc=com
+dn: ou=Backend,ou=Development,ou=Departments,dc=infra,dc=com
 objectClass: organizationalUnit
-ou: 백엔드
+ou: Backend
 
-dn: ou=프론트엔드,ou=개발팀,ou=departments,dc=infra,dc=com
+dn: ou=Frontend,ou=Development,ou=Departments,dc=infra,dc=com
 objectClass: organizationalUnit
-ou: 프론트엔드
+ou: Frontend
 
-# 마케팅
-dn: ou=마케팅,ou=departments,dc=infra,dc=com
+# Infrastructure OU
+dn: ou=Infrastructure,ou=Departments,dc=infra,dc=com
 objectClass: organizationalUnit
-ou: 마케팅
+ou: Infrastructure
 
-dn: ou=디지털광고,ou=마케팅,ou=departments,dc=infra,dc=com
+dn: ou=Network,ou=Infrastructure,ou=Departments,dc=infra,dc=com
 objectClass: organizationalUnit
-ou: 디지털광고
+ou: Network
 
-dn: ou=콘텐츠기획,ou=마케팅,ou=departments,dc=infra,dc=com
+dn: ou=System,ou=Infrastructure,ou=Departments,dc=infra,dc=com
 objectClass: organizationalUnit
-ou: 콘텐츠기획
-
-# 영업
-dn: ou=영업,ou=departments,dc=infra,dc=com
-objectClass: organizationalUnit
-ou: 영업
-
-dn: ou=국내영업,ou=영업,ou=departments,dc=infra,dc=com
-objectClass: organizationalUnit
-ou: 국내영업
-
-dn: ou=해외영업,ou=영업,ou=departments,dc=infra,dc=com
-objectClass: organizationalUnit
-ou: 해외영업
-
-# 인프라
-dn: ou=인프라,ou=departments,dc=infra,dc=com
-objectClass: organizationalUnit
-ou: 인프라
-
-dn: ou=서버관리,ou=인프라,ou=departments,dc=infra,dc=com
-objectClass: organizationalUnit
-ou: 서버관리
-
-dn: ou=네트워크관리,ou=인프라,ou=departments,dc=infra,dc=com
-objectClass: organizationalUnit
-ou: 네트워크관리
-
-# HR (경영지원팀)
-dn: ou=HR,ou=departments,dc=infra,dc=com
-objectClass: organizationalUnit
-ou: HR
-
-dn: ou=채용,ou=HR,ou=departments,dc=infra,dc=com
-objectClass: organizationalUnit
-ou: 채용
-
-dn: ou=인사관리,ou=HR,ou=departments,dc=infra,dc=com
-objectClass: organizationalUnit
-ou: 인사관리
-```
-
-### LDAP 그룹 추가 (groups.ldif)
-
-```bash
-dn: cn=개발팀,ou=개발팀,ou=departments,dc=infra,dc=com
-objectClass: posixGroup
-cn: 개발팀
-gidNumber: 2000
-
-dn: cn=백엔드,ou=백엔드,ou=개발팀,ou=departments,dc=infra,dc=com
-objectClass: posixGroup
-cn: 백엔드
-gidNumber: 2001
-
-dn: cn=프론트엔드,ou=프론트엔드,ou=개발팀,ou=departments,dc=infra,dc=com
-objectClass: posixGroup
-cn: 프론트엔드
-gidNumber: 2002
-
-dn: cn=마케팅,ou=마케팅,ou=departments,dc=infra,dc=com
-objectClass: posixGroup
-cn: 마케팅
-gidNumber: 2003
-
-dn: cn=디지털광고,ou=디지털광고,ou=마케팅,ou=departments,dc=infra,dc=com
-objectClass: posixGroup
-cn: 디지털광고
-gidNumber: 2004
-
-dn: cn=콘텐츠기획,ou=콘텐츠기획,ou=마케팅,ou=departments,dc=infra,dc=com
-objectClass: posixGroup
-cn: 콘텐츠기획
-gidNumber: 2005
-
-dn: cn=영업,ou=영업,ou=departments,dc=infra,dc=com
-objectClass: posixGroup
-cn: 영업
-gidNumber: 2006
-
-dn: cn=국내영업,ou=국내영업,ou=영업,ou=departments,dc=infra,dc=com
-objectClass: posixGroup
-cn: 국내영업
-gidNumber: 2007
-
-dn: cn=해외영업,ou=해외영업,ou=영업,ou=departments,dc=infra,dc=com
-objectClass: posixGroup
-cn: 해외영업
-gidNumber: 2008
-
-dn: cn=인프라,ou=인프라,ou=departments,dc=infra,dc=com
-objectClass: posixGroup
-cn: 인프라
-gidNumber: 2009
-
-dn: cn=서버관리,ou=서버관리,ou=인프라,ou=departments,dc=infra,dc=com
-objectClass: posixGroup
-cn: 서버관리
-gidNumber: 2010
-
-dn: cn=네트워크관리,ou=네트워크관리,ou=인프라,ou=departments,dc=infra,dc=com
-objectClass: posixGroup
-cn: 네트워크관리
-gidNumber: 2011
-
-dn: cn=HR,ou=HR,ou=departments,dc=infra,dc=com
-objectClass: posixGroup
-cn: HR
-gidNumber: 2012
-
-dn: cn=채용,ou=채용,ou=HR,ou=departments,dc=infra,dc=com
-objectClass: posixGroup
-cn: 채용
-gidNumber: 2013
-
-dn: cn=인사관리,ou=인사관리,ou=HR,ou=departments,dc=infra,dc=com
-objectClass: posixGroup
-cn: 인사관리
-gidNumber: 2014
-```
-
-### 사용자 리스트 생성 (users.csv - 직접 관리)
-
-```bash
-uid,cn,sn,ou,uidNumber,gidNumber
-user1,홍길동,홍,백엔드,3001,2001
-user2,이몽룡,이,백엔드,3002,2001
-user3,성춘향,성,디지털광고,3003,2004
-user4,임꺽정,임,디지털광고,3004,2004
-user5,변학도,변,콘텐츠기획,3005,2005
-user6,김철수,김,국내영업,3006,2007
-user7,박영희,박,국내영업,3007,2007
-user8,최자영,최,해외영업,3008,2008
-user9,정우성,정,서버관리,3009,2010
-user10,강동원,강,네트워크관리,3010,2011
-```
-
-사용자 추가 csv 파일을 이용해 자동화
-
-```
-while IFS=, read -r uid cn sn ou uidNumber gidNumber; do
-    ldapadd -x -D "cn=admin,dc=infra,dc=com" -W <<EOF
-dn: uid=$uid,ou=$ou,ou=departments,dc=infra,dc=com
-objectClass: inetOrgPerson
-objectClass: posixAccount
-cn: $cn
-sn: $sn
-uid: $uid
-uidNumber: $uidNumber
-gidNumber: $gidNumber
-homeDirectory: /home/$uid
-loginShell: /bin/bash
+ou: System
 EOF
-done < users.csv
+
+sudo ldapadd -x -D "cn=admin,dc=infra,dc=com" -W -f ~/base-groups.ldif
+```
+
+### LDAP 그룹 생성
+
+```bash
+cat <<EOF | sudo tee ~/groups.ldif
+dn: cn=Development,ou=Departments,dc=infra,dc=com
+objectClass: posixGroup
+cn: Development
+gidNumber: 10010
+
+dn: cn=Backend,ou=Development,ou=Departments,dc=infra,dc=com
+objectClass: posixGroup
+cn: Backend
+gidNumber: 10011
+
+dn: cn=Frontend,ou=Development,ou=Departments,dc=infra,dc=com
+objectClass: posixGroup
+cn: Frontend
+gidNumber: 10012
+
+dn: cn=Infrastructure,ou=Departments,dc=infra,dc=com
+objectClass: posixGroup
+cn: Infrastructure
+gidNumber: 10000
+
+dn: cn=Network,ou=Infrastructure,ou=Departments,dc=infra,dc=com
+objectClass: posixGroup
+cn: Network
+gidNumber: 10001
+
+dn: cn=System,ou=Infrastructure,ou=Departments,dc=infra,dc=com
+objectClass: posixGroup
+cn: System
+gidNumber: 10002
+EOF
+
+sudo ldapadd -x -D "cn=admin,dc=infra,dc=com" -W -f ~/groups.ldif
+```
+
+### LDAP 그룹 및 조직 구조 확인
+
+```bash
+sudo ldapsearch -x -LLL -H ldap://172.16.0.101 -b "dc=infra,dc=com" "(objectClass=organizationalUnit)"
+sudo ldapsearch -x -LLL -H ldap://172.16.0.101 -b "dc=infra,dc=com" "(objectClass=posixGroup)"
 ```

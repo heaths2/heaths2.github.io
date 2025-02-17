@@ -387,78 +387,71 @@ sudo ldapadd -x -D "cn=admin,dc=infra,dc=com" -W -f ~/people.ldif
 ### LDAP 사용자 계정 생성 및 적용
 
 ```bash
-PW1=$(slappasswd -h {SSHA} -s "0200")
-PW2=$(slappasswd -h {SSHA} -s "0201")
-PW3=$(slappasswd -h {SSHA} -s "0202")
-PW4=$(slappasswd -h {SSHA} -s "0205")
-PW5=$(slappasswd -h {SSHA} -s "0206")
+#!/usr/bin/env bash
 
-cat <<EOF | sudo tee ~/account.ldif
-dn: uid=800250200,ou=People,dc=infra,dc=com
+# LDAP 관리자 계정 정보
+LDAP_ADMIN="cn=admin,dc=mailplug,dc=com"
+LDAP_BASE="ou=People,dc=mailplug,dc=com"
+
+# 사용자 정보 (USER_ID, CN, SN, UID_NUMBER, GID_NUMBER, PASSWORD)
+declare -A USERS=(
+    ["800250200"]="SuperUser SuperUser 10001 10000 0200"
+    ["801250201"]="SuperUser SuperUser 10002 10000 0201"
+    ["802250202"]="SuperUser SuperUser 10003 10000 0202"
+    ["811250205"]="SuperUser SuperUser 10004 10000 0205"
+    ["811250206"]="SuperUser SuperUser 10005 10000 0206"
+)
+
+# LDIF 파일 경로
+LDIF_FILE="/tmp/account.ldif"
+
+# 기존 LDIF 파일 삭제 후 새로 생성
+rm -f "$LDIF_FILE"
+
+echo "LDAP 사용자 추가 스크립트 시작"
+
+# 🔹 `UID` 대신 `USER_ID` 사용 (Bash 예약 변수 문제 방지)
+for USER_ID in "${!USERS[@]}"; do
+    IFS=' ' read -r CN SN UID_NUMBER GID_NUMBER PASSWORD <<< "${USERS[$USER_ID]}"
+
+    # SSHA 해시된 비밀번호 생성
+    HASHED_PASS=$(slappasswd -h {SSHA} -s "$PASSWORD" -n)
+
+    # LDIF 파일에 사용자 추가
+    cat <<EOF >> "$LDIF_FILE"
+dn: uid=$USER_ID,$LDAP_BASE
 objectClass: inetOrgPerson
 objectClass: posixAccount
 objectClass: shadowAccount
-cn: SuperUser
-sn: SuperUser
-uid: 800250200
-uidNumber: 10000
-gidNumber: 10000
-homeDirectory: /home/800250200
+shadowinactive: 90
+shadowlastchange: 20045
+shadowmax: 90
+shadowmin: 1
+shadowwarning: 7
+cn: $CN
+sn: $SN
+uid: $USER_ID
+uidNumber: $UID_NUMBER
+gidNumber: $GID_NUMBER
+homeDirectory: /home/$USER_ID
 loginShell: /bin/bash
-userPassword: $PW1
+userPassword: $HASHED_PASS
 
-dn: uid=801250201,ou=People,dc=infra,dc=com
-objectClass: inetOrgPerson
-objectClass: posixAccount
-objectClass: shadowAccount
-cn: NetworkUser
-sn: NetworkUser
-uid: 801250201
-uidNumber: 10001
-gidNumber: 10001
-homeDirectory: /home/801250201
-loginShell: /bin/bash
-userPassword: $PW2
-
-dn: uid=802250202,ou=People,dc=infra,dc=com
-objectClass: inetOrgPerson
-objectClass: posixAccount
-objectClass: shadowAccount
-cn: SystemUser
-sn: SystemUser
-uid: 802250202
-uidNumber: 10002
-gidNumber: 10002
-homeDirectory: /home/802250202
-loginShell: /bin/bash
-userPassword: $PW3
-
-dn: uid=811250205,ou=People,dc=infra,dc=com
-objectClass: inetOrgPerson
-objectClass: posixAccount
-objectClass: shadowAccount
-cn: BackendUser
-sn: BackendUser
-uid: 811250205
-uidNumber: 10003
-gidNumber: 10011
-homeDirectory: /home/811250205
-loginShell: /bin/bash
-userPassword: $PW4
-
-dn: uid=811250206,ou=People,dc=infra,dc=com
-objectClass: inetOrgPerson
-objectClass: posixAccount
-objectClass: shadowAccount
-cn: FrontendUser
-sn: FrontendUser
-uid: 811250206
-uidNumber: 10004
-gidNumber: 10012
-homeDirectory: /home/811250206
-loginShell: /bin/bash
-userPassword: $PW5
 EOF
+done
+
+# LDIF 파일이 정상적으로 생성되었는지 확인
+if [[ ! -f "$LDIF_FILE" || ! -s "$LDIF_FILE" ]]; then
+    echo "❌ LDIF 파일 생성 실패: $LDIF_FILE"
+    exit 1
+fi
+
+echo "✅ LDIF 파일 생성 완료: $LDIF_FILE"
+
+# LDAP 서버에 사용자 추가
+ldapadd -x -D "$LDAP_ADMIN" -W -f "$LDIF_FILE"
+
+echo "✅ LDAP 사용자 등록 완료"
 
 ldapadd -x -D "cn=admin,dc=infra,dc=com" -W -f ~/account.ldif
 ```

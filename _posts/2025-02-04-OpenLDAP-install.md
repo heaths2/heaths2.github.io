@@ -282,6 +282,10 @@ sudo sed -i '/pam_mkhomedir.so/s/$/ skel=\/etc\/skel umask=077/' /etc/pam.d/comm
 LDAP 서버가 정상적으로 동작하는지 확인하고, 현재 저장된 사용자 및 그룹 데이터를 조회할 수 있는 명령어.
 
 ```bash
+getent passwd | grep 800250200
+```
+
+```bash
 sudo ldapsearch -x -LLL -H ldap://172.16.0.101 -b "dc=infra,dc=com"
 ```
 

@@ -394,16 +394,16 @@ sudo ldapadd -x -D "cn=admin,dc=infra,dc=com" -W -f ~/people.ldif
 #!/usr/bin/env bash
 
 # LDAP 관리자 계정 정보
-LDAP_ADMIN="cn=admin,dc=mailplug,dc=com"
-LDAP_BASE="ou=People,dc=mailplug,dc=com"
+LDAP_ADMIN="cn=admin,dc=infra,dc=com"
+LDAP_BASE="ou=People,dc=infra,dc=com"
 
 # 사용자 정보 (USER_ID, CN, SN, UID_NUMBER, GID_NUMBER, PASSWORD)
 declare -A USERS=(
-    ["800250200"]="SuperUser SuperUser 10001 10000 0200"
-    ["801250201"]="SuperUser SuperUser 10002 10000 0201"
-    ["802250202"]="SuperUser SuperUser 10003 10000 0202"
-    ["811250205"]="SuperUser SuperUser 10004 10000 0205"
-    ["811250206"]="SuperUser SuperUser 10005 10000 0206"
+    ["I800250200"]="SuperUser SuperUser 10001 10000 0200"
+    ["I801250201"]="SuperUser SuperUser 10002 10000 0201"
+    ["I802250202"]="SuperUser SuperUser 10003 10000 0202"
+    ["I811250205"]="SuperUser SuperUser 10004 10000 0205"
+    ["I811250206"]="SuperUser SuperUser 10005 10000 0206"
 )
 
 # LDIF 파일 경로

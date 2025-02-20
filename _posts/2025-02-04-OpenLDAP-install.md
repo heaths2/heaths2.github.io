@@ -472,6 +472,15 @@ sudo ldapsearch -x -LLL -H ldap://172.16.0.101 -b "dc=infra,dc=com" "uid=I800250
 getent passwd I800250200
 I800250200:x:10001:10000:SuperUser:/home/I800250200:/bin/bash
 ```
+> `I800250200` 계정 정보 확인
+{: .prompt-info }
+
+### nscd(Naming Service Cache Daemon) 캐시도 지우기
+
+```bash
+nscd --invalidate=passwd
+nscd --invalidate=group
+```
 
 ## 참조
 - [schema.OpenLDAP ](https://github.com/sudo-project/sudo/blob/main/docs/schema.OpenLDAP)

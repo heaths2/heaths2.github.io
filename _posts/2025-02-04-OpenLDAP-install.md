@@ -468,5 +468,10 @@ sudo ldapsearch -x -LLL -H ldap://172.16.0.101 -b "ou=People,dc=infra,dc=com" "(
 sudo ldapsearch -x -LLL -H ldap://172.16.0.101 -b "dc=infra,dc=com" "uid=I800250200"
 ```
 
+```bash
+getent passwd I800250200
+I800250200:x:10001:10000:SuperUser:/home/I800250200:/bin/bash
+```
+
 ## 참조
 - [schema.OpenLDAP ](https://github.com/sudo-project/sudo/blob/main/docs/schema.OpenLDAP)

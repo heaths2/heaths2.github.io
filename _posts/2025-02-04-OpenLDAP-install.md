@@ -465,7 +465,7 @@ ldapadd -x -D "cn=admin,dc=infra,dc=com" -W -f ~/account.ldif
 ```bash
 sudo ldapwhoami -x -D "uid=800250200,ou=People,dc=infra,dc=com" -W
 sudo ldapsearch -x -LLL -H ldap://172.16.0.101 -b "ou=People,dc=infra,dc=com" "(objectClass=posixAccount)"
-sudo ldapsearch -x -LLL -H ldap://172.16.0.101 -b "dc=infra,dc=com" "uid=800250200"
+sudo ldapsearch -x -LLL -H ldap://172.16.0.101 -b "dc=infra,dc=com" "uid=I800250200"
 ```
 
 ## 참조

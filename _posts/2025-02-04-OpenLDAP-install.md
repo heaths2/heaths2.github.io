@@ -231,7 +231,7 @@ EOF
 
 ```bash
 sudo apt update
-sudo apt install libnss-ldapd libpam-ldapd ldap-utils nslcd -y
+sudo apt install libnss-ldapd libpam-ldapd ldap-utils sudo-ldap nslcd -y
 ```
 
 ![LDAP_10](/assets/img/2025-02-04/LDAP_10.png)

@@ -240,36 +240,35 @@ _LDAP nslcd LDAP 서버 URI 설정_
 ![LDAP_11](/assets/img/2025-02-04/LDAP_11.png)
 _LDAP nslcd LDAP 서버 검색 base 설정_
 
-![LDAP_12](/assets/img/2025-02-04/LDAP_12.png)
-_LDAP ldap-auth-config LDAP 서버 API 설정_
+![LDAP_35](/assets/img/2025-02-04/LDAP_35.png)
+_LDAP libnss-ldapd nsswitch.conf 설정_
 
-![LDAP_13](/assets/img/2025-02-04/LDAP_13.png)
-_LDAP ldap-auth-config LDAP 검색 기반 설정_
-
-![LDAP_14](/assets/img/2025-02-04/LDAP_14.png)
-_LDAP ldap-auth-config LDAP 데이터베이스 관리자 만들기 _
-
-![LDAP_15](/assets/img/2025-02-04/LDAP_15.png)
-_LDAP ldap-auth-config LDAP 데이터베이스 로그인 안함_
-
-![LDAP_16](/assets/img/2025-02-04/LDAP_16.png)
-_LDAP ldap-auth-config LDAP root 계정 설정_
-
-![LDAP_17](/assets/img/2025-02-04/LDAP_17.png)
-_LDAP ldap-auth-config LDAP root 비밀번호 설정_
-
-![LDAP_18](/assets/img/2025-02-04/LDAP_18.png)
-_LDAP ldap-auth-config 오래된 데이터베이스 이동_
-
-### NSS 설정 변경 (LDAP을 NSS에 추가) 및 확인
+### NSS 설정 확인
 
 ```bash
-sudo sed -i -e 's/^passwd:.*/passwd:         compat systemd ldap/' \
-            -e 's/^group:.*/group:          compat systemd ldap/' \
-            -e 's/^shadow:.*/shadow:         compat ldap/' /etc/nsswitch.conf
+# /etc/nsswitch.conf
+#
+# Example configuration of GNU Name Service Switch functionality.
+# If you have the `glibc-doc-reference' and `info' packages installed, try:
+# `info libc "Name Service Switch"' for information about this file.
 
-grep -wE "passwd|group|shadow|sudoers" /etc/nsswitch.conf
+passwd:         files systemd ldap
+group:          files systemd ldap
+shadow:         files ldap
+gshadow:        files
+
+hosts:          files dns ldap
+networks:       files
+
+protocols:      db files
+services:       db files
+ethers:         db files
+rpc:            db files
+
+netgroup:       nis
+sudoers:        files ldap
 ```
+{: file='nsswitch.conf'}
 
 ### 홈 디렉토리 자동 생성 활성화 및 기본 권한 설
 

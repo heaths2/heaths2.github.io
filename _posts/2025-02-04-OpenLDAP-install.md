@@ -240,7 +240,7 @@ _LDAP nslcd LDAP 서버 URI 설정_
 ![LDAP_11](/assets/img/2025-02-04/LDAP_11.png)
 _LDAP nslcd LDAP 서버 검색 base 설정_
 
-![LDAP_35](/assets/img/2025-02-04/LDAP_35.png)
+![LDAP_35](assets/img/2025-02-04/LDAP_35.png)
 _LDAP libnss-ldapd nsswitch.conf 설정_
 
 ### NSS 설정 확인

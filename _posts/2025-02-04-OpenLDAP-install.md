@@ -281,7 +281,7 @@ sudo sed -i '/pam_mkhomedir.so/s/$/ skel=\/etc\/skel umask=077/' /etc/pam.d/comm
 LDAP 서버가 정상적으로 동작하는지 확인하고, 현재 저장된 사용자 및 그룹 데이터를 조회할 수 있는 명령어.
 
 ```bash
-getent passwd | grep 800250200
+getent passwd | grep I800250200
 ```
 
 ```bash
@@ -532,6 +532,19 @@ sudouser: I800250200
 EOF
 
 sudo ldapadd -x -D "cn=admin,dc=infra,dc=com" -W -f ~/sudo_role.ldif
+```
+
+### sudo 권한 적용
+
+```bash
+cat <<'EOF' | sudo tee -a /etc/ldap/ldap.conf
+
+BASE            dc=infra,dc=com
+URI             ldap://ldap.infra.com
+SUDOERS_BASE    ou=SUDOers,dc=infra,dc=com
+EOF
+
+sudo systemctl restart nscd nslcd
 ```
 
 ## 참조

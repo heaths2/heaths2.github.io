@@ -481,10 +481,12 @@ nscd --invalidate=passwd
 nscd --invalidate=group
 ```
 
-## sudo 모듈 스키마 추가
+## sudo 권한
+
+### 모듈 스키마 추가
 
 ```bash
-cat <<EOF | sudo tee /etc/ldap/schema/sudoers.ldif
+cat <<'EOF' | sudo tee /etc/ldap/schema/sudoers.ldif
 dn: cn=sudo,cn=schema,cn=config
 objectClass: olcSchemaConfig
 cn: sudo
@@ -500,6 +502,36 @@ olcAttributeTypes: ( 1.3.6.1.4.1.15953.9.1.9 NAME 'sudoNotAfter' DESC 'End of ti
 olcAttributeTypes: ( 1.3.6.1.4.1.15953.9.1.10 NAME 'sudoOrder' DESC 'an integer to order the sudoRole entries' EQUALITY integerMatch ORDERING integerOrderingMatch SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 )
 olcObjectClasses: ( 1.3.6.1.4.1.15953.9.2.1 NAME 'sudoRole' SUP top STRUCTURAL DESC 'Sudoer Entries' MUST ( cn ) MAY ( sudoUser $ sudoHost $ sudoCommand $ sudoRunAs $ sudoRunAsUser $ sudoRunAsGroup $ sudoOption $ sudoOrder $ sudoNotBefore $ sudoNotAfter $ description ) )
 EOF
+```
+
+### sudo 조직 단위(OU) 생성 및 적용
+
+```bash
+cat <<'EOF' | sudo tee ~/sudo_ou.ldif
+dn: ou=SUDOers,dc=infra,dc=com
+objectclass: organizationalUnit
+ou: SUDOers
+EOF
+
+sudo ldapadd -x -D "cn=admin,dc=infra,dc=com" -W -f ~/sudo_ou.ldif
+```
+
+### sudo 권한 추가
+
+```bash
+cat <<'EOF' | sudo tee ~/sudo_role.ldif
+dn: cn=sudo,ou=SUDOers,dc=infra,dc=com
+cn: sudo
+objectclass: sudoRole
+objectclass: top
+sudocommand: !/bin/rm
+sudocommand: !/bin/mv
+sudocommand: /bin/bash
+sudohost: ALL
+sudouser: I800250200
+EOF
+
+sudo ldapadd -x -D "cn=admin,dc=infra,dc=com" -W -f ~/sudo_role.ldif
 ```
 
 ## 참조

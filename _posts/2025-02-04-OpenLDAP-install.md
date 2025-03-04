@@ -549,5 +549,77 @@ EOF
 sudo systemctl restart nscd nslcd
 ```
 
+## logging
+
+```bash
+ldapsearch -Y EXTERNAL -H ldapi:/// -b cn=config -s base | grep -i LOG
+
+cat <<'EOF' | sudo tee ~/access_logging.ldif
+dn: cn=config
+replace: olcLogLevel
+olcLogLevel: -1
+EOF
+
+ldapmodify -Y EXTERNAL -H ldapi:/// -f ~/access_logging.ldif
+
+ldapsearch -Y EXTERNAL -H ldapi:/// -b cn=config -s base | grep -i LOG
+
+
+
+cat <<'EOF' | sudo tee -a /etc/rsyslog.d/50-default.conf
+
+#
+# Asynchronous Logging for the OpenLDAP system.
+#
+LOCAL4.*                        -/var/log/ldap/slapd.log
+EOF
+
+cat <<'EOF' | sudo tee ~/audit_logging.ldif
+dn: olcOverlay=auditlog,olcDatabase={1}mdb,cn=config
+changetype: add
+objectClass: olcOverlayConfig
+objectClass: olcAuditLogConfig
+olcOverlay: auditlog
+olcAuditlogFile: /tmp/auditlog.ldif
+EOF
+
+ldapmodify -Y EXTERNAL -H ldapi:/// -f ~/audit_logging.ldif
+
+
+
+
+cat <<'EOF' | sudo tee ~/audit_logging.ldif
+dn: olcOverlay=auditlog,olcDatabase={1}mdb,cn=config
+changetype: modify
+objectClass: olcOverlayConfig
+objectClass: olcAuditLogConfig
+olcOverlay: auditlog
+olcAuditlogFile: /var/log/ldap/audit/audit.ldif
+EOF
+
+ldapmodify -Y EXTERNAL -H ldapi:/// -f ~/audit_logging.ldif
+
+
+cat <<'EOF' | sudo tee ~/modify_audit_logging.ldif
+dn: olcOverlay=auditlog,olcDatabase={1}mdb,cn=config
+changetype: modify
+
+replace: olcAuditlogFile
+olcAuditlogFile: /var/log/ldap/audit/audit.ldif
+EOF
+
+ldapmodify -Y EXTERNAL -H ldapi:/// -f ~/audit_logging.ldif
+
+
+cat <<'EOF' | sudo tee ~/add_audit_logging.ldif
+dn: olcOverlay=auditlog,olcDatabase={1}mdb,cn=config
+changetype: add
+objectClass: olcOverlayConfig
+objectClass: olcAuditLogConfig
+olcOverlay: auditlog
+olcAuditlogFile: /tmp/auditlog.ldif
+EOF
+```
+
 ## 참조
 - [schema.OpenLDAP ](https://github.com/sudo-project/sudo/blob/main/docs/schema.OpenLDAP)

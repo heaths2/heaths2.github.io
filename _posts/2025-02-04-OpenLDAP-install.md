@@ -345,14 +345,14 @@ enumerate = true
 # ignore_group_members = true
 cache_credentials = false
 ldap_schema = rfc2307
-ldap_uri = ldap://ldap.mailplug.com:389
-ldap_search_base = dc=mailplug,dc=com
+ldap_uri = ldap://ldap.infra.com:389
+ldap_search_base = dc=infra,dc=com
 
-ldap_user_search_base = dc=mailplug,dc=com
+ldap_user_search_base = dc=infra,dc=com
 ldap_user_object_class = posixAccount
 ldap_user_name = uid
 
-ldap_group_search_base = dc=mailplug,dc=com
+ldap_group_search_base = dc=infra,dc=com
 ldap_group_object_class = posixGroup
 ldap_group_name = cn
 
@@ -360,7 +360,7 @@ ldap_id_use_start_tls = false
 ldap_tls_reqcert = never
 ldap_tls_cacert = /etc/ssl/certs/ca-certificates.crt
 
-ldap_default_bind_dn = cn=admin,dc=mailplug,dc=com
+ldap_default_bind_dn = cn=admin,dc=infra,dc=com
 ldap_default_authtok_type = password
 ldap_default_authtok = mail1234
 access_provider = ldap

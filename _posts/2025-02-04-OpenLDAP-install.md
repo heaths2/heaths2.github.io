@@ -362,7 +362,7 @@ ldap_tls_cacert = /etc/ssl/certs/ca-certificates.crt
 
 ldap_default_bind_dn = cn=admin,dc=infra,dc=com
 ldap_default_authtok_type = password
-ldap_default_authtok = mail1234
+ldap_default_authtok = qwer1234
 access_provider = ldap
 ldap_access_filter = (objectClass=posixAccount)
 min_id = 1

@@ -215,7 +215,13 @@ LDAP DN은 LDAP 디렉터리에서 각 항목(Entry)을 고유하게 식별하�
 | `description` | 사용자 또는 그룹에 대한 설명              | `John's account for development` |
 | `memberOf` | 사용자가 속한 그룹 정보                   | `cn=Developers,ou=Groups,dc=example,dc=com` |
 
-## OpenLDAP Client
+## A. OpenLDAP Client
+
+### hostname 설정
+
+```bash
+hostnamectl set-hostname ldap-client
+```
 
 ### /etc/hosts 파일에 OpenLDAP 서버 정보 추가
 
@@ -270,7 +276,7 @@ sudoers:        files ldap
 ```
 {: file='nsswitch.conf'}
 
-### 홈 디렉토리 자동 생성 활성화 및 기본 권한 설
+### 홈 디렉토리 자동 생성 활성화 및 기본 권한 설정
 
 ```bash
 sudo pam-auth-update --enable mkhomedir
@@ -286,6 +292,107 @@ getent passwd | grep I800250200
 
 ```bash
 sudo ldapsearch -x -LLL -H ldap://172.16.0.101 -b "dc=infra,dc=com"
+```
+
+## B. SSSD Client
+
+### hostname 설정
+
+```bash
+hostnamectl set-hostname sssd-client
+```
+
+### /etc/hosts 파일에 OpenLDAP 서버 정보 추가
+
+```bash
+cat <<EOF | sudo tee -a /etc/hosts
+
+# OpenLDAP FQDN 
+172.16.0.101    ldap.infra.com ldap 
+EOF
+```
+
+### SSSD NSS, PAM, SUDO 및 관련 유틸리티 패키지 설치
+
+```bash
+sudo apt update
+sudo apt install sssd sssd-tools ldap-utils libsss-sudo -y
+```
+
+### sssd.conf 설정 및 적용
+
+```bash
+sudo install -m 600 /dev/null /etc/sssd/sssd.conf
+
+cat << EOF | sudo tee /etc/sssd/sssd.conf
+[sssd]
+config_file_version = 2
+services = nss, pam, sudo
+domains = LDAP
+
+[nss]
+filter_users =
+filter_groups =
+
+[pam]
+
+[domain/LDAP]
+id_provider = ldap
+auth_provider = ldap
+chpass_provider = ldap
+sudo_provider = ldap
+enumerate = true
+# ignore_group_members = true
+cache_credentials = false
+ldap_schema = rfc2307
+ldap_uri = ldap://ldap.mailplug.com:389
+ldap_search_base = dc=mailplug,dc=com
+
+ldap_user_search_base = dc=mailplug,dc=com
+ldap_user_object_class = posixAccount
+ldap_user_name = uid
+
+ldap_group_search_base = dc=mailplug,dc=com
+ldap_group_object_class = posixGroup
+ldap_group_name = cn
+
+ldap_id_use_start_tls = false
+ldap_tls_reqcert = never
+ldap_tls_cacert = /etc/ssl/certs/ca-certificates.crt
+
+ldap_default_bind_dn = cn=admin,dc=mailplug,dc=com
+ldap_default_authtok_type = password
+ldap_default_authtok = mail1234
+access_provider = ldap
+ldap_access_filter = (objectClass=posixAccount)
+min_id = 1
+max_id = 0
+ldap_user_uuid = entryUUID
+ldap_user_shell = loginShell
+ldap_user_home_directory = homeDirectory
+ldap_user_uid_number = uidNumber
+ldap_user_gid_number = gidNumber
+ldap_group_gid_number = gidNumber
+ldap_group_uuid = entryUUID
+ldap_group_member = memberUid
+
+ldap_auth_disable_tls_never_use_in_production = true
+use_fully_qualified_names = false
+ldap_access_order = filter
+debug_level=6
+
+override_homedir = /home/%U
+fallback_homedir = /home/%U
+EOF
+
+sudo systemctl enable --now sssd.service
+```
+
+### 홈 디렉토리 자동 생성 활성화 및 기본 권한 설정
+
+```bash
+sudo pam-auth-update --enable mkhomedir
+sudo sed -i '/pam_mkhomedir.so/s/$/ skel=\/etc\/skel umask=077/' /etc/pam.d/common-session
 ```
 
 ## LDAP 조직 및 그룹 구조 생성

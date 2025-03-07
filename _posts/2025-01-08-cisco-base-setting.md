@@ -210,12 +210,6 @@ Switch(config)# interface Port-channel 1
 Switch(config-if)# description bb-in-A02
 ```
 
-```bash
-Switch(config)# default-value exec-character-bits 8
-Switch(config)# end
-Switch# exit
-```
-
 ### ACL 설정
 1. ACL 정책 수립
 

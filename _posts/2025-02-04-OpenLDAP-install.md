@@ -106,8 +106,8 @@ ldap.conf 설정 (LDAP 서버 URI 및 Base DN 추가)
 
 ```bash
 sudo sed -i -e '/^#URI[[:space:]]*ldap:\/\//a\
-BASE   dc=infra,dc=com\
-URI    ldap://ldap.infra.com' /etc/ldap/ldap.conf
+BASE    dc=infra,dc=com\
+URI     ldap://ldap.infra.com' /etc/ldap/ldap.conf
 ```
 
 ### OpenLDAP 서비스 활성화

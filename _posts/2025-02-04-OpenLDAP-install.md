@@ -141,6 +141,14 @@ sudo apt install ldap-account-manager php-fpm
 sudo a2enconf php*-fpm
 ```
 
+```bash
+sudo a2enmod proxy_fcgi setenvif
+sudo a2enconf php*-fpm
+sudo systemctl restart apache2
+```
+> PHP 소스 코드가 그대로 보이는 경우
+{: .prompt-info }
+
 ![LDAP_21](/assets/img/2025-02-04/LDAP_21.png)
 _LDAP LAM 구성_
 

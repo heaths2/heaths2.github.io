@@ -207,5 +207,6 @@ chown -h $(id -u freerad):$(id -g freerad) ldap
 sed -i.bak -e "s/server = 'localhost'/server = '$(hostname -I | awk '{print $1}')'/" \
            -e "28,29s/^#//" \
            -e "s/identity = .*/identity = 'cn=admin,dc=infra,dc=com'/" \
-           -e "s/password = .*/password = '1234'/" /etc/freeradius/3.0/mods-available/ldap
+           -e "s/password = .*/password = '1234'/" \
+           -e "s|base_dn = '.*'|base_dn = 'dc=infra,dc=com'|" /etc/freeradius/3.0/mods-available/ldap
 ```

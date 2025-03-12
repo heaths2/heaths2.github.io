@@ -202,7 +202,7 @@ sudo dpkg-reconfigure slapd
 
 cd /etc/freeradius/3.0/mods-enabled
 ln -s ../mods-available/ldap ldap
-chown -h $(id -u freerad):$(id -g freerad) sql
+chown -h $(id -u freerad):$(id -g freerad) ldap
 
 sed -i.bak -e "s/server = 'localhost'/server = '$(hostname -I | awk '{print $1}')'/" \
            -e "28,29s/^#//" \

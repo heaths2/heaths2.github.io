@@ -195,3 +195,10 @@ SELECT * FROM radpostauth ORDER BY id DESC;'
 tail -f /var/log/auth
 "
 ```
+
+```bash
+sed -i.bak -e "s/server = 'localhost'/server = '$(hostname -I | awk '{print $1}')'/" \
+           -e "28,29s/^#//" \
+           -e "s/identity = .*/identity = 'cn=admin,dc=infra,dc=com'/" \
+           -e "s/password = .*/password = '1234'/" /etc/freeradius/3.0/mods-available/ldap
+```

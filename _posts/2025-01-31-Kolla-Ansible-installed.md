@@ -3,7 +3,7 @@ title: OpenStack 설치 매뉴얼
 author: G.G
 date: 2025-01-31 09:27:00 +0900
 categories: [Blog, Provisioning]
-tags: [provisioning, openstack, ansible, docker]
+tags: [Provisioning, OpenStack, Ansible, Docker]
 ---
 
 ## 개요

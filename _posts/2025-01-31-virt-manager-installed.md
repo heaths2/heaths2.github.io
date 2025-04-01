@@ -3,7 +3,7 @@ title: Virt-Manager 설치 매뉴얼
 author: G.G
 date: 2025-01-31 08:22:00 +0900
 categories: [Blog, Virtual Machine]
-tags: [virtual machine, virt-manager, virsh, qemu]
+tags: [Virtual Machine, Virt-Manager, Virsh, QEMU]
 ---
 
 ## 개요

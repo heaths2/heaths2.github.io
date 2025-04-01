@@ -1,0 +1,23 @@
+---
+title:  ETF 운용사 수수료 비교
+author: G.G
+date: 2025-04-01 11:23:00 +0900
+categories: [Finance, Fund]
+tags: [fund, etf]
+---
+
+## 개요
+본 매뉴얼은 국내외 주요 ETF 운용사의 수수료 구조를 비교 분석함으로써, 효율적인 투자 상품 선택과 비용 절감을 위한 실질적인 정보를 제공하는 것을 목적으로 한다.
+ETF는 낮은 보수와 투명한 운용으로 인기를 끌고 있으나, 운용사별로 설정된 **운용보수(Expense Ratio)**는 상품 간 수익률에 직접적인 영향을 미칠 수 있다.
+따라서 본 문서는 ETF 운용사(예: KODEX, TIGER, ARIRANG, HANARO 등)의 대표 ETF 상품군을 중심으로 수수료 수준을 정리하고, 투자 전략별로 고려해야 할 수수료 기준 및 선택 팁을 포함한다.
+
+
+> `펀드공시 → 펀드 보수 및 비용 → 펀드별 보수비용비교 → 펀드명 <미국배당다우존스> → 검색`
+{: .prompt-tip }
+
+![001-ETF](https://github.com/heaths2/heaths2.github.io/assets/36792594/a97bb2a2-06ce-4201-b632-f0c4dad70d4a)
+![002-ETF](https://github.com/heaths2/heaths2.github.io/assets/36792594/6e4b0753-bdc4-46ff-b693-cd5406b54bf8)
+![003-ETF](https://github.com/heaths2/heaths2.github.io/assets/36792594/45d9d32a-6664-4eb4-8d74-dfda3bc5145e)
+
+## 참조
+- [금융투자협회 전자공시서비스](https://dis.kofia.or.kr)

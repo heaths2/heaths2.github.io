@@ -3,7 +3,7 @@ title: Helm을 이용한 AWX 설치
 author: G.G
 date: 2025-01-13 07:51:00 +0900
 categories: [Blog, Orchestration]
-tags: [kubernetes, k8s]
+tags: [Kubernetes, K8s]
 ---
 
 > 관련글 :

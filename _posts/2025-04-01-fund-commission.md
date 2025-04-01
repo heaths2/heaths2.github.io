@@ -3,7 +3,7 @@ title:  ETF 운용사 수수료 비교
 author: G.G
 date: 2025-04-01 11:23:00 +0900
 categories: [Finance, Fund]
-tags: [fund, etf]
+tags: [Fund, ETF]
 ---
 
 ## 개요

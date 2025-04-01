@@ -3,7 +3,7 @@ title: FortiGate SSL VPN 설정
 author: G.G
 date: 2025-01-16 11:39:00 +0900
 categories: [Blog, Provisioning]
-tags: [fortinet, fortigate, vpn]
+tags: [Fortinet, Fortigate, VPN]
 ---
 
 ## 개요

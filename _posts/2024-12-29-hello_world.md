@@ -5,13 +5,14 @@ description: >-
 author: G.G
 date: 2024-12-29 22:28:00 +0900
 categories: [Blog, Tutorial]
-tags: [form]
+tags: [Form]
 pin: true
 ---
 
 ## 소개
 
 > 안녕하세요! G.G의 블로그입니다.
+{: .prompt-tip }
 
 ## GitHub에서 Chirpy Jekyll 템플릿으로 블로그 시작하기
 

@@ -3,7 +3,7 @@ title: OpenLDAP 설치 매뉴얼
 author: G.G
 date: 2025-02-04 12:48:00 +0900
 categories: [Blog, Provisioning]
-tags: [provisioning, ldap, lam, ldap account manager]
+tags: [Provisioning, LDAP, LAM, LDAP Account Manager]
 ---
 
 ## 개요

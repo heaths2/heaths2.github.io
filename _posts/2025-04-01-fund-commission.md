@@ -15,9 +15,8 @@ ETF는 낮은 보수와 투명한 운용으로 인기를 끌고 있으나, 운�
 > `펀드공시 → 펀드 보수 및 비용 → 펀드별 보수비용비교 → 펀드명 <미국배당다우존스> → 검색`
 {: .prompt-tip }
 
-![001-ETF](https://github.com/heaths2/heaths2.github.io/assets/36792594/a97bb2a2-06ce-4201-b632-f0c4dad70d4a)
-![002-ETF](https://github.com/heaths2/heaths2.github.io/assets/36792594/6e4b0753-bdc4-46ff-b693-cd5406b54bf8)
-![003-ETF](https://github.com/heaths2/heaths2.github.io/assets/36792594/45d9d32a-6664-4eb4-8d74-dfda3bc5145e)
+![ETF_1](/assets/img/2025-04-01/ETF_1.png)
+_ETF slapd 비밀번호 설정_
 
 ## 참조
 - [금융투자협회 전자공시서비스](https://dis.kofia.or.kr)

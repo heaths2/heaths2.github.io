@@ -3,7 +3,7 @@ title: Cisco Switch 로그인 제어 설정 개요
 author: G.G
 date: 2025-01-21 16:42:00 +0900
 categories: [Blog, Provisioning]
-tags: [provisioning, cisco, acl, ssh]
+tags: [Provisioning, Cisco, ACL, SSH]
 ---
 
 ## 개요

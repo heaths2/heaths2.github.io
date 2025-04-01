@@ -3,7 +3,7 @@ title: Cisco Switch Bandwidth Limit 설정
 author: G.G
 date: 2025-01-08 10:36:00 +0900
 categories: [Blog, Provisioning]
-tags: [provisioning, cisco, qos, bandwidth]
+tags: [Provisioning, Cisco, QoS, Bandwidth]
 ---
 
 ## 개요

@@ -3,7 +3,7 @@ title: Cisco Switch 복구 X/Y/Z MODEOM
 author: G.G
 date: 2025-01-08 10:56:00 +0900
 categories: [Blog, Provisioning]
-tags: [provisioning, cisco, x modeom, y modeom, z modeom, serial port]
+tags: [Provisioning, Cisco, X Modeom, Y Modeom, Z Modeom, Serial Port]
 ---
 
 ## 개요

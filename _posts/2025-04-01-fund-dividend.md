@@ -3,7 +3,7 @@ title:  ETF 운용사 분당금 확인
 author: G.G
 date: 2025-04-01 11:32:00 +0900
 categories: [Finance, Fund]
-tags: [fund, etf]
+tags: [Fund, ETF]
 ---
 
 ## 개요

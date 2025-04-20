@@ -1,9 +1,9 @@
 ---
-title: AD(Active Directory) 사용
+title: OPNsense 기본 세팅
 author: G.G
 date: 2025-04-20 21:08:00 +0900
 categories: [Blog, Provisioning]
-tags: [LDAP, AD, Active Directory]
+tags: [OPNsense]
 ---
 
 ## 개요

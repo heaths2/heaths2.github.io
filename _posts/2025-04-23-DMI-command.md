@@ -78,5 +78,4 @@ Memory :        $(dmidecode -t 17 | grep Size: | grep -v No | sed 's/[^0-9]//g' 
 ```
 
 ## 참고 자료
-> - [Windows 다운로드 사이트](http://downloads.sourceforge.net/gnuwin32/dmidecode-2.10-bin.zip)
 > - [DMI table decoder 참고 사이트](https://linux.die.net/man/8/dmidecode/)

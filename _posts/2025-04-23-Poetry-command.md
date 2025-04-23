@@ -62,3 +62,6 @@ build-backend = "poetry.core.masonry.api"
 ```
 >
 {: .prompt-info }
+
+## 참고 자료
+- [공식 문서서](https://python-poetry.org/docs/#installing-with-the-official-installer)

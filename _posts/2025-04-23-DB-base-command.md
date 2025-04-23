@@ -111,6 +111,3 @@ mysql -u root -e "
 "
 ```
 
-
-## 참조
-- [증권정보포털 세이브로](https://seibro.or.kr)

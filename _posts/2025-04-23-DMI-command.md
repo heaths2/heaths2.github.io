@@ -53,28 +53,7 @@ dmidecode -t slot | grep -Ei 'Designation|Type|Current Usage'
 ```
 
 ```bash
-#!/usr/bin/env bash 
-set -eE 
-#export LC_ALL=ko_KR.UTF-8 
-export LC_ALL=en_US.UTF-8
 
-# 로그 파일 정의 
-log_file="./runLog-$(date +'%F_%H%M%S').txt"
-
-# 모든 출력을 로그 파일과 콘솔에 동시에 기록 
-exec &> >(tee -a "$log_file")
- 
-echo "\
-OS :            $(lsb_release -is)
-Relase :        $(lsb_release -rs)
-Code Name :     $(lsb_release -cs)
-Kernel :        $(uname -r)
-Architecture :  $(uname -m)
-Manufacturer :  $(dmidecode -t 1 | grep 'Manufacturer:' | awk '{ print $NF }')
-Product Name :  $(dmidecode -t 1 | grep 'Product Name:' | awk '{ print $NF }')
-CPU Core :      $(dmidecode -t 4 | grep "Thread Count:" | awk '{ sum += $3 } END { print sum }')
-Memory :        $(dmidecode -t 17 | grep Size: | grep -v No | sed 's/[^0-9]//g' | paste -sd+ | bc
-)" > Result
 ```
 
 ## 참고 자료

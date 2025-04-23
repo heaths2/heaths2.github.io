@@ -28,8 +28,7 @@ sdc                8:32    0   20T  0 disk
 sdd                8:48    0  100T  0 disk 
 sr0                11:0    1 1024M  0 rom  
 ```
->
-{: .prompt-tip }
+{: .prompt-info }
 
 ### 🧱 LVM 볼륨 그룹 및 논리 볼륨 생성
 

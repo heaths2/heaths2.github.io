@@ -17,8 +17,11 @@ python3 -m pip install --user pipx
 # poetry 설치 (pipx 기반)
 pipx install poetry
 
-# 설치 후 poetry가 실행되는지 확인
+# 설치 후 pipx가 실행되는지 확인
 pipx --version
+
+# 설치 후 poetry가 실행되는지 확인
+poetry --version
 ```
 
 ```bash

@@ -8,6 +8,8 @@ tags: [Command, Script, DMI, dmidecode]
 
 ## 명령어 사용법
 
+### dmidecode Type 번호 및 키워드 매핑표
+
 | Keyword    | Types                  |
 |------------|------------------------|
 | bios       | 0, 13                  |

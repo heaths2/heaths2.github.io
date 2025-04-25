@@ -74,7 +74,8 @@ ta = "^0.11.0"
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 ```
->
+
+> - pyproject.toml 설정 파일
 {: .prompt-info }
 
 

@@ -77,5 +77,49 @@ build-backend = "poetry.core.masonry.api"
 >
 {: .prompt-info }
 
+
+## WSL + Poetry 프로젝트 초기화 스크립트
+
+```bash
+# ================================================
+# ✅ 1. Poetry 설치 (Python 패키지/가상환경 관리 도구)
+# ================================================
+curl -sSL https://install.python-poetry.org | python3 -
+
+# Poetry CLI를 사용할 수 있도록 PATH 설정
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+
+# ================================================
+# ✅ 2. 새 Python 프로젝트 생성
+# ================================================
+poetry new myprojects           # src/myprojects 구조 자동 생성
+cd myprojects
+
+# ================================================
+# ✅ 3. Python 3.12 버전으로 가상환경 지정
+# ================================================
+# ※ WSL에 python3.12이 설치되어 있어야 함
+poetry env use python3.12
+
+# ================================================
+# ✅ 4. 필수 라이브러리 설치 (프로덕션용)
+# ================================================
+poetry add requests             # ECOS API 호출용
+poetry add tabulate             # 콘솔 표 출력
+poetry add python-dotenv        # .env로 API 키 관리
+
+# ================================================
+# ✅ 5. 개발 도구 설치 (개발용 의존성)
+# ================================================
+poetry add --dev black isort pytest   # 코드 정리, 테스트용
+
+# ================================================
+# ✅ 6. 메인 스크립트 실행
+# ================================================
+# ※ src/myprojects/main.py 파일이 있어야 실행 가능
+poetry run python src/myprojects/main.py
+```
+
 ## 참고 자료
 - [공식 문서서](https://python-poetry.org/docs/#installing-with-the-official-installer)

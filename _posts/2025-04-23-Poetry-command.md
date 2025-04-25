@@ -58,20 +58,32 @@ poetry export -f requirements.txt --output requirements.txt
 ```
 
 ```bash
-[tool.poetry]
+[project]
 name = "myprojects"
 version = "0.1.0"
-description = "Stock data analysis with pandas + yfinance + ta"
-authors = ["Your Name <you@example.com>"]
+description = ""
+authors = [
+    {name = "Your Name",email = "you@example.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12,<3.15"
+dependencies = [
+    "requests (>=2.32.3,<3.0.0)",
+    "tabulate (>=0.9.0,<0.10.0)",
+    "python-dotenv (>=1.1.0,<2.0.0)"
+]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-pandas = "^2.2.1"
-yfinance = "^0.2.37"
-ta = "^0.11.0"
+[tool.poetry]
+packages = [{include = "myprojects", from = "src"}]
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^25.1.0"
+isort = "^6.0.1"
+pytest = "^8.3.5"
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 ```
 

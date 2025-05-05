@@ -57,6 +57,7 @@ PowerDNS는 유연하고 확장 가능한 오픈소스 DNS 서버이며, PowerDN
 
 ## 📁 파일 구조
 
+```bash
 PowerDNS-Admin
 ├── charts
 ├── [Chart.yaml](#chartyaml)
@@ -70,4 +71,514 @@ PowerDNS-Admin
 │   ├── [service-powerdns-admin.yaml](#service-powerdns-adminyaml)
 │   ├── [service-powerdns.yaml](#service-powerdnsyaml)
 └── [values.yaml](#valuesyaml)
+```
 
+## ⚙️ 사용법
+
+### K3s, kubectl, k9s, Helm 설치 
+
+```bash
+# K3s 설치 (Ubuntu/Rocky)
+curl -sfL https://get.k3s.io | sh -
+
+# kubectl 설정 파일 복사
+mkdir -p ~/.kube
+cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
+chown $(id -u):$(id -g) ~/.kube/config
+
+# K9s CLI 설치
+curl -sS https://webinstall.dev/k9s | bash
+
+# Helm 설치
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+```
+
+### PATH, alias 설정
+
+```bash
+cat <<'EOF' | sudo tee -a ~/.bashrc
+
+###############################################
+# ✅ 사용자 환경 설정 (PATH 및 alias)
+# - 목적: k3s, helm 등 CLI 도구를 정상 인식시키기 위함
+# - 대상: 현재 사용자 기준 설정
+###############################################
+
+# 시스템 전체 바이너리 경로 추가 (예: k3s, helm, k9s 등)
+export PATH="/usr/local/bin:$PATH"
+
+# 사용자 전용 바이너리 경로 추가 (예: Webinstall, pipx 설치 등)
+export PATH="$HOME/.local/bin:$PATH"
+
+# k3s에서 기본 제공하는 kubectl을 사용하도록 별칭 설정
+alias kubectl='k3s kubectl'
+EOF
+
+source ~/.bashrc
+kubectl get node
+
+# kubectl 자동완성 등록
+kubectl completion bash >/etc/bash_completion.d/kubectl
+source /etc/bash_completion.d/kubectl
+
+# Helm 자동완성 등록
+helm completion bash > /etc/bash_completion.d/helm
+source /etc/bash_completion.d/helm
+```
+
+### NFS 서버 (PVC 제공용) 구성
+
+```bash
+# NFS 설치 & 복잡 조치
+sudo dnf install -y nfs-utils
+sudo systemctl enable --now nfs-server
+
+# Export 디렉토리 생성
+sudo mkdir -p /data/db
+sudo chown -R 5000:5000 /data
+
+# /etc/exports 설정
+echo "/data *(rw,sync,no_subtree_check,no_root_squash)" | sudo tee /etc/exports > /dev/null
+sudo exportfs -rv
+
+# 방화벽 설정
+sudo firewall-cmd --permanent --add-service=nfs
+sudo firewall-cmd --reload
+```
+
+### NFS StorageClass 설치
+
+```bash
+helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner
+helm repo update
+
+helm install nfs-subdir nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
+  --namespace kube-system \
+  --create-namespace \
+  --set nfs.server=172.16.0.51 \
+  --set nfs.path=/data \
+  --set storageClass.name=nfs \
+  --set storageClass.defaultClass=true \
+  --set storageClass.reclaimPolicy=Retain \
+  --set storageClass.allowVolumeExpansion=true
+
+kubectl get storageclass
+```
+
+### MetalLB 로드버더 설치
+
+```bash
+helm repo add metallb https://metallb.github.io/metallb
+helm repo update
+
+helm install metallb metallb/metallb \
+  --namespace metallb-system \
+  --create-namespace \
+  --set webhook.enabled=true
+```
+
+### 확인
+
+```bash
+kubectl get all --all-namespaces
+```
+
+### PowerDNS & PowerDNS-Admin Helm Chart 배포
+
+```bash
+helm create PowerDNS-Admin
+rm -f PowerDNS-Admin/templates/{deployment.yaml,hpa.yaml,serviceaccount.yaml,service.yaml,tests/*}
+```
+
+### values.yaml
+
+```yaml
+---
+# 📁 values.yaml (설정값 중심 관리)
+
+postgresql:
+  enabled: true
+  image: postgres:16-alpine
+  database: pdns
+  username: pdns
+  password: pdns
+  storageSize: 5Gi
+
+  securityContext:
+    runAsUser: 5000
+    runAsGroup: 5000
+    fsGroup: 5000
+
+powerdns:
+  enabled: true
+  image: pschiffe/pdns-pgsql:latest
+  apiKey: changeme
+  dbHost: postgresql
+  dbUser: pdns
+  dbPassword: pdns
+  dbName: pdns
+  apiAllowFrom: 0.0.0.0/0
+  webserver: true
+
+powerdnsAdmin:
+  enabled: true
+  image: pschiffe/pdns-admin
+  db:
+    host: postgresql
+    port: 5432
+    user: pdns
+    password: pdns
+  api:
+    url: http://powerdns:8081
+    key: changeme
+
+recursor:
+  enabled: true
+  image: pschiffe/pdns-recursor:latest
+
+service:
+  type: ClusterIP
+
+ingress:
+  enabled: false
+  hostname: ""
+  className: ""
+
+metallb:
+  enabled: true
+  poolName: pdns-pool
+  advertisementName: pdns-l2adv
+  addressRange: 172.16.0.240-172.16.0.250
+```
+{: file='PowerDNS-Admin/values.yaml'}
+
+
+### deployment-postgresql.yaml
+
+```yaml
+---
+# 📁 templates/deployment-postgresql.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgresql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql
+  template:
+    metadata:
+      labels:
+        app: postgresql
+    spec:
+      securityContext:
+        runAsUser: {{ .Values.postgresql.securityContext.runAsUser }}
+        runAsGroup: {{ .Values.postgresql.securityContext.runAsGroup }}
+        fsGroup: {{ .Values.postgresql.securityContext.fsGroup }}
+      initContainers:
+        - name: init-permissions
+          image: busybox
+          command: ["sh", "-c", "chown -R 5000:5000 /var/lib/postgresql/data && chmod -R 755 /var/lib/postgresql/data"]
+          volumeMounts:
+            - name: db-data
+              mountPath: /var/lib/postgresql/data
+          securityContext:
+            runAsUser: 0
+      containers:
+        - name: postgresql
+          image: {{ .Values.postgresql.image }}
+          env:
+            - name: POSTGRES_DB
+              value: {{ .Values.postgresql.database }}
+            - name: POSTGRES_USER
+              value: {{ .Values.postgresql.username }}
+            - name: POSTGRES_PASSWORD
+              value: {{ .Values.postgresql.password }}
+          volumeMounts:
+            - name: db-data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: db-data
+          persistentVolumeClaim:
+            claimName: pvc-postgresql
+```
+{: file='PowerDNS-Admin/templates/deployment-postgresql.yaml'}
+
+### deployment-powerdns-admin.yaml
+
+```yaml
+---
+# 📁 templates/deployment-powerdns-admin.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: powerdns-admin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: powerdns-admin
+  template:
+    metadata:
+      labels:
+        app: powerdns-admin
+    spec:
+      containers:
+        - name: pdns-admin
+          image: {{ .Values.powerdnsAdmin.image }}
+          env:
+            - name: PDNS_ADMIN_SQLA_DB_TYPE
+              value: postgres
+            - name: PDNS_ADMIN_SQLA_DB_HOST
+              value: {{ .Values.powerdnsAdmin.db.host }}
+            - name: PDNS_ADMIN_SQLA_DB_PORT
+              value: "5432"
+            - name: PDNS_ADMIN_SQLA_DB_USER
+              value: {{ .Values.powerdnsAdmin.db.user }}
+            - name: PDNS_ADMIN_SQLA_DB_PASSWORD
+              value: {{ .Values.powerdnsAdmin.db.password }}
+            - name: PDNS_VERSION
+              value: "4.9"
+            - name: PDNS_API_URL
+              value: {{ .Values.powerdnsAdmin.api.url }}
+            - name: PDNS_API_KEY
+              value: {{ .Values.powerdnsAdmin.api.key }}
+          ports:
+            - containerPort: 8080
+```
+{: file='PowerDNS-Admin/templates/deployment-powerdns-admin.yaml'}
+
+### deployment-powerdns.yaml
+
+```yaml
+---
+# 📁 templates/deployment-powerdns.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: powerdns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: powerdns
+  template:
+    metadata:
+      labels:
+        app: powerdns
+    spec:
+      containers:
+        - name: powerdns
+          image: {{ .Values.powerdns.image }}
+          env:
+            - name: PDNS_gpgsql_password
+              value: {{ .Values.powerdns.dbPassword }}
+            - name: PDNS_gpgsql_user
+              value: {{ .Values.powerdns.dbUser }}
+            - name: PDNS_gpgsql_dbname
+              value: {{ .Values.powerdns.dbName }}
+            - name: PDNS_gpgsql_host
+              value: {{ .Values.powerdns.dbHost }}
+            - name: PDNS_api
+              value: "yes"
+            - name: PDNS_api_key
+              value: {{ .Values.powerdns.apiKey }}
+            - name: PDNS_webserver
+              value: "yes"
+            - name: PDNS_webserver_address
+              value: "0.0.0.0"
+            - name: PDNS_webserver_allow_from
+              value: {{ .Values.powerdns.apiAllowFrom }}
+          ports:
+            - containerPort: 53
+              protocol: TCP
+            - containerPort: 53
+              protocol: UDP
+            - containerPort: 8081
+              protocol: TCP
+```
+{: file='PowerDNS-Admin/templates/deployment-powerdns.yaml'}
+
+### metallb-config.yaml
+
+```yaml
+---
+# 📁 PowerDNS-Admin/templates/metallb-config.yaml
+# Helm Chart에 포함되는 MetalLB 설정 파일입니다.
+
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: {{ .Values.metallb.poolName }}
+  namespace: metallb-system
+spec:
+  addresses:
+    - {{ .Values.metallb.addressRange }}
+
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: {{ .Values.metallb.advertisementName }}
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+    - {{ .Values.metallb.poolName }}
+```
+{: file='PowerDNS-Admin/templates/metallb-config.yaml'}
+
+### pvc-postgresql.yaml
+
+```yaml
+---
+# 📁 templates/pvc-postgresql.yaml
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-postgresql
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: nfs
+  resources:
+    requests:
+      storage: {{ .Values.postgresql.storageSize }}
+```
+{: file='PowerDNS-Admin/templates/pvc-postgresql.yaml'}
+
+### service-postgresql.yaml
+
+```yaml
+---
+# 📁 templates/service-postgresql.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql
+spec:
+  selector:
+    app: postgresql
+  ports:
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP
+  type: ClusterIP
+```
+{: file='PowerDNS-Admin/templates/service-postgresql.yaml'}
+
+### service-powerdns-admin.yaml
+
+```yaml
+---
+# 📁 templates/service-powerdns-admin.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: powerdns-admin
+spec:
+  selector:
+    app: powerdns-admin
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  type: LoadBalancer
+  loadBalancerIP: {{ .Values.powerdnsAdmin.serviceIP }}
+```
+{: file='PowerDNS-Admin/templates/service-powerdns-admin.yaml'}
+
+### service-powerdns.yaml
+
+```yaml
+---
+# 📁 templates/service-powerdns.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: powerdns
+spec:
+  selector:
+    app: powerdns
+  ports:
+    - name: dns-tcp
+      port: 53
+      targetPort: 53
+      protocol: TCP
+    - name: dns-udp
+      port: 53
+      targetPort: 53
+      protocol: UDP
+    - name: web
+      port: 8081
+      targetPort: 8081
+      protocol: TCP
+  type: LoadBalancer
+  loadBalancerIP: {{ .Values.powerdns.serviceIP }}
+```
+{: file='PowerDNS-Admin/templates/service-powerdns.yaml'}
+
+### Helm Chart 설치
+
+```bash
+helm install powerdns-admin ~/PowerDNS-Admin \
+  --namespace pdns \
+  --create-namespace \
+  --values ~/PowerDNS-Admin/values.yaml
+```
+
+### 릴리스가 존재하면 업그레이드, 없으면 신규 설치
+
+```bash
+helm upgrade --install powerdns-admin ~/PowerDNS-Admin \
+  --namespace pdns \
+  --values ~/PowerDNS-Admin/values.yaml
+```
+
+### 전체 설정 내용 확인
+
+```bash
+kubectl get all -A -o wide
+```
+
+### DNS 적용
+
+```bash
+cat <<EOF | sudo tee /etc/resolv.conf
+# ======================= DNS 설정 파일 ========================
+# 이 설정은 Linux 시스템이 도메인 이름을 IP로 해석할 때
+# 어떤 DNS 서버를 우선적으로 사용할지 정의합니다.
+# =============================================================
+
+nameserver 172.16.0.51      # ✅ 내부 DNS (PowerDNS Authoritative 서버) - 사내 도메인 이름 해석
+nameserver 8.8.8.8          # ✅ 외부 DNS (Google Public DNS) - 외부 도메인 요청 처리
+nameserver 210.220.163.82   # ✅ 외부 DNS (SK 브로드밴드 기본 DNS)
+nameserver 219.250.36.130   # ✅ 외부 DNS (SK 브로드밴드 보조 DNS)
+nameserver 168.126.63.1     # ✅ 외부 DNS (KT 기본 DNS)
+nameserver 168.126.63.2     # ✅ 외부 DNS (KT 보조 DNS)
+nameserver 164.124.107.9    # ✅ 외부 DNS (LG U+ 기본 DNS)
+nameserver 203.248.242.2    # ✅ 외부 DNS (LG U+ 보조 DNS)
+
+search in.infra.com        # ✅ 도메인 자동 완성 - 예: wk01 → wk01.in.infra.com
+EOF
+```
+
+### DNS 확인
+
+```bash
+dig +short +search wk01
+dig +short +search wk02
+dig +short @172.16.0.51 wk01.in.infra.com
+dig +short @172.16.0.51 wk02.in.infra.com
+```
+
+## 참고 자료
+- [PowerDNS-Admin Github 문서](https://github.com/PowerDNS-Admin/PowerDNS-Admin)
+- [PowerDNS Github 문서](https://github.com/pschiffe/docker-pdns)

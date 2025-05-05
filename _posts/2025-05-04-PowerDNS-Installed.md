@@ -79,10 +79,6 @@ PowerDNS-Admin
 # K3s 설치 (Ubuntu/Rocky)
 curl -sfL https://get.k3s.io | sh -
 
-# kubectl 자동완성 등록
-kubectl completion bash >/etc/bash_completion.d/kubectl
-source /etc/bash_completion.d/kubectl
-
 # kubectl 설정 파일 복사
 mkdir -p ~/.kube
 cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
@@ -93,16 +89,13 @@ curl -sS https://webinstall.dev/k9s | bash
 
 # Helm 설치
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-
-# Helm 자동완성 등록
-helm completion bash > /etc/bash_completion.d/helm
-source /etc/bash_completion.d/helm
 ```
 
 ### PATH, alias 설정
 
 ```bash
-cat <<EOF | sudo tee -a ~/.bashrc
+cat <<'EOF' | sudo tee -a ~/.bashrc
+
 ###############################################
 # ✅ 사용자 환경 설정 (PATH 및 alias)
 # - 목적: k3s, helm 등 CLI 도구를 정상 인식시키기 위함
@@ -121,6 +114,14 @@ EOF
 
 source ~/.bashrc
 kubectl get node
+
+# kubectl 자동완성 등록
+kubectl completion bash >/etc/bash_completion.d/kubectl
+source /etc/bash_completion.d/kubectl
+
+# Helm 자동완성 등록
+helm completion bash > /etc/bash_completion.d/helm
+source /etc/bash_completion.d/helm
 ```
 
 ### NFS 서버 (PVC 제공용) 구성
@@ -177,10 +178,14 @@ helm install metallb metallb/metallb \
 ### 확인
 
 ```bash
-kubectl get pods -n pdns
-kubectl get svc -n pdns
-kubectl get ipaddresspool -n metallb-system
-kubectl get l2advertisement -n metallb-system
+kubectl get all --all-namespaces
+```
+
+### PowerDNS & PowerDNS-Admin Helm Chart 배포
+
+```bash
+helm create PowerDNS-Admin
+rm -f PowerDNS-Admin/templates/{deployment.yaml,hpa.yaml,serviceaccount.yaml,service.yaml,tests/*}
 ```
 
 ### values.yaml
@@ -517,6 +522,29 @@ spec:
   loadBalancerIP: {{ .Values.powerdns.serviceIP }}
 ```
 {: file='PowerDNS-Admin/templates/service-powerdns.yaml'}
+
+### Helm Chart 설치
+
+```bash
+helm install powerdns-admin ~/PowerDNS-Admin \
+  --namespace pdns \
+  --create-namespace \
+  --values ~/PowerDNS-Admin/values.yaml
+```
+
+### 릴리스가 존재하면 업그레이드, 없으면 신규 설치
+
+```bash
+helm upgrade --install powerdns-admin ~/PowerDNS-Admin \
+  --namespace pdns \
+  --values ~/PowerDNS-Admin/values.yaml
+```
+
+### 전체 설정 내용 확인
+
+```bash
+kubectl get all -A -o wide
+```
 
 ## 참고 자료
 - [PowerDNS-Admin Github 문서](https://github.com/PowerDNS-Admin/PowerDNS-Admin)

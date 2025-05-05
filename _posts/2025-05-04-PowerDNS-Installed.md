@@ -11,7 +11,7 @@ tags: [Provisioning, PowerDNS, PowerDNS-Admin]
 
 ## 📁 파일 구조
 
-```text
+
 PowerDNS-Admin
 ├── charts
 ├── [Chart.yaml](#chartyaml)
@@ -19,12 +19,13 @@ PowerDNS-Admin
 │   ├── [deployment-postgresql.yaml](#deployment-postgresqlyaml)
 │   ├── [deployment-powerdns-admin.yaml](#deployment-powerdns-adminyaml)
 │   ├── [deployment-powerdns.yaml](#deployment-powerdnsyaml)
+│   ├── [metallb-config.yaml](#metallb-config.yaml)
 │   ├── [pvc-postgresql.yaml](#pvc-postgresqlyaml)
 │   ├── [service-postgresql.yaml](#service-postgresqlyaml)
 │   ├── [service-powerdns-admin.yaml](#service-powerdns-adminyaml)
 │   ├── [service-powerdns.yaml](#service-powerdnsyaml)
 └── [values.yaml](#valuesyaml)
-```
+
 
 ### values.yaml
 

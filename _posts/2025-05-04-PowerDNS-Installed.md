@@ -240,7 +240,7 @@ metallb:
   enabled: true
   poolName: pdns-pool
   advertisementName: pdns-l2adv
-  addressRange: 172.16.0.240-172.16.0.250
+  addressRange: 172.16.0.241-172.16.0.250
 
 service:
   type: ClusterIP

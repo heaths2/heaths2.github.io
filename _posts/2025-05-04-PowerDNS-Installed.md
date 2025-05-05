@@ -6,11 +6,56 @@ categories: [Blog, Provisioning]
 tags: [Provisioning, PowerDNS, PowerDNS-Admin]
 ---
 
-## 명령어 사용법
+## 📌 개요
+PowerDNS는 유연하고 확장 가능한 오픈소스 DNS 서버이며, PowerDNS-Admin은 이를 위한 웹 기반 관리 인터페이스입니다.
+이 문서는 Kubernetes(K3s) 환경에서 Helm Chart를 활용해 PowerDNS + PowerDNS-Admin 스택을 설치하고,
+내부망 DNS 서버로 구성하는 과정을 담고 있습니다.
 
+## 🧭 등장배경
+- /etc/hosts 기반 수동 관리의 확장성 한계
+- 내부망에서 독립된 DNS 인프라 필요성
+- GUI 기반의 레코드 관리와 API 자동화를 고려한 선택
+- Docker Compose → Helm Chart 기반 Kubernetes 전환 필요
+
+## 🧩 주요 특징 및 구성 요소
+
+| 구성 요소                      | 설명                                 |
+| -------------------------- | ---------------------------------- |
+| **PowerDNS Authoritative** | PostgreSQL Backend 기반 권한 있는 DNS 서버 |
+| **PowerDNS-Admin**         | GUI 기반 웹 인터페이스 (API 지원 포함)         |
+| **PostgreSQL**             | 레코드 메타데이터 저장소                      |
+| **MetalLB**                | K3s 환경에서 LoadBalancer 타입의 외부 IP 제공 |
+| **Helm**                   | 배포 자동화 및 재사용 가능한 Chart 관리 도구       |
+
+## 🏗️ 아키텍처
+
+```bash
+[Browser]
+   |
+   | HTTP
+   v
+[MetalLB LoadBalancer: 172.16.0.242:8080]
+   |
+   v
+[PowerDNS-Admin Pod] ---> [PowerDNS API: 8081]
+                        |
+                        v
+                  [PowerDNS Pod: 53/tcp,udp]
+                        |
+                        v
+                [PostgreSQL Pod (DB Backend)]
+```
+
+- **네트워크 포트 정리**
+
+| 서비스            | 포트             | 설명            |
+| -------------- | -------------- | ------------- |
+| PowerDNS       | 53/tcp,udp     | DNS 서비스 기본 포트 |
+| PowerDNS API   | 8081/tcp       | 관리용 REST API  |
+| PowerDNS Admin | 8080 (→ 외부 80) | GUI 인터페이스     |
+| PostgreSQL     | 5432/tcp       | 데이터베이스 연결     |
 
 ## 📁 파일 구조
-
 
 PowerDNS-Admin
 ├── charts
@@ -26,11 +71,110 @@ PowerDNS-Admin
 │   ├── [service-powerdns.yaml](#service-powerdnsyaml)
 └── [values.yaml](#valuesyaml)
 
+## ⚙️ 사용법
+
+### K3s, kubectl, k9s, Helm 설치 
+
+```bash
+# K3s 설치 (Ubuntu/Rocky)
+curl -sfL https://get.k3s.io | sh -
+
+# kubectl 자동완성 등록
+kubectl completion bash >/etc/bash_completion.d/kubectl
+source /etc/bash_completion.d/kubectl
+
+# kubectl 설정 파일 복사
+mkdir -p ~/.kube
+cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
+chown $(id -u):$(id -g) ~/.kube/config
+
+# K9s CLI 설치
+curl -sS https://webinstall.dev/k9s | bash
+
+# Helm 설치
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+# Helm 자동완성 등록
+helm completion bash > /etc/bash_completion.d/helm
+source /etc/bash_completion.d/helm
+```
+
+```bash
+cat <<EOF | sudo tee -a ~/.bashrc
+###############################################
+# ✅ 사용자 환경 설정 (PATH 및 alias)
+# - 목적: k3s, helm 등 CLI 도구를 정상 인식시키기 위함
+# - 대상: 현재 사용자 기준 설정
+###############################################
+
+# 시스템 전체 바이너리 경로 추가 (예: k3s, helm, k9s 등)
+export PATH="/usr/local/bin:$PATH"
+
+# 사용자 전용 바이너리 경로 추가 (예: Webinstall, pipx 설치 등)
+export PATH="$HOME/.local/bin:$PATH"
+
+# k3s에서 기본 제공하는 kubectl을 사용하도록 별칭 설정
+alias kubectl='k3s kubectl'
+EOF
+
+source ~/.bashrc
+kubectl get node
+```
+
+```bash
+### 1. NFS 서버 패키지 설치 및 활성화 ###
+sudo dnf install -y nfs-utils
+sudo systemctl enable --now nfs-server
+
+### 2. NFS export 디렉토리 생성 ###
+sudo mkdir -p /data/db
+sudo chown -R 5000:5000 /data
+
+### 3. /etc/exports 설정 ###
+echo "/data *(rw,sync,no_subtree_check,no_root_squash)" | sudo tee /etc/exports > /dev/null
+sudo exportfs -rv
+
+### 4. 방화벽 오픈 ###
+sudo firewall-cmd --permanent --add-service=nfs
+sudo firewall-cmd --reload
+
+### 5. Helm Chart 설치 ###
+helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner
+helm repo update
+
+# 기존 StorageClass 존재 시 삭제
+kubectl delete storageclass nfs --ignore-not-found
+
+helm install nfs-subdir nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
+  --namespace kube-system \
+  --create-namespace \
+  --set nfs.server=172.16.0.51 \
+  --set nfs.path=/data \
+  --set storageClass.name=nfs \
+  --set storageClass.defaultClass=true \
+  --set storageClass.reclaimPolicy=Retain \
+  --set storageClass.allowVolumeExpansion=true
+
+### 7. 확인 ###
+kubectl get storageclass
+
+helm list -n pdns
+kubectl get pods -n pdns
+```
+
+```bash
+helm repo add metallb https://metallb.github.io/metallb
+helm repo update
+
+helm install metallb metallb/metallb \
+  --namespace metallb-system \
+  --create-namespace \
+  --set webhook.enabled=true
+```
 
 ### values.yaml
 
 ```yaml
----
 ---
 # 📁 values.yaml (설정값 중심 관리)
 

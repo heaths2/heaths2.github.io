@@ -236,6 +236,12 @@ recursor:
   enabled: true
   image: pschiffe/pdns-recursor:latest
 
+metallb:
+  enabled: true
+  poolName: pdns-pool
+  advertisementName: pdns-l2adv
+  addressRange: 172.16.0.240-172.16.0.250
+
 service:
   type: ClusterIP
 
@@ -243,12 +249,6 @@ ingress:
   enabled: false
   hostname: ""
   className: ""
-
-metallb:
-  enabled: true
-  poolName: pdns-pool
-  advertisementName: pdns-l2adv
-  addressRange: 172.16.0.240-172.16.0.250
 ```
 {: file='PowerDNS-Admin/values.yaml'}
 

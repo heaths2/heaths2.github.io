@@ -26,6 +26,8 @@ PowerDNS-Admin
 └── [values.yaml](#valuesyaml)
 ```
 
+### values.yaml
+
 ```yaml
 ---
 # 📁 values.yaml (설정값 중심 관리)
@@ -80,6 +82,9 @@ ingress:
 ```
 {: file='PowerDNS-Admin/values.yaml'}
 
+
+### deployment-postgresql.yaml
+
 ```yaml
 ---
 # 📁 templates/deployment-postgresql.yaml
@@ -131,6 +136,8 @@ spec:
 ```
 {: file='PowerDNS-Admin/templates/deployment-postgresql.yaml'}
 
+### deployment-powerdns-admin.yaml
+
 ```yaml
 ---
 # 📁 templates/deployment-powerdns-admin.yaml
@@ -173,6 +180,8 @@ spec:
             - containerPort: 8080
 ```
 {: file='PowerDNS-Admin/templates/deployment-powerdns-admin.yaml'}
+
+### deployment-powerdns.yaml
 
 ```yaml
 ---
@@ -224,6 +233,8 @@ spec:
 ```
 {: file='PowerDNS-Admin/templates/deployment-powerdns.yaml'}
 
+### service-postgresql.yaml
+
 ```yaml
 ---
 # 📁 templates/service-postgresql.yaml
@@ -241,6 +252,8 @@ spec:
       protocol: TCP
 ```
 {: file='PowerDNS-Admin/templates/service-postgresql.yaml'}
+
+### service-powerdns-admin.yaml
 
 ```yaml
 ---
@@ -261,6 +274,8 @@ spec:
   type: NodePort
 ```
 {: file='PowerDNS-Admin/templates/service-powerdns-admin.yaml'}
+
+### service-powerdns.yaml
 
 ```yaml
 ---
@@ -287,6 +302,8 @@ spec:
 ```
 {: file='PowerDNS-Admin/templates/service-powerdns.yaml'}
 
+### pvc-postgresql.yaml
+
 ```yaml
 ---
 # 📁 templates/pvc-postgresql.yaml
@@ -306,4 +323,5 @@ spec:
 {: file='PowerDNS-Admin/templates/pvc-postgresql.yaml'}
 
 ## 참고 자료
-- [공식 문서서](https://python-poetry.org/docs/#installing-with-the-official-installer)
+- [PowerDNS-Admin Github 문서](https://github.com/PowerDNS-Admin/PowerDNS-Admin)
+- [PowerDNS Github 문서](https://github.com/pschiffe/docker-pdns)

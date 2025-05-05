@@ -546,6 +546,37 @@ helm upgrade --install powerdns-admin ~/PowerDNS-Admin \
 kubectl get all -A -o wide
 ```
 
+### DNS 적용
+
+```bash
+cat <<EOF | sudo tee /etc/resolv.conf
+# ======================= DNS 설정 파일 ========================
+# 이 설정은 Linux 시스템이 도메인 이름을 IP로 해석할 때
+# 어떤 DNS 서버를 우선적으로 사용할지 정의합니다.
+# =============================================================
+
+nameserver 172.16.0.51      # ✅ 내부 DNS (PowerDNS Authoritative 서버) - 사내 도메인 이름 해석
+nameserver 8.8.8.8          # ✅ 외부 DNS (Google Public DNS) - 외부 도메인 요청 처리
+nameserver 210.220.163.82   # ✅ 외부 DNS (SK 브로드밴드 기본 DNS)
+nameserver 219.250.36.130   # ✅ 외부 DNS (SK 브로드밴드 보조 DNS)
+nameserver 168.126.63.1     # ✅ 외부 DNS (KT 기본 DNS)
+nameserver 168.126.63.2     # ✅ 외부 DNS (KT 보조 DNS)
+nameserver 164.124.107.9    # ✅ 외부 DNS (LG U+ 기본 DNS)
+nameserver 203.248.242.2    # ✅ 외부 DNS (LG U+ 보조 DNS)
+
+search in.infra.com        # ✅ 도메인 자동 완성 - 예: wk01 → wk01.in.infra.com
+EOF
+```
+
+### DNS 확인
+
+```bash
+dig +short +search wk01
+dig +short +search wk02
+dig +short @172.16.0.51 wk01.in.infra.com
+dig +short @172.16.0.51 wk02.in.infra.com
+```
+
 ## 참고 자료
 - [PowerDNS-Admin Github 문서](https://github.com/PowerDNS-Admin/PowerDNS-Admin)
 - [PowerDNS Github 문서](https://github.com/pschiffe/docker-pdns)

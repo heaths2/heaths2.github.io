@@ -30,6 +30,7 @@ PowerDNS-Admin
 
 ```yaml
 ---
+---
 # 📁 values.yaml (설정값 중심 관리)
 
 postgresql:
@@ -79,6 +80,12 @@ ingress:
   enabled: false
   hostname: ""
   className: ""
+
+metallb:
+  enabled: true
+  poolName: pdns-pool
+  advertisementName: pdns-l2adv
+  addressRange: 172.16.0.240-172.16.0.250
 ```
 {: file='PowerDNS-Admin/values.yaml'}
 
@@ -177,7 +184,7 @@ spec:
             - name: PDNS_API_KEY
               value: {{ .Values.powerdnsAdmin.api.key }}
           ports:
-            - containerPort: 8080
+            - containerPort: 80
 ```
 {: file='PowerDNS-Admin/templates/deployment-powerdns-admin.yaml'}
 
@@ -233,74 +240,33 @@ spec:
 ```
 {: file='PowerDNS-Admin/templates/deployment-powerdns.yaml'}
 
-### service-postgresql.yaml
+### metallb-config.yaml
 
 ```yaml
 ---
-# 📁 templates/service-postgresql.yaml
+# 📁 PowerDNS-Admin/templates/metallb-config.yaml
+# Helm Chart에 포함되는 MetalLB 설정 파일입니다.
 
-apiVersion: v1
-kind: Service
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
 metadata:
-  name: postgresql
+  name: {{ .Values.metallb.poolName }}
+  namespace: metallb-system
 spec:
-  selector:
-    app: postgresql
-  ports:
-    - port: 5432
-      targetPort: 5432
-      protocol: TCP
-```
-{: file='PowerDNS-Admin/templates/service-postgresql.yaml'}
+  addresses:
+    - {{ .Values.metallb.addressRange }}
 
-### service-powerdns-admin.yaml
-
-```yaml
 ---
-# 📁 templates/service-powerdns-admin.yaml
-
-apiVersion: v1
-kind: Service
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
 metadata:
-  name: powerdns-admin
+  name: {{ .Values.metallb.advertisementName }}
+  namespace: metallb-system
 spec:
-  selector:
-    app: powerdns-admin
-  ports:
-    - port: 8080
-      targetPort: 8080
-      nodePort: 30080
-      protocol: TCP
-  type: NodePort
+  ipAddressPools:
+    - {{ .Values.metallb.poolName }}
 ```
-{: file='PowerDNS-Admin/templates/service-powerdns-admin.yaml'}
-
-### service-powerdns.yaml
-
-```yaml
----
-# 📁 templates/service-powerdns.yaml
-
-apiVersion: v1
-kind: Service
-metadata:
-  name: powerdns
-spec:
-  selector:
-    app: powerdns
-  ports:
-    - name: dns-tcp
-      port: 53
-      protocol: TCP
-    - name: dns-udp
-      port: 53
-      protocol: UDP
-    - name: web
-      port: 8081
-      protocol: TCP
-  type: ClusterIP
-```
-{: file='PowerDNS-Admin/templates/service-powerdns.yaml'}
+{: file='PowerDNS-Admin/templates/metallb-config.yaml'}
 
 ### pvc-postgresql.yaml
 
@@ -321,6 +287,80 @@ spec:
       storage: {{ .Values.postgresql.storageSize }}
 ```
 {: file='PowerDNS-Admin/templates/pvc-postgresql.yaml'}
+
+### service-postgresql.yaml
+
+```yaml
+---
+# 📁 templates/service-postgresql.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql
+spec:
+  selector:
+    app: postgresql
+  ports:
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP
+  type: ClusterIP
+```
+{: file='PowerDNS-Admin/templates/service-postgresql.yaml'}
+
+### service-powerdns-admin.yaml
+
+```yaml
+---
+# 📁 templates/service-powerdns-admin.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: powerdns-admin
+spec:
+  selector:
+    app: powerdns-admin
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+  type: LoadBalancer
+  loadBalancerIP: {{ .Values.powerdnsAdmin.serviceIP }}
+```
+{: file='PowerDNS-Admin/templates/service-powerdns-admin.yaml'}
+
+### service-powerdns.yaml
+
+```yaml
+---
+# 📁 templates/service-powerdns.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: powerdns
+spec:
+  selector:
+    app: powerdns
+  ports:
+    - name: dns-tcp
+      port: 53
+      targetPort: 53
+      protocol: TCP
+    - name: dns-udp
+      port: 53
+      targetPort: 53
+      protocol: UDP
+    - name: web
+      port: 8081
+      targetPort: 8081
+      protocol: TCP
+  type: LoadBalancer
+  loadBalancerIP: {{ .Values.powerdns.serviceIP }}
+```
+{: file='PowerDNS-Admin/templates/service-powerdns.yaml'}
 
 ## 참고 자료
 - [PowerDNS-Admin Github 문서](https://github.com/PowerDNS-Admin/PowerDNS-Admin)

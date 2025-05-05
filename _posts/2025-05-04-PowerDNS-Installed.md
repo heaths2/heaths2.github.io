@@ -99,6 +99,8 @@ helm completion bash > /etc/bash_completion.d/helm
 source /etc/bash_completion.d/helm
 ```
 
+### PATH, alias 설정
+
 ```bash
 cat <<EOF | sudo tee -a ~/.bashrc
 ###############################################
@@ -121,29 +123,31 @@ source ~/.bashrc
 kubectl get node
 ```
 
+### NFS 서버 (PVC 제공용) 구성
+
 ```bash
-### 1. NFS 서버 패키지 설치 및 활성화 ###
+# NFS 설치 & 복잡 조치
 sudo dnf install -y nfs-utils
 sudo systemctl enable --now nfs-server
 
-### 2. NFS export 디렉토리 생성 ###
+# Export 디렉토리 생성
 sudo mkdir -p /data/db
 sudo chown -R 5000:5000 /data
 
-### 3. /etc/exports 설정 ###
+# /etc/exports 설정
 echo "/data *(rw,sync,no_subtree_check,no_root_squash)" | sudo tee /etc/exports > /dev/null
 sudo exportfs -rv
 
-### 4. 방화벽 오픈 ###
+# 방화벽 설정
 sudo firewall-cmd --permanent --add-service=nfs
 sudo firewall-cmd --reload
+```
 
-### 5. Helm Chart 설치 ###
+### NFS StorageClass 설치
+
+```bash
 helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner
 helm repo update
-
-# 기존 StorageClass 존재 시 삭제
-kubectl delete storageclass nfs --ignore-not-found
 
 helm install nfs-subdir nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
   --namespace kube-system \
@@ -155,12 +159,10 @@ helm install nfs-subdir nfs-subdir-external-provisioner/nfs-subdir-external-prov
   --set storageClass.reclaimPolicy=Retain \
   --set storageClass.allowVolumeExpansion=true
 
-### 7. 확인 ###
 kubectl get storageclass
-
-helm list -n pdns
-kubectl get pods -n pdns
 ```
+
+### MetalLB 로드버더 설치
 
 ```bash
 helm repo add metallb https://metallb.github.io/metallb
@@ -170,6 +172,15 @@ helm install metallb metallb/metallb \
   --namespace metallb-system \
   --create-namespace \
   --set webhook.enabled=true
+```
+
+### 확인
+
+```bash
+kubectl get pods -n pdns
+kubectl get svc -n pdns
+kubectl get ipaddresspool -n metallb-system
+kubectl get l2advertisement -n metallb-system
 ```
 
 ### values.yaml

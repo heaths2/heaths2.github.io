@@ -184,7 +184,7 @@ spec:
             - name: PDNS_API_KEY
               value: {{ .Values.powerdnsAdmin.api.key }}
           ports:
-            - containerPort: 80
+            - containerPort: 8080
 ```
 {: file='PowerDNS-Admin/templates/deployment-powerdns-admin.yaml'}
 
@@ -323,8 +323,8 @@ spec:
   selector:
     app: powerdns-admin
   ports:
-    - port: 80
-      targetPort: 80
+    - port: 8080
+      targetPort: 8080
       protocol: TCP
   type: LoadBalancer
   loadBalancerIP: {{ .Values.powerdnsAdmin.serviceIP }}

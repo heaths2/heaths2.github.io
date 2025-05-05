@@ -609,5 +609,8 @@ dig +short @172.16.0.51 wk02.in.infra.com
 ```
 
 ## 참고 자료
-- [PowerDNS-Admin Github 문서](https://github.com/PowerDNS-Admin/PowerDNS-Admin)
-- [PowerDNS Github 문서](https://github.com/pschiffe/docker-pdns)
+> - [Helm 설치 가이드](https://helm.sh/ko/docs/intro/install/)
+> - [awx-operator 가이드](https://ansible.readthedocs.io/projects/awx-operator/en/latest/)
+> - [awx-operator git](https://github.com/ansible/awx-operator/blob/devel/docs/installation/basic-install.md)
+> - [kustomize 참고](https://kubectl.docs.kubernetes.io/installation/kustomize/binaries/)
+> - [kustomize git 참고](https://github.com/kubernetes-sigs/kustomize)

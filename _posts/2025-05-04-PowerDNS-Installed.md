@@ -8,62 +8,86 @@ tags: [Provisioning, PowerDNS, PowerDNS-Admin]
 
 ## 명령어 사용법
 
+
+## 📁 파일 구조
+
+```text
+PowerDNS-Admin
+├── charts
+├── [Chart.yaml](#chartyaml)
+├── templates
+│   ├── [deployment-postgresql.yaml](#deployment-postgresqlyaml)
+│   ├── [deployment-powerdns-admin.yaml](#deployment-powerdns-adminyaml)
+│   ├── [deployment-powerdns.yaml](#deployment-powerdnsyaml)
+│   ├── [pvc-postgresql.yaml](#pvc-postgresqlyaml)
+│   ├── [service-postgresql.yaml](#service-postgresqlyaml)
+│   ├── [service-powerdns-admin.yaml](#service-powerdns-adminyaml)
+│   ├── [service-powerdns.yaml](#service-powerdnsyaml)
+└── [values.yaml](#valuesyaml)
+```
+
 ```yaml
+---
+# 📁 values.yaml (설정값 중심 관리)
+
 postgresql:
+  enabled: true
   image: postgres:16-alpine
   database: pdns
   username: pdns
   password: pdns
-  storageClass: nfs
   storageSize: 5Gi
-  accessMode: ReadWriteOnce
 
   securityContext:
     runAsUser: 5000
     runAsGroup: 5000
     fsGroup: 5000
-    readOnlyRootFilesystem: false
-    runAsNonRoot: true
 
-  initVolumePermissions:
-    enabled: true
-    image: busybox
-    command: "chown -R 5000:5000 /data && chmod -R 755 /data"
-    mountPath: /data
-    securityContext:
-      runAsUser: 0
-      readOnlyRootFilesystem: false
+powerdns:
+  enabled: true
+  image: pschiffe/pdns-pgsql:latest
+  apiKey: changeme
+  dbHost: postgresql
+  dbUser: pdns
+  dbPassword: pdns
+  dbName: pdns
+  apiAllowFrom: 0.0.0.0/0
+  webserver: true
 
-  service:
-    type: ClusterIP
+powerdnsAdmin:
+  enabled: true
+  image: pschiffe/pdns-admin
+  db:
+    host: postgresql
+    port: 5432
+    user: pdns
+    password: pdns
+  api:
+    url: http://powerdns:8081
+    key: changeme
+
+recursor:
+  enabled: true
+  image: pschiffe/pdns-recursor:latest
+
+service:
+  type: ClusterIP
 
 ingress:
   enabled: false
+  hostname: ""
+  className: ""
 ```
 {: file='PowerDNS-Admin/values.yaml'}
 
 ```yaml
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: pvc-postgresql
-spec:
-  accessModes:
-    - {{ .Values.postgresql.accessMode | default "ReadWriteOnce" }}
-  storageClassName: {{ .Values.postgresql.storageClass }}
-  resources:
-    requests:
-      storage: {{ .Values.postgresql.storageSize }}
-```
-{: file='PowerDNS-Admin/templates/pvc-postgresql.yaml'}
+---
+# 📁 templates/deployment-postgresql.yaml
 
-```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: postgresql
-  labels:
-    app: postgresql
 spec:
   replicas: 1
   selector:
@@ -75,23 +99,20 @@ spec:
         app: postgresql
     spec:
       securityContext:
+        runAsUser: {{ .Values.postgresql.securityContext.runAsUser }}
+        runAsGroup: {{ .Values.postgresql.securityContext.runAsGroup }}
         fsGroup: {{ .Values.postgresql.securityContext.fsGroup }}
-
-      {{- if .Values.postgresql.initVolumePermissions.enabled }}
       initContainers:
-        - name: fix-permissions
-          image: {{ .Values.postgresql.initVolumePermissions.image }}
-          command: ["sh", "-c", "{{ .Values.postgresql.initVolumePermissions.command }}"]
+        - name: init-permissions
+          image: busybox
+          command: ["sh", "-c", "chown -R 5000:5000 /var/lib/postgresql/data && chmod -R 755 /var/lib/postgresql/data"]
           volumeMounts:
-            - name: db-storage
-              mountPath: {{ .Values.postgresql.initVolumePermissions.mountPath }}
+            - name: db-data
+              mountPath: /var/lib/postgresql/data
           securityContext:
-            runAsUser: {{ .Values.postgresql.initVolumePermissions.securityContext.runAsUser | default 0 }}
-            readOnlyRootFilesystem: {{ .Values.postgresql.initVolumePermissions.securityContext.readOnlyRootFilesystem | default false }}
-      {{- end }}
-
+            runAsUser: 0
       containers:
-        - name: postgres
+        - name: postgresql
           image: {{ .Values.postgresql.image }}
           env:
             - name: POSTGRES_DB
@@ -100,74 +121,189 @@ spec:
               value: {{ .Values.postgresql.username }}
             - name: POSTGRES_PASSWORD
               value: {{ .Values.postgresql.password }}
-          ports:
-            - containerPort: 5432
-          securityContext:
-            runAsUser: {{ .Values.postgresql.securityContext.runAsUser }}
-            runAsGroup: {{ .Values.postgresql.securityContext.runAsGroup }}
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: {{ .Values.postgresql.securityContext.readOnlyRootFilesystem }}
-            capabilities:
-              drop: ["ALL"]
           volumeMounts:
-            - name: db-storage
+            - name: db-data
               mountPath: /var/lib/postgresql/data
-
       volumes:
-        - name: db-storage
+        - name: db-data
           persistentVolumeClaim:
             claimName: pvc-postgresql
 ```
 {: file='PowerDNS-Admin/templates/deployment-postgresql.yaml'}
 
 ```yaml
+---
+# 📁 templates/deployment-powerdns-admin.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: powerdns-admin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: powerdns-admin
+  template:
+    metadata:
+      labels:
+        app: powerdns-admin
+    spec:
+      containers:
+        - name: pdns-admin
+          image: {{ .Values.powerdnsAdmin.image }}
+          env:
+            - name: PDNS_ADMIN_SQLA_DB_TYPE
+              value: postgres
+            - name: PDNS_ADMIN_SQLA_DB_HOST
+              value: {{ .Values.powerdnsAdmin.db.host }}
+            - name: PDNS_ADMIN_SQLA_DB_PORT
+              value: "5432"
+            - name: PDNS_ADMIN_SQLA_DB_USER
+              value: {{ .Values.powerdnsAdmin.db.user }}
+            - name: PDNS_ADMIN_SQLA_DB_PASSWORD
+              value: {{ .Values.powerdnsAdmin.db.password }}
+            - name: PDNS_VERSION
+              value: "4.9"
+            - name: PDNS_API_URL
+              value: {{ .Values.powerdnsAdmin.api.url }}
+            - name: PDNS_API_KEY
+              value: {{ .Values.powerdnsAdmin.api.key }}
+          ports:
+            - containerPort: 8080
+```
+{: file='PowerDNS-Admin/templates/deployment-powerdns-admin.yaml'}
+
+```yaml
+---
+# 📁 templates/deployment-powerdns.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: powerdns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: powerdns
+  template:
+    metadata:
+      labels:
+        app: powerdns
+    spec:
+      containers:
+        - name: powerdns
+          image: {{ .Values.powerdns.image }}
+          env:
+            - name: PDNS_gpgsql_password
+              value: {{ .Values.powerdns.dbPassword }}
+            - name: PDNS_gpgsql_user
+              value: {{ .Values.powerdns.dbUser }}
+            - name: PDNS_gpgsql_dbname
+              value: {{ .Values.powerdns.dbName }}
+            - name: PDNS_gpgsql_host
+              value: {{ .Values.powerdns.dbHost }}
+            - name: PDNS_api
+              value: "yes"
+            - name: PDNS_api_key
+              value: {{ .Values.powerdns.apiKey }}
+            - name: PDNS_webserver
+              value: "yes"
+            - name: PDNS_webserver_address
+              value: "0.0.0.0"
+            - name: PDNS_webserver_allow_from
+              value: {{ .Values.powerdns.apiAllowFrom }}
+          ports:
+            - containerPort: 53
+              protocol: TCP
+            - containerPort: 53
+              protocol: UDP
+            - containerPort: 8081
+              protocol: TCP
+```
+{: file='PowerDNS-Admin/templates/deployment-powerdns.yaml'}
+
+```yaml
+---
+# 📁 templates/service-postgresql.yaml
+
 apiVersion: v1
 kind: Service
 metadata:
   name: postgresql
-  labels:
-    app: postgresql
 spec:
-  type: {{ .Values.postgresql.service.type }}
   selector:
     app: postgresql
   ports:
-    - name: postgres
-      port: 5432
+    - port: 5432
       targetPort: 5432
       protocol: TCP
 ```
 {: file='PowerDNS-Admin/templates/service-postgresql.yaml'}
 
 ```yaml
-apiVersion: batch/v1
-kind: Job
+---
+# 📁 templates/service-powerdns-admin.yaml
+
+apiVersion: v1
+kind: Service
 metadata:
-  name: postgresql-init-schema
-  annotations:
-    "helm.sh/hook": post-install
-    "helm.sh/hook-delete-policy": hook-succeeded
+  name: powerdns-admin
 spec:
-  template:
-    spec:
-      containers:
-        - name: schema-loader
-          image: {{ .Values.postgresql.image }}
-          command: ["sh", "-c", "psql -h postgresql -U {{ .Values.postgresql.username }} -d {{ .Values.postgresql.database }} -f /data/db/schema.pgsql.sql"]
-          env:
-            - name: PGPASSWORD
-              value: {{ .Values.postgresql.password }}
-          volumeMounts:
-            - name: schema-volume
-              mountPath: /data
-      restartPolicy: OnFailure
-      volumes:
-        - name: schema-volume
-          hostPath:
-            path: /data
-            type: Directory
+  selector:
+    app: powerdns-admin
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30080
+      protocol: TCP
+  type: NodePort
 ```
-{: file='PowerDNS-Admin/templates/job-schema.yaml'}
+{: file='PowerDNS-Admin/templates/service-powerdns-admin.yaml'}
+
+```yaml
+---
+# 📁 templates/service-powerdns.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: powerdns
+spec:
+  selector:
+    app: powerdns
+  ports:
+    - name: dns-tcp
+      port: 53
+      protocol: TCP
+    - name: dns-udp
+      port: 53
+      protocol: UDP
+    - name: web
+      port: 8081
+      protocol: TCP
+  type: ClusterIP
+```
+{: file='PowerDNS-Admin/templates/service-powerdns.yaml'}
+
+```yaml
+---
+# 📁 templates/pvc-postgresql.yaml
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-postgresql
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: nfs
+  resources:
+    requests:
+      storage: {{ .Values.postgresql.storageSize }}
+```
+{: file='PowerDNS-Admin/templates/pvc-postgresql.yaml'}
 
 ## 참고 자료
 - [공식 문서서](https://python-poetry.org/docs/#installing-with-the-official-installer)

@@ -548,7 +548,36 @@ helm upgrade --install powerdns-admin ~/PowerDNS-Admin \
 kubectl get all -A -o wide
 ```
 
-### DNS 적용
+### DNS 등록
+
+![그림_1](/assets/img/2025-05-04/그림_1.png)
+_PowerDNS-Admin 계정생성 클릭_
+
+![그림_2](/assets/img/2025-05-04/그림_2.png)
+_PowerDNS-Admin 계정생성_
+
+![그림_3](/assets/img/2025-05-04/그림_3.png)
+_PowerDNS-Admin 계정 로그인인_
+
+![그림_4](/assets/img/2025-05-04/그림_4.png)
+_PowerDNS-Admin 계정생성 클릭_
+
+![그림_5](/assets/img/2025-05-04/그림_5.png)
+_PowerDNS-Admin Zone 생성_
+
+![그림_6](/assets/img/2025-05-04/그림_6.png)
+_PowerDNS-Admin Zone 클릭_
+
+![그림_7](/assets/img/2025-05-04/그림_7.png)
+_PowerDNS-Admin Zone에 레코드 등록_
+
+![그림_8](/assets/img/2025-05-04/그림_8.png)
+_PowerDNS-Admin Zone에 레코드 적용 확인_
+
+![그림_9](/assets/img/2025-05-04/그림_9.png)
+_PowerDNS-Admin Zone에 레코드 목록 확인_
+
+### DNS 호스트 적용
 
 ```bash
 cat <<EOF | sudo tee /etc/resolv.conf

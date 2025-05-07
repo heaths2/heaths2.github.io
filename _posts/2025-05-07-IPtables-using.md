@@ -116,6 +116,84 @@ num    pkts bytes target     prot opt in     out     source               destin
 
 ## ⚙️ 사용법
 
+```bash
+cat <<'EOF' | sudo tee /etc/rc.firewall
+#!/usr/bin/bash
+
+# 모든 규칙 플러시
+sudo iptables -F
+
+# 사용자 정의 체인 삭제
+sudo iptables -X
+
+# 모든 허용되지 않은 트래픽 기본 정책으로 차단
+sudo iptables -P INPUT DROP
+sudo iptables -P FORWARD DROP
+sudo iptables -P OUTPUT DROP
+
+# 루프백 인터페이스의 트래픽 허용
+sudo iptables -A INPUT -i lo -j ACCEPT
+sudo iptables -A OUTPUT -o lo -j ACCEPT
+
+# eth0 인터페이스의 트래픽 허용
+sudo iptables -A OUTPUT -o eth0 -j ACCEPT
+
+# eth1 인터페이스의 트래픽 허용
+sudo iptables -A OUTPUT -o eth1 -j ACCEPT
+
+# 이미 확립된 연결 및 관련 트래픽 허용
+sudo iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+sudo iptables -A OUTPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+# eth0 → eth1으로 트래픽 허용
+#sudo iptables -A FORWARD -i eth0 -o eth1 -j ACCEPT
+
+# eth1 → eth0으로 트래픽 허용
+#sudo iptables -A FORWARD -i eth1 -o eth0 -j ACCEPT
+
+# ICMP(PING) 트래픽 허용
+#sudo iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+#sudo iptables -A OUTPUT -p icmp --icmp-type echo-reply -j ACCEPT
+
+# DNS 트래픽 허용 (TCP/UDP 포트 53)
+sudo iptables -A OUTPUT -p tcp --dport 53 -j ACCEPT
+sudo iptables -A OUTPUT -p udp --dport 53 -j ACCEPT
+sudo iptables -A INPUT -p tcp --sport 53 -j ACCEPT
+sudo iptables -A INPUT -p udp --sport 53 -j ACCEPT
+
+# NTP 트래픽 허용 (TCP/UDP 포트 123)
+sudo iptables -A OUTPUT -p tcp --dport 123 -j ACCEPT
+sudo iptables -A OUTPUT -p udp --dport 123 -j ACCEPT
+sudo iptables -A INPUT -p tcp --sport 123 -j ACCEPT
+sudo iptables -A INPUT -p udp --sport 123 -j ACCEPT
+
+# SSH 접근 시도 로깅 (허용된 경우)
+# sudo iptables -A INPUT -p tcp --dport 22 -j LOG --log-prefix "iptables_INPUT_SSH_Accept: " --log-level 7
+# sudo iptables -A OUTPUT -p tcp --sport 22 -j LOG --log-prefix "iptables_OUTPUT_SSH_Accept: " --log-level 7
+
+# SSH(포트 22) 트래픽 허용
+sudo iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+sudo iptables -A OUTPUT -p tcp --sport 22 -j ACCEPT
+# sudo iptables -A INPUT -s 172.16.0.0/24 -p tcp --dport 22 -j ACCEPT
+# sudo iptables -A INPUT -s 10.1.0.0/24 -p tcp --dport 22 -j ACCEPT
+# sudo iptables -A INPUT -s 172.16.0.0/24 -p icmp --icmp-type echo-request -j ACCEPT
+# sudo iptables -A INPUT -s 10.1.0.0/24 -p icmp --icmp-type echo-request -j ACCEPT
+# sudo iptables -A OUTPUT -d 172.16.0.0/24 -p tcp --sport 22 -j ACCEPT
+# sudo iptables -A OUTPUT -d 10.1.0.0/24 -p tcp --sport 22 -j ACCEPT
+# sudo iptables -A OUTPUT -d 172.16.0.0/24 -p icmp --icmp-type echo-reply -j ACCEPT
+# sudo iptables -A OUTPUT -d 10.1.0.0/24 -p icmp --icmp-type echo-reply -j ACCEPT
+
+# SSH 접근 시도 로깅 (차단된 경우)
+# sudo iptables -A INPUT -p tcp --dport 22 -j LOG --log-prefix "iptables_INPUT_SSH_Deny: " --log-level 7
+# sudo iptables -A OUTPUT -p tcp --sport 22 -j LOG --log-prefix "iptables_OUTPUT_SSH_Deny: " --log-level 7
+
+# 모든 허용되지 않은 트래픽 로깅
+sudo iptables -A INPUT -j LOG --log-prefix "iptables_INPUT_Denied: " --log-level 7
+sudo iptables -A FORWARD -j LOG --log-prefix "iptables_FORWARD_Denied: " --log-level 7
+sudo iptables -A OUTPUT -j LOG --log-prefix "iptables_OUTPUT_Denied: " --log-level 7
+EOF
+```
+
 ### iptables 특정 규칙 제거
 
 ```bash

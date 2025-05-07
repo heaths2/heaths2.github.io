@@ -231,7 +231,7 @@ spec:
     - setting: SYSTEM_TASK_ABS_MEM
       value: "8Gi"
     - setting: SYSTEM_TASK_ABS_CPU
-      value: "4000m"  
+      value: "4000"  
 EOF
 
 tee ~/awx/awx-ingress.yaml << EOF

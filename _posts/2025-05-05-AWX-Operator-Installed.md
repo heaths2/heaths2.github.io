@@ -227,11 +227,6 @@ metadata:
   name: awx-server
 spec:
   service_type: ClusterIP
-  extra_settings:
-    - setting: SYSTEM_TASK_ABS_MEM
-      value: "8589934592"
-    - setting: SYSTEM_TASK_ABS_CPU
-      value: "4000"  
 EOF
 
 tee ~/awx/awx-ingress.yaml << EOF

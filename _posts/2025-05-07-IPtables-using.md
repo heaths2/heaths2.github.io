@@ -20,7 +20,7 @@ tags: [Command, iptables]
 |-----------------------|--------------------|------------------------------------------|-------------------------------------------------------------------------------|
 | **화이트리스트**      | `DROP` (차단)      | 허용할 트래픽만 명시적으로 `ACCEPT`      | `sudo iptables -P INPUT DROP`<br>`sudo iptables -P FORWARD DROP`<br>`sudo iptables -P OUTPUT DROP`<br> |
 | **블랙리스트**        | `ACCEPT` (허용)    | 차단할 트래픽만 명시적으로 `DROP`        | `sudo iptables -P INPUT ACCEPT`<br>`sudo iptables -P FORWARD ACCEPT`<br>`sudo iptables -P OUTPUT ACCEPT`<br> |
->
+
 | **기준**                 | **화이트리스트**                | **블랙리스트**              |
 |--------------------------|---------------------------------|----------------------------|
 | **보안 수준**            | 높음                           | 낮음                       |

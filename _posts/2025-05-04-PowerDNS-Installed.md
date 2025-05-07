@@ -138,7 +138,7 @@ sudo mkdir -p /data/db
 sudo chown -R 5000:5000 /data
 
 # /etc/exports 설정
-echo "/data *(rw,sync,no_subtree_check,no_root_squash)" | sudo tee /etc/exports > /dev/null
+echo "/data *(rw,sync,no_subtree_check,no_root_squash)" | sudo tee -a /etc/exports > /dev/null
 sudo exportfs -rv
 
 # 방화벽 설정

@@ -240,7 +240,7 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-  - host: awx.infra.local
+  - host: awx.infra
     http:
       paths:
       - path: /

@@ -195,11 +195,11 @@ rm -f PowerDNS-Admin/templates/{deployment.yaml,hpa.yaml,serviceaccount.yaml,ser
 ```bash
 systemctl stop firewalld.service
 
-mkdir -pv .awx
+mkdir -pv awx
 # Basic Install
 LTS_TAG=`curl -s https://api.github.com/repos/ansible/awx-operator/releases/latest | grep tag_name | cut -d '"' -f 4`
 
-tee ~/.awx/kustomization.yaml << EOF
+tee ~/awx/kustomization.yaml << EOF
 ---
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
@@ -207,16 +207,19 @@ resources:
   # Find the latest tag here: https://github.com/ansible/awx-operator/releases
   - github.com/ansible/awx-operator/config/default?ref=$LTS_TAG
   - awx-server.yaml
+  - awx-ingress.yaml
+
 # Set the image tags to match the git version from above
 images:
   - name: quay.io/ansible/awx-operator
     newTag: $LTS_TAG
+
 # Specify a custom namespace in which to install AWX
 namespace: awx
 EOF
 
 
-tee ~/.awx/awx-server.yaml << EOF
+tee ~/awx/awx-server.yaml << EOF
 ---
 apiVersion: awx.ansible.com/v1beta1
 kind: AWX
@@ -224,9 +227,14 @@ metadata:
   name: awx-server
 spec:
   service_type: ClusterIP
+  extra_settings:
+    - setting: SYSTEM_TASK_ABS_MEM
+      value: "8Gi"
+    - setting: SYSTEM_TASK_ABS_CPU
+      value: "4000m"  
 EOF
 
-tee ~/.awx/awx-ingress.yaml << EOF
+tee ~/awx/awx-ingress.yaml << EOF
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress

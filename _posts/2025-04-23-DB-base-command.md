@@ -6,7 +6,7 @@ categories: [Blog, Command]
 tags: [Command, Script, MySQL, MariaDB]
 ---
 
-## 명령어 사용법
+## ⚙️ 명령어 사용법
 
 ```bash
 -- 현재 MySQL 서버에 존재하는 데이터베이스 목록 보기

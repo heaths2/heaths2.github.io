@@ -6,7 +6,7 @@ categories: [Blog, Provisioning]
 tags: [Provisioning, Cisco, NTP, SNMP, Banner, SCP, ACL, AAA Model]
 ---
 
-## 개요
+## 📘 개요
 Cisco 스위치는 네트워크의 중심 장비로, 보안 및 효율성을 높이기 위해 초기 설정을 신중히 수행해야 합니다. 이 매뉴얼은 스위치의 기본 설정 항목과 보안 및 관리에 필수적인 설정 방법을 제공합니다.
 
 ## 설정 요약 표

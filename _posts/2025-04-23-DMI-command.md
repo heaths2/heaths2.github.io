@@ -6,7 +6,7 @@ categories: [Blog, Command]
 tags: [Command, Script, dmidecode]
 ---
 
-## 명령어 사용법
+## ⚙️ 명령어 사용법
 
 ### dmidecode Type 번호 및 키워드 매핑표
 

@@ -6,7 +6,7 @@ categories: [Blog, Bash Shell]
 tags: [Bash, Shell, Script]
 ---
 
-## 개요
+## 📘 개요
 XEN VM 이미지를 병렬처리로 복사하는 스크립트 입니다.
 
 ```bash

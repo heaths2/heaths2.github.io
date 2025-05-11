@@ -6,7 +6,7 @@ categories: [Blog, Provisioning]
 tags: [Provisioning, Cisco, QoS, Bandwidth]
 ---
 
-## 개요
+## 📘 개요
 Cisco 스위치에서 Bandwidth Limit 설정은 네트워크 트래픽을 효율적으로 관리하기 위한 QoS(Quality of Service) 기능의 일부입니다. 특정 시간대(예: 00:00 ~ 18:00) 동안 대역폭을 제한하여 네트워크 리소스의 불균형 사용을 방지하거나, 우선순위가 낮은 트래픽을 제어하는 데 사용됩니다. 이러한 설정은 네트워크 성능 최적화 및 안정성을 높이는 데 기여합니다.
 
 ## 특징

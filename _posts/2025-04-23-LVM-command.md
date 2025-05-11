@@ -6,7 +6,7 @@ categories: [Blog, Command]
 tags: [Command, Script, DMI, dmidecode]
 ---
 
-## 명령어 사용법
+## ⚙️ 명령어 사용법
 
 ### 📦 디스크/볼륨 확인
 

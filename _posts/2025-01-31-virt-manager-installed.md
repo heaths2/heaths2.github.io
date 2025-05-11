@@ -6,7 +6,7 @@ categories: [Blog, Virtual Machine]
 tags: [Virtual Machine, Virt-Manager, Virsh, QEMU]
 ---
 
-## 개요
+## 📘 개요
 Virt-Manager(Virtual Machine Manager)는 KVM, QEMU 및 libvirt 기반 가상 머신을 관리하는 GUI 툴입니다. 이를 통해 가상 머신을 쉽게 생성, 관리 및 모니터링할 수 있다.
 
 ## 주요 기능

@@ -9,7 +9,7 @@ tags: [Ansible, AWX]
 > 관련글 :
 > [ Kubespray 설치방법 (1)](https://heaths2.github.io/posts/kubespray_install/)
 
-## 개요
+## 📘 개요
 Ansible AWX는 Ansible의 CLI 중심 관리에 GUI 기반의 대시보드, REST API, 작업 스케줄링 등의 기능을 추가한 플랫폼입니다. 이는 팀과 조직이 공동으로 자동화 워크플로우를 설계하고 실행하며, 작업의 상태를 모니터링할 수 있는 강력한 도구를 제공합니다.
 
 ## 특징

@@ -6,7 +6,7 @@ categories: [Blog, Virtual Machine]
 tags: [Virtual Machine, Xen, Xen Hypervisor]
 ---
 
-## 개요
+## 📘 개요
 Xen Hypervisor는 고성능 및 고효율의 오픈소스 **하이퍼바이저(Hypervisor)**로, 가상화 환경에서 다중 운영체제를 단일 물리 서버에서 실행할 수 있도록 지원하는 핵심 소프트웨어입니다. Xen은 Type-1 하이퍼바이저로 분류되며, 하드웨어 위에서 직접 실행되면서 높은 성능과 보안을 제공합니다.
 
 ## 특징

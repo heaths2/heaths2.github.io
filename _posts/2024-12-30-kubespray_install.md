@@ -6,7 +6,7 @@ categories: [Blog, Orchestration]
 tags: [Kubernetes, K8s, Kubespray]
 ---
 
-## 개요
+## 📘 개요
 Kubespray는 Ansible 기반의 오픈소스 프로젝트로, Kubernetes 클러스터를 빠르고 쉽게 설치하고 관리할 수 있도록 도와줍니다. 특히 고가용성(High Availability, HA) 클러스터를 구축하는 데 적합하며, 다양한 클라우드 및 베어메탈 환경에서 동작할 수 있습니다.
 
 ## 특징

@@ -6,7 +6,7 @@ categories: [Blog, Provisioning]
 tags: [Provisioning, iPXE]
 ---
 
-## 개요
+## 📘 개요
 iPXE는 오픈 소스 네트워크 부트 소프트웨어로, PXE(Preboot Execution Environment)를 확장하여 네트워크 기반 부팅을 더욱 유연하게 지원합니다. 디스크리스 부팅, 클라우드 환경 통합, 운영 체제 설치 및 대규모 시스템 프로비저닝에서 널리 사용됩니다. HTTP, HTTPS, iSCSI, TFTP 등 다양한 프로토콜을 지원하며, 스크립트 기능을 통해 복잡한 부팅 프로세스를 자동화할 수 있습니다.
 
 ## 특징

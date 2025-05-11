@@ -6,7 +6,7 @@ categories: [Blog, Provisioning]
 tags: [Provisioning, Helm, PowerDNS, PowerDNS-Admin]
 ---
 
-## 📌 개요
+## 📘 개요
 PowerDNS는 유연하고 확장 가능한 오픈소스 DNS 서버이며, PowerDNS-Admin은 이를 위한 웹 기반 관리 인터페이스입니다.
 이 문서는 Kubernetes(K3s) 환경에서 Helm Chart를 활용해 PowerDNS + PowerDNS-Admin 스택을 설치하고,
 내부망 DNS 서버로 구성하는 과정을 담고 있습니다.

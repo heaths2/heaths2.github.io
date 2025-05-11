@@ -6,7 +6,7 @@ categories: [Blog, Provisioning]
 tags: [Provisioning, Cisco, ACL, SSH]
 ---
 
-## 개요
+## 📘 개요
 이 문서는 Cisco 스위치에서 `ip ssh pubkey-chain` 명령어를 지원하지 않는 오래된 IOS 장비에서 SSH Key 인증을 사용할 수 없는 경우, IP 기반 접근 제어와 간소화된 인증 설정을 통해 최소한의 보안을 유지하며 장비를 관리하는 방법을 설명합니다. 이 설정은 긴급 상황이나 레거시 장비 유지 보수를 목적으로 사용되며, 내부망과 같은 신뢰할 수 있는 환경에서만 적용하는 것이 권장됩니다.
 
 ## 목적

@@ -6,7 +6,7 @@ categories: [Blog, Command]
 tags: [Command, Script, Poetry, Python3]
 ---
 
-## 명령어 사용법
+## ⚙️ 명령어 사용법
 
 ### 1️⃣ Poetry 설치 및 📌 설치 확인
 

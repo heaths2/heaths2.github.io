@@ -6,7 +6,7 @@ categories: [Blog, Provisioning]
 tags: [Provisioning, OpenStack, Ansible, Docker]
 ---
 
-## 개요
+## 📘 개요
 Kolla-Ansible은 OpenStack을 컨테이너 기반으로 배포하고 관리하기 위한 도구다. Kolla 프로젝트는 Docker 컨테이너와 Ansible을 결합하여 OpenStack의 설치, 구성 및 유지보수를 자동화한다. 이를 통해 복잡한 OpenStack 환경을 보다 쉽게 운영할 수 있다.
 
 ## 특징

@@ -595,7 +595,7 @@ nameserver 168.126.63.2     # ✅ 외부 DNS (KT 보조 DNS)
 nameserver 164.124.107.9    # ✅ 외부 DNS (LG U+ 기본 DNS)
 nameserver 203.248.242.2    # ✅ 외부 DNS (LG U+ 보조 DNS)
 
-search in.infra.com        # ✅ 도메인 자동 완성 - 예: wk01 → wk01.in.infra.com
+search in.infra.com         # ✅ 도메인 자동 완성 - 예: wk01 → wk01.in.infra.com
 EOF
 ```
 

@@ -7,73 +7,28 @@ tags: [Provisioning, AWX, AWX-Operator, Helm]
 ---
 
 ## 📘 개요
-PowerDNS는 유연하고 확장 가능한 오픈소스 DNS 서버이며, PowerDNS-Admin은 이를 위한 웹 기반 관리 인터페이스입니다.
-이 문서는 Kubernetes(K3s) 환경에서 Helm Chart를 활용해 PowerDNS + PowerDNS-Admin 스택을 설치하고,
-내부망 DNS 서버로 구성하는 과정을 담고 있습니다.
+AWX는 Ansible Tower의 오픈소스 버전으로, 웹 기반 GUI 및 REST API를 통해 Ansible Playbook을 중앙에서 관리하고 자동화할 수 있는 플랫폼입니다.
+AWX Operator는 Kubernetes 환경에서 AWX 인스턴스를 Custom Resource(사용자 정의 리소스) 형태로 배포 및 유지 관리할 수 있도록 설계된 컨트롤러입니다.
+
+이 문서는 RKE2 기반의 고가용성 Kubernetes 환경에서 Helm Chart를 활용하여 AWX Operator 및 AWX 인스턴스를 설치하는 절차를 담고 있으며,
+실제 운영 환경에서 사용할 수 있도록 보안 설정, Helm 기반 버전 관리, Secret 관리, Ingress 설정 등의 항목을 포함합니다.
 
 ## 🧭 등장배경
-- /etc/hosts 기반 수동 관리의 확장성 한계
-- 내부망에서 독립된 DNS 인프라 필요성
-- GUI 기반의 레코드 관리와 API 자동화를 고려한 선택
-- Docker Compose → Helm Chart 기반 Kubernetes 전환 필요
+- 단일 서버 기반 Ansible 실행의 복잡성 증가
+- 멀티 사용자의 GUI 기반 작업 스케줄링 요구
+- Kubernetes 환경에 쉽게 배포 가능한 자동화 도구 필요
+- Helm Chart를 통한 선언적 설치 및 유지보수
 
-## 🧩 주요 특징 및 구성 요소
+## 🧩 주요 구성 요소
 
-| 구성 요소                      | 설명                                 |
-| -------------------------- | ---------------------------------- |
-| **PowerDNS Authoritative** | PostgreSQL Backend 기반 권한 있는 DNS 서버 |
-| **PowerDNS-Admin**         | GUI 기반 웹 인터페이스 (API 지원 포함)         |
-| **PostgreSQL**             | 레코드 메타데이터 저장소                      |
-| **MetalLB**                | K3s 환경에서 LoadBalancer 타입의 외부 IP 제공 |
-| **Helm**                   | 배포 자동화 및 재사용 가능한 Chart 관리 도구       |
+| 구성 요소            | 설명                                                  |
+| ---------------- | --------------------------------------------------- |
+| **AWX Operator** | Kubernetes에서 AWX 인스턴스를 관리하는 컨트롤러(Operator 패턴 적용)    |
+| **AWX**          | Ansible Playbook을 GUI로 실행하고, RBAC, 스케줄링, 인벤토리 관리 제공 |
+| **PostgreSQL**   | AWX 내부 메타데이터 저장소 (Operator가 자동 관리)                  |
+| **Helm**         | Kubernetes 리소스 설치 및 버전 관리를 위한 패키지 관리 도구             |
 
-## 🏗️ 아키텍처
-
-```bash
-[Browser]
-   |
-   | HTTP
-   v
-[MetalLB LoadBalancer: 172.16.0.242:8080]
-   |
-   v
-[PowerDNS-Admin Pod] ---> [PowerDNS API: 8081]
-                        |
-                        v
-                  [PowerDNS Pod: 53/tcp,udp]
-                        |
-                        v
-                [PostgreSQL Pod (DB Backend)]
-```
-
-- **네트워크 포트 정리**
-
-| 서비스            | 포트             | 설명            |
-| -------------- | -------------- | ------------- |
-| PowerDNS       | 53/tcp,udp     | DNS 서비스 기본 포트 |
-| PowerDNS API   | 8081/tcp       | 관리용 REST API  |
-| PowerDNS Admin | 8080 (→ 외부 80) | GUI 인터페이스     |
-| PostgreSQL     | 5432/tcp       | 데이터베이스 연결     |
-
-## 📁 파일 구조
-
-```bash
-PowerDNS-Admin
-├── charts
-├── [Chart.yaml](#chartyaml)
-├── templates
-│   ├── [deployment-postgresql.yaml](#deployment-postgresqlyaml)
-│   ├── [deployment-powerdns-admin.yaml](#deployment-powerdns-adminyaml)
-│   ├── [deployment-powerdns.yaml](#deployment-powerdnsyaml)
-│   ├── [metallb-config.yaml](#metallb-config.yaml)
-│   ├── [pvc-postgresql.yaml](#pvc-postgresqlyaml)
-│   ├── [service-postgresql.yaml](#service-postgresqlyaml)
-│   ├── [service-powerdns-admin.yaml](#service-powerdns-adminyaml)
-│   ├── [service-powerdns.yaml](#service-powerdnsyaml)
-└── [values.yaml](#valuesyaml)
-```
-
-## ⚙️ 사용법
+## 🛠️ 설치 절차
 
 ### RKE2, k9s, Helm 설치
 

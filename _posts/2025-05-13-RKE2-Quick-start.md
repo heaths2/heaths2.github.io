@@ -157,7 +157,7 @@ helm repo update
 
 helm upgrade --install rancher rancher-stable/rancher \
   --namespace cattle-system \
-  --create-namespace \  
+  --create-namespace \
   --set hostname=rke2.infra.com \
   --set bootstrapPassword=admin \
   --set ingress.tls.source=letsEncrypt \

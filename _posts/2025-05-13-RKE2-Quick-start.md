@@ -90,7 +90,9 @@ sudo systemctl disable firewalld
 # RKE2 CLI 설치
 curl -sfL https://get.rke2.io | INSTALL_RKE2_VERSION="v1.31.8+rke2r1" INSTALL_RKE2_TYPE="server" sh -
 systemctl enable rke2-server --now
+```
 
+```bash
 # K9s CLI 설치
 curl -sS https://webinstall.dev/k9s | bash
 
@@ -137,6 +139,49 @@ source /etc/bash_completion.d/helm
 ```
 
 ```bash
+# kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.17.2/cert-manager.crds.yaml
+
+helm repo add jetstack https://charts.jetstack.io
+helm repo update
+# cert-manager 버전 목록 조회 (최신 안정 버전 확인용)
+# helm search repo jetstack/cert-manager --versions | head -20
+
+helm upgrade --install cert-manager jetstack/cert-manager \
+  --namespace cert-manager \
+  --create-namespace \
+  --version v1.17.2 \
+  --set crds.enabled=true
+
+helm repo add rancher-stable https://releases.rancher.com/server-charts/stable
+helm repo update
+
+helm upgrade --install rancher rancher-stable/rancher \
+  --namespace cattle-system \
+  --create-namespace \  
+  --set hostname=rke2.infra.com \
+  --set bootstrapPassword=admin \
+  --set ingress.tls.source=letsEncrypt \
+  --set letsEncrypt.email=it@infra.com \
+  --set letsEncrypt.ingress.class=nginx
+```
+
+```bash
+cat <<'EOF' | sudo tee /etc/rancher/rke2/config.yaml
+cluster-cidr: "10.42.0.0/16,2001:cafe:42::/56"
+service-cidr: "10.43.0.0/16,2001:cafe:43::/112"
+EOF
+```
+
+
+```bash
+echo https://rke2.infra.com/dashboard/?setup=$(kubectl get secret --namespace cattle-system bootstrap-secret -o go-template='{{.data.bootstrapPassword|base64decode}}')
+
+kubectl get secret --namespace cattle-system bootstrap-secret -o go-template='{{.data.bootstrapPassword|base64decode}}{{ "\n" }}'
+```
+
+### Worker Node
+
+```bash
 sudo swapoff -a
 sudo systemctl stop firewalld
 sudo systemctl disable firewalld
@@ -148,34 +193,6 @@ cat <<'EOF' | sudo tee /etc/rancher/rke2/config.yaml
 server: https://192.168.1.51:9345
 token: K10c80dfd26c5d8eb362b216f134523c053a834678f0d4e1b609da96c78faad38db::server:167bf371331b9a8636cbdf9b2681e672
 EOF
-```
-
-```bash
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.17.2/cert-manager.crds.yaml
-
-helm repo add jetstack https://charts.jetstack.io
-helm repo update
-# cert-manager 버전 목록 조회 (최신 안정 버전 확인용)
-helm search repo jetstack/cert-manager --versions | head -20
-
-helm install cert-manager jetstack/cert-manager \
-  --namespace cert-manager \
-  --create-namespace \
-  --version v1.17.2 \
-  --set crds.enabled=true
-
-helm repo add rancher-stable https://releases.rancher.com/server-charts/stable
-helm repo update
-
-kubectl create namespace cattle-system
-
-helm install rancher rancher-stable/rancher \
-  --namespace cattle-system \
-  --set hostname=rke2.infra.com \
-  --set bootstrapPassword=admin \
-  --set ingress.tls.source=letsEncrypt \
-  --set letsEncrypt.email=it@infra.com \
-  --set letsEncrypt.ingress.class=nginx
 ```
 
 ## 참고 자료

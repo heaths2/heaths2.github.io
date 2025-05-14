@@ -166,7 +166,7 @@ helm repo update
 helm install nfs-subdir nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
   --namespace kube-system \
   --create-namespace \
-  --set nfs.server=172.25.212.16 \
+  --set nfs.server=172.16.0.51 \
   --set nfs.path=/data \
   --set storageClass.name=nfs \
   --set storageClass.defaultClass=true \

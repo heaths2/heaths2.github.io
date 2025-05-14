@@ -173,7 +173,7 @@ EOF
 ```
 
 ```bash
-kubectl get nodes -o jsonpath="{.items[*].spec.podCIDR}"; echo
+kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} → {.spec.podCIDR}{'\n'}{end}"
 ```
 
 ```bash

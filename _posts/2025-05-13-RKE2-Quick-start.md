@@ -166,15 +166,10 @@ helm upgrade --install rancher rancher-stable/rancher \
 ```
 
 ```bash
-cat <<'EOF' | sudo tee /etc/rancher/rke2/config.yaml
-cluster-cidr: "10.42.0.0/16,2001:cafe:42::/56"
-service-cidr: "10.43.0.0/16,2001:cafe:43::/112"
-EOF
-```
-
-```bash
 kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} → {.spec.podCIDR}{'\n'}{end}"
 ```
+> - IP 대역 확인
+{: .prompt-info }
 
 ```bash
 echo https://rke2.infra.com/dashboard/?setup=$(kubectl get secret --namespace cattle-system bootstrap-secret -o go-template='{{.data.bootstrapPassword|base64decode}}')

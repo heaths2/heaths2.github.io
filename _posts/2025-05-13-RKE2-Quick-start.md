@@ -172,6 +172,9 @@ service-cidr: "10.43.0.0/16,2001:cafe:43::/112"
 EOF
 ```
 
+```bash
+kubectl get nodes -o jsonpath="{.items[*].spec.podCIDR}"; echo
+```
 
 ```bash
 echo https://rke2.infra.com/dashboard/?setup=$(kubectl get secret --namespace cattle-system bootstrap-secret -o go-template='{{.data.bootstrapPassword|base64decode}}')

@@ -7,75 +7,30 @@ tags: [Provisioning, RKE2, Rancher, Helm, K9s]
 ---
 
 ## 📘 개요
-PowerDNS는 유연하고 확장 가능한 오픈소스 DNS 서버이며, PowerDNS-Admin은 이를 위한 웹 기반 관리 인터페이스입니다.
-이 문서는 Kubernetes(K3s) 환경에서 Helm Chart를 활용해 PowerDNS + PowerDNS-Admin 스택을 설치하고,
-내부망 DNS 서버로 구성하는 과정을 담고 있습니다.
+이 문서는 경량 Kubernetes 배포판인 RKE2(Rancher Kubernetes Engine 2)를 기반으로,
+Rancher를 설치하여 웹 기반 Kubernetes 관리 플랫폼을 구축하는 전체 과정을 설명합니다.
+테스트 및 개발 환경에서 빠르게 RKE2 클러스터를 구성하고 Rancher UI로 관리하기 위한 목적에 최적화되어 있습니다.
 
 ## 🧭 등장배경
-- /etc/hosts 기반 수동 관리의 확장성 한계
-- 내부망에서 독립된 DNS 인프라 필요성
-- GUI 기반의 레코드 관리와 API 자동화를 고려한 선택
-- Docker Compose → Helm Chart 기반 Kubernetes 전환 필요
+- 기존 VM 기반 Kubernetes 관리의 복잡성 해소 
+- Rancher UI를 통한 멀티 클러스터 관리 수요
+- K3s보다 보안 강화를 요구하는 환경(RKE2는 SELinux/PSP/etcd 내장)
+- 스크립트 기반 빠른 재구축 및 테스트 환경 자동화를 위한 설계
 
-## 🧩 주요 특징 및 구성 요소
+## 🧩 주요 구성 요소
 
-| 구성 요소                      | 설명                                 |
-| -------------------------- | ---------------------------------- |
-| **PowerDNS Authoritative** | PostgreSQL Backend 기반 권한 있는 DNS 서버 |
-| **PowerDNS-Admin**         | GUI 기반 웹 인터페이스 (API 지원 포함)         |
-| **PostgreSQL**             | 레코드 메타데이터 저장소                      |
-| **MetalLB**                | K3s 환경에서 LoadBalancer 타입의 외부 IP 제공 |
-| **Helm**                   | 배포 자동화 및 재사용 가능한 Chart 관리 도구       |
+| 구성 요소            | 설명                                        |
+| ---------------- | ----------------------------------------- |
+| **RKE2 Server**  | Control-plane 역할을 하는 메인 노드                |
+| **RKE2 Agent**   | Worker 역할을 하는 데이터 처리 전용 노드                |
+| **Rancher**      | Kubernetes 클러스터 관리용 웹 UI 및 API 플랫폼        |
+| **Helm**         | Kubernetes 패키지 배포 도구                      |
+| **cert-manager** | TLS 인증서를 자동으로 발급 및 갱신하는 Kubernetes 리소스    |
+| **MetalLB**      | LoadBalancer IP를 내부망에서 할당할 수 있는 네트워크 컴포넌트 |
 
-## 🏗️ 아키텍처
+## 🛠️ 설치 방법
 
-```bash
-[Browser]
-   |
-   | HTTP
-   v
-[MetalLB LoadBalancer: 172.16.0.242:8080]
-   |
-   v
-[PowerDNS-Admin Pod] ---> [PowerDNS API: 8081]
-                        |
-                        v
-                  [PowerDNS Pod: 53/tcp,udp]
-                        |
-                        v
-                [PostgreSQL Pod (DB Backend)]
-```
-
-- **네트워크 포트 정리**
-
-| 서비스            | 포트             | 설명            |
-| -------------- | -------------- | ------------- |
-| PowerDNS       | 53/tcp,udp     | DNS 서비스 기본 포트 |
-| PowerDNS API   | 8081/tcp       | 관리용 REST API  |
-| PowerDNS Admin | 8080 (→ 외부 80) | GUI 인터페이스     |
-| PostgreSQL     | 5432/tcp       | 데이터베이스 연결     |
-
-## 📁 파일 구조
-
-```bash
-PowerDNS-Admin
-├── charts
-├── [Chart.yaml](#chartyaml)
-├── templates
-│   ├── [deployment-postgresql.yaml](#deployment-postgresqlyaml)
-│   ├── [deployment-powerdns-admin.yaml](#deployment-powerdns-adminyaml)
-│   ├── [deployment-powerdns.yaml](#deployment-powerdnsyaml)
-│   ├── [metallb-config.yaml](#metallb-config.yaml)
-│   ├── [pvc-postgresql.yaml](#pvc-postgresqlyaml)
-│   ├── [service-postgresql.yaml](#service-postgresqlyaml)
-│   ├── [service-powerdns-admin.yaml](#service-powerdns-adminyaml)
-│   ├── [service-powerdns.yaml](#service-powerdnsyaml)
-└── [values.yaml](#valuesyaml)
-```
-
-## ⚙️ 사용법
-
-### RKE2, k9s, Helm 설치
+### 🖥️ Control/Worker Node 공통 RKE2, k9s, Helm 설치
 
 ```bash
 # 스왑 메모리 비활성화
@@ -83,8 +38,10 @@ sudo swapoff -a
 
 # curl -s https://update.rke2.io/v1-release/channels/stable
 # curl -sfL https://get.rke2.io | sh -
-# RKE2 CLI 설치
+# Control Node RKE2 CLI 설치
 curl -sfL https://get.rke2.io | INSTALL_RKE2_VERSION="v1.31.8+rke2r1" INSTALL_RKE2_TYPE="server" sh -
+# Worker Node RKE2 CLI 설치
+curl -sfL https://get.rke2.io | INSTALL_RKE2_VERSION="v1.31.8+rke2r1" INSTALL_RKE2_TYPE="agent" sh -
 systemctl enable rke2-server --now
 ```
 
@@ -136,6 +93,8 @@ helm completion bash > /etc/bash_completion.d/helm
 source /etc/bash_completion.d/helm
 ```
 
+### 📌 cert-manager 설치
+
 ```bash
 # kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.17.2/cert-manager.crds.yaml
 
@@ -144,12 +103,17 @@ helm repo update
 # cert-manager 버전 목록 조회 (최신 안정 버전 확인용)
 # helm search repo jetstack/cert-manager --versions | head -20
 
+# cert-manager 설치 (v1.17.2, CRD 자동 설치 옵션 포함)
 helm upgrade --install cert-manager jetstack/cert-manager \
   --namespace cert-manager \
   --create-namespace \
   --version v1.17.2 \
   --set crds.enabled=true
+```
 
+### 🌐 Rancher 설치
+
+```bash
 helm repo add rancher-stable https://releases.rancher.com/server-charts/stable
 helm repo update
 
@@ -163,26 +127,24 @@ helm upgrade --install rancher rancher-stable/rancher \
   --set letsEncrypt.ingress.class=nginx
 ```
 
+### 🔍 클러스터 정보 확인
+
 ```bash
+# 각 노드의 Pod CIDR 대역 확인 (CNI 설정 확인용)
 kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} → {.spec.podCIDR}{'\n'}{end}"
 ```
 > - IP 대역 확인
 {: .prompt-info }
 
 ```bash
+# Rancher Web UI 접속 URL 자동 생성 (초기 비밀번호 포함)
 echo https://rke2.infra.com/dashboard/?setup=$(kubectl get secret --namespace cattle-system bootstrap-secret -o go-template='{{.data.bootstrapPassword|base64decode}}')
 
+# Rancher 초기 관리자 패스워드 확인
 kubectl get secret --namespace cattle-system bootstrap-secret -o go-template='{{.data.bootstrapPassword|base64decode}}{{ "\n" }}'
 ```
 
 ### 🖥️ Worker Node 설정
-
-```bash
-sudo swapoff -a
-sudo systemctl stop firewalld
-sudo systemctl disable firewalld
-curl -sfL https://get.rke2.io | INSTALL_RKE2_VERSION="v1.31.8+rke2r1" INSTALL_RKE2_TYPE="agent" sh -
-```
 
 ```bash
 cat <<'EOF' | sudo tee /etc/rancher/rke2/config.yaml

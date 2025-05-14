@@ -75,17 +75,20 @@ PowerDNS-Admin
 
 ## ⚙️ 사용법
 
-### K3s, kubectl, k9s, Helm 설치 
+### RKE2, k9s, Helm 설치
 
 ```bash
-# K3s 설치 (Ubuntu/Rocky)
-curl -sfL https://get.k3s.io | sh -
+# 스왑 메모리 비활성화
+sudo swapoff -a
 
-# kubectl 설정 파일 복사
-mkdir -p ~/.kube
-cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
-chown $(id -u):$(id -g) ~/.kube/config
+# curl -s https://update.rke2.io/v1-release/channels/stable
+# curl -sfL https://get.rke2.io | sh -
+# RKE2 CLI 설치
+curl -sfL https://get.rke2.io | INSTALL_RKE2_VERSION="v1.31.8+rke2r1" INSTALL_RKE2_TYPE="server" sh -
+systemctl enable rke2-server --now
+```
 
+```bash
 # K9s CLI 설치
 curl -sS https://webinstall.dev/k9s | bash
 
@@ -99,23 +102,30 @@ curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 cat <<'EOF' | sudo tee -a ~/.bashrc
 
 ###############################################
-# ✅ 사용자 환경 설정 (PATH 및 alias)
-# - 목적: k3s, helm 등 CLI 도구를 정상 인식시키기 위함
-# - 대상: 현재 사용자 기준 설정
+# ✅ 사용자 환경 설정 (PATH 및 KUBECONFIG)
+# - 목적: rke2 관련 CLI 도구 및 kubectl 명령어 정상 인식
+# - 대상: 현재 로그인 사용자 환경에만 적용됨
 ###############################################
 
-# 시스템 전체 바이너리 경로 추가 (예: k3s, helm, k9s 등)
+
+# 📌 kubectl 명령어에서 사용할 kubeconfig 경로 설정
+export KUBECONFIG=/etc/rancher/rke2/rke2.yaml
+
+# 📌 rke2 CLI 바이너리 경로 추가 (예: rke2-killall.sh, kubectl 등 포함)
+export PATH=$PATH:/var/lib/rancher/rke2/bin
+
+# 📌 시스템 전체 바이너리 경로 추가 (예: k3s, helm, k9s 등)
 export PATH="/usr/local/bin:$PATH"
-
-# 사용자 전용 바이너리 경로 추가 (예: Webinstall, pipx 설치 등)
-export PATH="$HOME/.local/bin:$PATH"
-
-# k3s에서 기본 제공하는 kubectl을 사용하도록 별칭 설정
-alias kubectl='k3s kubectl'
 EOF
 
+# ✨ 설정 적용 (현재 쉘에 즉시 반영)
 source ~/.bashrc
-kubectl get node
+
+kubectl get nodes
+
+mkdir -p ~/.kube
+cp /etc/rancher/rke2/rke2.yaml ~/.kube/config
+chown $(id -u):$(id -g) ~/.kube/config
 
 # kubectl 자동완성 등록
 kubectl completion bash >/etc/bash_completion.d/kubectl

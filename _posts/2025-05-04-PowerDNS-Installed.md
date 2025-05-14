@@ -193,8 +193,9 @@ rm -f PowerDNS-Admin/templates/{deployment.yaml,hpa.yaml,serviceaccount.yaml,ser
 ### values.yaml
 
 ```yaml
+cat <<'EOF' | sudo tee values.yaml
 ---
-# 📁 values.yaml (설정값 중심 관리)
+# 📁 PowerDNS-Admin/values.yaml (설정값 중심 관리)
 
 postgresql:
   enabled: true
@@ -249,6 +250,7 @@ ingress:
   enabled: false
   hostname: ""
   className: ""
+EOF
 ```
 {: file='PowerDNS-Admin/values.yaml'}
 
@@ -256,8 +258,9 @@ ingress:
 ### deployment-postgresql.yaml
 
 ```yaml
+cat <<'EOF' | sudo tee deployment-postgresql.yaml
 ---
-# 📁 templates/deployment-postgresql.yaml
+# 📁 PowerDNS-Admin/templates/deployment-postgresql.yaml
 
 apiVersion: apps/v1
 kind: Deployment
@@ -303,14 +306,16 @@ spec:
         - name: db-data
           persistentVolumeClaim:
             claimName: pvc-postgresql
+EOF
 ```
 {: file='PowerDNS-Admin/templates/deployment-postgresql.yaml'}
 
 ### deployment-powerdns-admin.yaml
 
 ```yaml
+cat <<'EOF' | sudo tee deployment-powerdns-admin.yaml
 ---
-# 📁 templates/deployment-powerdns-admin.yaml
+# 📁 PowerDNS-Admin/templates/deployment-powerdns-admin.yaml
 
 apiVersion: apps/v1
 kind: Deployment
@@ -348,14 +353,16 @@ spec:
               value: {{ .Values.powerdnsAdmin.api.key }}
           ports:
             - containerPort: 8080
+EOF
 ```
 {: file='PowerDNS-Admin/templates/deployment-powerdns-admin.yaml'}
 
 ### deployment-powerdns.yaml
 
 ```yaml
+cat <<'EOF' | sudo tee deployment-powerdns.yaml
 ---
-# 📁 templates/deployment-powerdns.yaml
+# 📁 PowerDNS-Admin/templates/deployment-powerdns.yaml
 
 apiVersion: apps/v1
 kind: Deployment
@@ -400,12 +407,14 @@ spec:
               protocol: UDP
             - containerPort: 8081
               protocol: TCP
+EOF
 ```
 {: file='PowerDNS-Admin/templates/deployment-powerdns.yaml'}
 
 ### metallb-config.yaml
 
 ```yaml
+cat <<'EOF' | sudo tee metallb-config.yaml
 ---
 # 📁 PowerDNS-Admin/templates/metallb-config.yaml
 # Helm Chart에 포함되는 MetalLB 설정 파일입니다.
@@ -428,14 +437,16 @@ metadata:
 spec:
   ipAddressPools:
     - {{ .Values.metallb.poolName }}
+EOF
 ```
 {: file='PowerDNS-Admin/templates/metallb-config.yaml'}
 
 ### pvc-postgresql.yaml
 
 ```yaml
+cat <<'EOF' | sudo tee pvc-postgresql.yaml
 ---
-# 📁 templates/pvc-postgresql.yaml
+# 📁 PowerDNS-Admin/templates/pvc-postgresql.yaml
 
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -448,14 +459,16 @@ spec:
   resources:
     requests:
       storage: {{ .Values.postgresql.storageSize }}
+EOF
 ```
 {: file='PowerDNS-Admin/templates/pvc-postgresql.yaml'}
 
 ### service-postgresql.yaml
 
 ```yaml
+cat <<'EOF' | sudo tee service-postgresql.yaml
 ---
-# 📁 templates/service-postgresql.yaml
+# 📁 PowerDNS-Admin/templates/service-postgresql.yaml
 
 apiVersion: v1
 kind: Service
@@ -469,14 +482,16 @@ spec:
       targetPort: 5432
       protocol: TCP
   type: ClusterIP
+EOF
 ```
 {: file='PowerDNS-Admin/templates/service-postgresql.yaml'}
 
 ### service-powerdns-admin.yaml
 
 ```yaml
+cat <<'EOF' | sudo tee service-powerdns-admin.yaml
 ---
-# 📁 templates/service-powerdns-admin.yaml
+# 📁 PowerDNS-Admin/templates/service-powerdns-admin.yaml
 
 apiVersion: v1
 kind: Service
@@ -491,14 +506,16 @@ spec:
       protocol: TCP
   type: LoadBalancer
   loadBalancerIP: {{ .Values.powerdnsAdmin.serviceIP }}
+EOF
 ```
 {: file='PowerDNS-Admin/templates/service-powerdns-admin.yaml'}
 
 ### service-powerdns.yaml
 
 ```yaml
+cat <<'EOF' | sudo tee service-powerdns.yaml
 ---
-# 📁 templates/service-powerdns.yaml
+# 📁 PowerDNS-Admin/templates/service-powerdns.yaml
 
 apiVersion: v1
 kind: Service
@@ -522,6 +539,7 @@ spec:
       protocol: TCP
   type: LoadBalancer
   loadBalancerIP: {{ .Values.powerdns.serviceIP }}
+EOF
 ```
 {: file='PowerDNS-Admin/templates/service-powerdns.yaml'}
 

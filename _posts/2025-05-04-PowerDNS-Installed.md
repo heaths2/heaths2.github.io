@@ -140,6 +140,7 @@ source /etc/bash_completion.d/helm
 
 ```bash
 # NFS 설치 & 복잡 조치
+# nfs-kernel-server
 sudo dnf install -y nfs-utils
 sudo systemctl enable --now nfs-server
 

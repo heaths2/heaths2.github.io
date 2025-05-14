@@ -142,7 +142,7 @@ source /etc/bash_completion.d/helm
 # NFS 설치 & 복잡 조치
 # nfs-kernel-server
 sudo dnf install -y nfs-utils
-sudo systemctl enable --now nfs-server
+sudo systemctl enable nfs-server --now
 
 # Export 디렉토리 생성
 sudo mkdir -p /data/db
@@ -166,7 +166,7 @@ helm repo update
 helm install nfs-subdir nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
   --namespace kube-system \
   --create-namespace \
-  --set nfs.server=172.16.0.51 \
+  --set nfs.server=172.25.212.16 \
   --set nfs.path=/data \
   --set storageClass.name=nfs \
   --set storageClass.defaultClass=true \

@@ -1,9 +1,9 @@
 ---
-title: Rancher Kubernetes Engine 2 설치
+title: RKE2 + Rancher 설치 매뉴얼
 author: G.G
 date: 2025-05-05 20:48 +0900
 categories: [Blog, Provisioning]
-tags: [Provisioning, AWX, AWX-Operator, Helm]
+tags: [Provisioning, RKE2, Rancher, Helm, K9s]
 ---
 
 ## 📘 개요
@@ -175,7 +175,7 @@ echo https://rke2.infra.com/dashboard/?setup=$(kubectl get secret --namespace ca
 kubectl get secret --namespace cattle-system bootstrap-secret -o go-template='{{.data.bootstrapPassword|base64decode}}{{ "\n" }}'
 ```
 
-### Worker Node
+### 🖥️ Worker Node 설정
 
 ```bash
 sudo swapoff -a

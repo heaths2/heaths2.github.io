@@ -75,16 +75,12 @@ PowerDNS-Admin
 
 ## ⚙️ 사용법
 
-### K3s, kubectl, k9s, Helm 설치 
-
+### RKE2, k9s, Helm 설치
 
 ```bash
+# 스왑 메모리 비활성화
 sudo swapoff -a
-sudo systemctl stop firewalld
-sudo systemctl disable firewalld
-```
 
-```bash
 # curl -s https://update.rke2.io/v1-release/channels/stable
 # curl -sfL https://get.rke2.io | sh -
 # RKE2 CLI 설치
@@ -99,6 +95,8 @@ curl -sS https://webinstall.dev/k9s | bash
 # Helm 설치
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 ```
+
+### PATH, alias 설정
 
 ```bash
 cat <<'EOF' | sudo tee -a ~/.bashrc

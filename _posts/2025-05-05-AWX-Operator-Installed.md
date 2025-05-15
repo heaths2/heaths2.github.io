@@ -148,13 +148,6 @@ helm install metallb metallb/metallb \
 kubectl get all --all-namespaces
 ```
 
-### PowerDNS & PowerDNS-Admin Helm Chart 배포
-
-```bash
-helm create PowerDNS-Admin
-rm -f PowerDNS-Admin/templates/{deployment.yaml,hpa.yaml,serviceaccount.yaml,service.yaml,tests/*}
-```
-
 ### AWX
 
 ```bash

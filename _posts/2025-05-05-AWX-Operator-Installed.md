@@ -148,10 +148,20 @@ helm install metallb metallb/metallb \
 kubectl get all --all-namespaces
 ```
 
-### AWX
+### AWX & AWX-Operator Helm Chart 배포
 
 ```bash
+helm repo add awx-operator https://ansible-community.github.io/awx-operator-helm/
+helm repo update
+
+helm create AWX-Operator
+rm -f  AWX-Operator/templates/{deployment.yaml,hpa.yaml,serviceaccount.yaml,service.yaml,tests/*}
+```
+```bash
 systemctl stop firewalld.service
+
+LTS_TAG=`curl -s https://api.github.com/repos/ansible/awx-operator/releases/latest | grep tag_name | cut -d '"' -f 4`
+kubectl apply -k github.com/ansible/awx-operator/config/default?ref=${LTS_TAG}
 
 mkdir -pv awx
 # Basic Install

@@ -144,6 +144,15 @@ echo https://rke2.infra.com/dashboard/?setup=$(kubectl get secret --namespace ca
 kubectl get secret --namespace cattle-system bootstrap-secret -o go-template='{{.data.bootstrapPassword|base64decode}}{{ "\n" }}'
 ```
 
+### 🔐 Rancher Admin 비밀번호 초기화 
+
+```bash
+kubectl exec -it -n cattle-system rancher-5f6d98bff8-5b8sx -- reset-password
+W0515 01:02:24.741810     653 client_config.go:667] Neither --kubeconfig nor --master was specified.  Using the inClusterConfig.  This might not work.
+New password for default admin user (user-4nnzl):
+RuMIDJM_N3AYqUshnlsG
+```
+
 ### 🖥️ Worker Node 설정
 
 ```bash

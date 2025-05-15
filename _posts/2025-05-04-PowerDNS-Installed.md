@@ -204,7 +204,7 @@ rm -f PowerDNS-Admin/templates/{deployment.yaml,hpa.yaml,serviceaccount.yaml,ser
 ### values.yaml
 
 ```yaml
-cat <<'EOF' | sudo tee values.yaml
+cat <<'EOF' | sudo tee PowerDNS-Admin/values.yaml
 ---
 # 📁 PowerDNS-Admin/values.yaml (설정값 중심 관리)
 
@@ -269,7 +269,7 @@ EOF
 ### deployment-postgresql.yaml
 
 ```yaml
-cat <<'EOF' | sudo tee deployment-postgresql.yaml
+cat <<'EOF' | sudo tee PowerDNS-Admin/templates/deployment-postgresql.yaml
 ---
 # 📁 PowerDNS-Admin/templates/deployment-postgresql.yaml
 
@@ -324,7 +324,7 @@ EOF
 ### deployment-powerdns-admin.yaml
 
 ```yaml
-cat <<'EOF' | sudo tee deployment-powerdns-admin.yaml
+cat <<'EOF' | sudo tee PowerDNS-Admin/templates/deployment-powerdns-admin.yaml
 ---
 # 📁 PowerDNS-Admin/templates/deployment-powerdns-admin.yaml
 
@@ -371,7 +371,7 @@ EOF
 ### deployment-powerdns.yaml
 
 ```yaml
-cat <<'EOF' | sudo tee deployment-powerdns.yaml
+cat <<'EOF' | sudo tee PowerDNS-Admin/templates/deployment-powerdns.yaml
 ---
 # 📁 PowerDNS-Admin/templates/deployment-powerdns.yaml
 
@@ -425,7 +425,7 @@ EOF
 ### metallb-config.yaml
 
 ```yaml
-cat <<'EOF' | sudo tee metallb-config.yaml
+cat <<'EOF' | sudo tee PowerDNS-Admin/templates/metallb-config.yaml
 ---
 # 📁 PowerDNS-Admin/templates/metallb-config.yaml
 # Helm Chart에 포함되는 MetalLB 설정 파일입니다.
@@ -455,7 +455,7 @@ EOF
 ### pvc-postgresql.yaml
 
 ```yaml
-cat <<'EOF' | sudo tee pvc-postgresql.yaml
+cat <<'EOF' | sudo tee PowerDNS-Admin/templates/pvc-postgresql.yaml
 ---
 # 📁 PowerDNS-Admin/templates/pvc-postgresql.yaml
 
@@ -477,7 +477,7 @@ EOF
 ### service-postgresql.yaml
 
 ```yaml
-cat <<'EOF' | sudo tee service-postgresql.yaml
+cat <<'EOF' | sudo tee PowerDNS-Admin/templates/service-postgresql.yaml
 ---
 # 📁 PowerDNS-Admin/templates/service-postgresql.yaml
 
@@ -500,7 +500,7 @@ EOF
 ### service-powerdns-admin.yaml
 
 ```yaml
-cat <<'EOF' | sudo tee service-powerdns-admin.yaml
+cat <<'EOF' | sudo tee PowerDNS-Admin/templates/service-powerdns-admin.yaml
 ---
 # 📁 PowerDNS-Admin/templates/service-powerdns-admin.yaml
 
@@ -524,7 +524,7 @@ EOF
 ### service-powerdns.yaml
 
 ```yaml
-cat <<'EOF' | sudo tee service-powerdns.yaml
+cat <<'EOF' | sudo tee PowerDNS-Admin/templates/service-powerdns.yaml
 ---
 # 📁 PowerDNS-Admin/templates/service-powerdns.yaml
 

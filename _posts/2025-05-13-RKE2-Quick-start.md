@@ -101,7 +101,7 @@ source /etc/bash_completion.d/helm
 helm repo add jetstack https://charts.jetstack.io
 helm repo update
 # cert-manager 버전 목록 조회 (최신 안정 버전 확인용)
-# helm search repo jetstack/cert-manager --versions | head -20
+# helm search repo jetstack/cert-manager --versions | head -5
 
 # cert-manager 설치 (v1.17.2, CRD 자동 설치 옵션 포함)
 helm upgrade --install cert-manager jetstack/cert-manager \

@@ -153,10 +153,17 @@ kubectl get all --all-namespaces
 ```bash
 helm repo add awx-operator https://ansible-community.github.io/awx-operator-helm/
 helm repo update
+# helm search repo awx-operator --versions | head -5
 
 helm create AWX-Operator
 rm -f  AWX-Operator/templates/{deployment.yaml,hpa.yaml,serviceaccount.yaml,service.yaml,tests/*}
+
+helm upgrade --install awx-operator ./AWX-Operator \
+  --namespace awx \
+  --create-namespace \
+  -f AWX-Operator/values.yaml
 ```
+
 ```bash
 systemctl stop firewalld.service
 

@@ -41,6 +41,10 @@ tags: [Provisioning , syslog, logrotate]
 
 ## ⚙️ 사용법
 
+### RSyslog 
+
+- rsyslog.conf 설정
+
 ```yaml
 # rsyslog configuration file
 
@@ -125,6 +129,8 @@ uucp,news.crit                                          /var/log/spooler
 #Target="remote_host" Port="XXX" Protocol="tcp")
 ```
 {: file='/etc/rsyslog.conf'}
+
+- rsyslog.d/default.conf 생성 및 설정
 
 ```yaml
 #### ✅ 템플릿 정의 ####
@@ -216,6 +222,52 @@ if ($fromhost-ip == '10.1.50.18' and $syslogfacility-text == 'local7' and $syslo
 }
 ```
 {: file='/etc/rsyslog.d/default.conf'}
+
+### Logrotate 
+
+- RHEL 계열
+
+```bash
+# /data/log/*/syslog - 해당 경로의 로그 파일에 대한 logrotate 설정
+# 매일 실행
+# 만약 로그 파일이 없어도 계속 진행 (에러 무시)
+# 최대 180개의 로그 파일 유지
+# 최대 180일 이상된 로그 파일 삭제
+# 로그 파일을 압축 (rotate 이후에 압축 진행)
+# 압축된 로그 파일을 지연 압축 (다음 실행 시 압축 진행)
+# 현재 로그파일 복사 후 원본 로그파일 크기 0으로 생성
+# 비어있는 로그 파일은 회전하지 않음
+# 로그 파일 생성 시 권한 설정
+# 로그 파일에 날짜 확장자 추가
+# 날짜 형식 지정 (%Y: 연도, %m: 월, %d: 일)
+# logrotate 실행 시 sharedscripts 이후에 postrotate 스크립트 실행
+# postrotate 스크립트 - rsyslog-rotate 실행
+/data/log/*/syslog {
+    daily
+    missingok
+    rotate 180
+    maxage 180
+    compress
+    compresscmd /usr/bin/zstd
+    uncompresscmd /usr/bin/unzstd
+    compressoptions -19 -T0
+    compressext .zst
+    dateext
+    dateformat -%Y-%m-%d
+    delaycompress
+    missingok
+    notifempty
+    sharedscripts
+    create 0640 syslog adm
+
+    postrotate
+        /usr/bin/systemctl -s HUP kill rsyslog.service >/dev/null 2>&1 || true
+    endscript
+}
+```
+{: file='/etc/logrotate.d/firewall'}
+
+- Debian/Ubuntu 계열
 
 ```bash
 # /data/log/*/syslog - 해당 경로의 로그 파일에 대한 logrotate 설정

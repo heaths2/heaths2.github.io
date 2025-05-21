@@ -258,7 +258,6 @@ if ($fromhost-ip == '10.1.50.18' and $syslogfacility-text == 'local7' and $syslo
     missingok
     notifempty
     sharedscripts
-    create 0640 syslog adm
 
     postrotate
         /usr/bin/systemctl -s HUP kill rsyslog.service >/dev/null 2>&1 || true

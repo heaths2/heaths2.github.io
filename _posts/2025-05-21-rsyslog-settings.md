@@ -62,10 +62,10 @@ module(load="builtin:omfile" Template="RSYSLOG_TraditionalFileFormat")
 
 #### MODULES ####
 
-module(load="imuxsock" 	  # provides support for local system logging (e.g. via logger command)
+module(load="imuxsock"    # provides support for local system logging (e.g. via logger command)
        SysSock.Use="off") # Turn off message reception via local log socket; 
-			  # local messages are retrieved through imjournal now.
-module(load="imjournal" 	    # provides access to the systemd journal
+     # local messages are retrieved through imjournal now.
+module(load="imjournal"      # provides access to the systemd journal
        UsePid="system" # PID nummber is retrieved as the ID of the process the journal entry originates from
        FileCreateMode="0644" # Set the access permissions for the state file
        StateFile="imjournal.state") # File to store the position in the journal

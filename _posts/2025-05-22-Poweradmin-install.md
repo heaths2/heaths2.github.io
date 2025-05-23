@@ -204,6 +204,6 @@ GRANT USAGE, SELECT ON SEQUENCE log_zones_id_seq TO pdns;
 GRANT USAGE, SELECT ON SEQUENCE log_users_id_seq TO pdns;
 EOF
 
-psql -U pdns -h 127.0.0.1 -d pdns < "/usr/share/doc/pdns/schema.pgsql.sql"
+psql -U pdns -h 127.0.0.1 -d pdns < "~/pdns-grants.sql"
 ```
 

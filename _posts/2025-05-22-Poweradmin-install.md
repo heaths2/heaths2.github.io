@@ -58,10 +58,68 @@ PowerDNS는 유연하고 확장 가능한 오픈소스 DNS 서버이며, PowerDN
 ## 📁 파일 구조
 
 ```bash
-dnf install -y epel-release
-dnf install -y https://rpms.remirepo.net/enterprise/remi-release-9.rpm
-dnf update
-dnf install pdns pdns-backend-postgresql
+sudo dnf install epel-release -y yum-utils
+sudo dnf install pdns pdns-backend-postgresql
+sudo dnf install -y https://rpms.remirepo.net/enterprise/remi-release-9.rpm
+sudo dnf module reset php -y
+sudo dnf module enable php:remi-8.2 -y
+sudo dnf install -y php php-intl php-gettext php-pdo php-fpm php-pgsql
+
+sudo sed -i \
+  -e 's/^user *= *.*/user = nginx/' \
+  -e 's/^group *= *.*/group = nginx/' \
+  /etc/php-fpm.d/www.conf
+
+sudo sed -i 's/^\s*launch=bind/# launch=bind/' /etc/pdns/pdns.conf
+cat <<'EOF' | sudo tee -a /etc/pdns/pdns.conf
+# DB 백엔드 활성화 (PostgreSQL 기준)
+launch=gpgsql
+
+gpgsql-host=127.0.0.1
+gpgsql-port=5432
+gpgsql-user=pdns
+gpgsql-password=pdns
+gpgsql-dbname=pdns
+EOF
+
+sudo dnf install -y nginx
+
+cat <<'EOF' | sudo tee /etc/nginx/conf.d/poweradmin.conf
+server {
+    listen 80;
+    server_name localhost; # Replace with your domain
+
+    root /usr/share/nginx/html; # Path to Poweradmin files
+    index index.php index.html index.htm;
+
+    location / {
+        try_files $uri $uri/ /index.php?$args;
+    }
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php-fpm/www.sock;  # RHEL/CentOS path
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+        fastcgi_index index.php;
+    }
+
+    # Deny access to .htaccess and .htpasswd files for security reasons
+    location ~ /\.ht {
+        deny all;
+    }
+}
+EOF
+
+wget https://download.postgresql.org/pub/repos/yum/17/redhat/rhel-9-x86_64/postgresql17-17.5-2PGDG.rhel9.x86_64.rpm
+wget https://download.postgresql.org/pub/repos/yum/17/redhat/rhel-9-x86_64/postgresql17-libs-17.5-2PGDG.rhel9.x86_64.rpm
+wget https://download.postgresql.org/pub/repos/yum/17/redhat/rhel-9-x86_64/postgresql17-server-17.5-2PGDG.rhel9.x86_64.rpm
+wget https://download.postgresql.org/pub/repos/yum/17/redhat/rhel-9-x86_64/postgresql17-contrib-17.5-2PGDG.rhel9.x86_64.rpm
+wget https://download.postgresql.org/pub/repos/yum/17/redhat/rhel-9-x86_64/postgresql17-devel-17.5-2PGDG.rhel9.x86_64.rpm
+
+sudo dnf install -y ./postgresql17* --skip-broken
+sudo /usr/pgsql-17/bin/postgresql-17-setup initdb
+sudo systemctl enable postgresql-17 --now
+
 curl -Lo v3.9.2.zip https://github.com/poweradmin/poweradmin/archive/refs/tags/v3.9.2.zip
 unzip v3.9.2.zip
 # For Nginx (if using a different directory)
@@ -74,6 +132,35 @@ sed -i \
 -e "s/^\(\$db_pass *= *\).*/\1'pdns';/" \
 -e "s/^\(\$db_name *= *\).*/\1'pdns';/" \
 -e "s/^\(\$db_type *= *\).*/\1'pgsql';/" \
+-e "s/^\(\$dns_hostmaster *= *\).*/\1'hostmaster.infra.com';/" \
+-e "s/^\(\$dns_ns1 *= *\).*/\1'ns1.infra.com';/" \
+-e "s/^\(\$dns_ns2 *= *\).*/\1'ns2.infra.com';/" \
 /usr/share/nginx/html/inc/config-defaults.inc.php
+cp -v /usr/share/nginx/html/inc/config-defaults.inc.php /usr/share/nginx/html/config.inc.php
+chown nginx:nginx /usr/share/nginx/html/config.inc.php
+
+mkdir -pv /opt/pdns_install
+echo \
+"-- PowerDNS PGSQL Create DB File
+CREATE USER pdns WITH ENCRYPTED PASSWORD 'pdns';
+CREATE DATABASE pdns OWNER pdns;
+GRANT ALL PRIVILEGES ON DATABASE pdns TO pdns;" > "/opt/pdns_install/pdns-createdb-pg.sql"
+sudo -u postgres psql < "/opt/pdns_install/pdns-createdb-pg.sql"
+
+echo "127.0.0.1:5432:pdns:pdns:pdns" >> ~/.pgpass
+chmod 600 ~/.pgpass
+
+psql -U pdns -h 127.0.0.1 -d pdns < "/usr/share/doc/pdns/schema.pgsql.sql"
+
+
+psql -U pdns -h 127.0.0.1 -d pdns -c '\dt'
+psql -U pdns -h 127.0.0.1 -d pdns -c '\l'
+
+
+sudo firewall-cmd --permanent --add-service=http
+sudo firewall-cmd --reload
+
+sudo setsebool -P httpd_can_network_connect_db 1
+sudo restorecon -Rv /usr/share/nginx/html
 ```
 

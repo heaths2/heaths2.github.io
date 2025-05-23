@@ -59,7 +59,7 @@ PowerDNS는 유연하고 확장 가능한 오픈소스 DNS 서버이며, PowerDN
 
 ```bash
 sudo dnf install epel-release -y
-sudo dnf install pdns pdns-backend-postgresql
+sudo dnf install pdns pdns-backend-postgresql -y
 sudo dnf install -y https://rpms.remirepo.net/enterprise/remi-release-9.rpm
 sudo dnf module reset php -y
 sudo dnf module enable php:remi-8.2 -y
@@ -69,6 +69,9 @@ sudo sed -i \
   -e 's/^user *= *.*/user = nginx/' \
   -e 's/^group *= *.*/group = nginx/' \
   /etc/php-fpm.d/www.conf
+
+chown -R nginx:nginx /var/lib/php/session
+chmod 1733 /var/lib/php/session
 
 sudo sed -i 's/^\s*launch=bind/# launch=bind/' /etc/pdns/pdns.conf
 cat <<'EOF' | sudo tee -a /etc/pdns/pdns.conf

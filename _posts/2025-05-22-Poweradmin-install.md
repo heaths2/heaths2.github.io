@@ -157,6 +157,7 @@ psql -U pdns -h 127.0.0.1 -d pdns < "/usr/share/doc/pdns/schema.pgsql.sql"
 psql -U pdns -h 127.0.0.1 -d pdns -c '\dt'
 psql -U pdns -h 127.0.0.1 -d pdns -c '\l'
 
+systemctl enable pdns php-fpm nginx --now
 
 sudo firewall-cmd --permanent --add-service=http
 sudo firewall-cmd --reload

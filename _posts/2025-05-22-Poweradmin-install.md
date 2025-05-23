@@ -123,6 +123,7 @@ sudo systemctl enable postgresql-17 --now
 curl -Lo v3.9.2.zip https://github.com/poweradmin/poweradmin/archive/refs/tags/v3.9.2.zip
 unzip v3.9.2.zip
 # For Nginx (if using a different directory)
+rm -rf /usr/share/nginx/html/*
 cp -r poweradmin-3.9.2/* /usr/share/nginx/html/
 chown -R nginx:nginx /usr/share/nginx/html/
 sed -i \
@@ -136,16 +137,16 @@ sed -i \
 -e "s/^\(\$dns_ns1 *= *\).*/\1'ns1.infra.com';/" \
 -e "s/^\(\$dns_ns2 *= *\).*/\1'ns2.infra.com';/" \
 /usr/share/nginx/html/inc/config-defaults.inc.php
-cp -v /usr/share/nginx/html/inc/config-defaults.inc.php /usr/share/nginx/html/config.inc.php
-chown nginx:nginx /usr/share/nginx/html/config.inc.php
+mv -v /usr/share/nginx/html/inc/config-defaults.inc.php /usr/share/nginx/html/inc/config.inc.php
+chown nginx:nginx /usr/share/nginx/html/inc/config.inc.php
 
-mkdir -pv /opt/pdns_install
-echo \
-"-- PowerDNS PGSQL Create DB File
+cat <<'EOF'> ~/pdns.sql
+-- PowerDNS PGSQL Create DB File
 CREATE USER pdns WITH ENCRYPTED PASSWORD 'pdns';
 CREATE DATABASE pdns OWNER pdns;
-GRANT ALL PRIVILEGES ON DATABASE pdns TO pdns;" > "/opt/pdns_install/pdns-createdb-pg.sql"
-sudo -u postgres psql < "/opt/pdns_install/pdns-createdb-pg.sql"
+GRANT ALL PRIVILEGES ON DATABASE pdns TO pdns;
+EOF
+sudo -u postgres psql < ~/pdns.sql
 
 echo "127.0.0.1:5432:pdns:pdns:pdns" >> ~/.pgpass
 chmod 600 ~/.pgpass

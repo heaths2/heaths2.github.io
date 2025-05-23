@@ -7,64 +7,88 @@ tags: [Provisioning, PowerDNS, PowerAdmin]
 ---
 
 ## 📘 개요
-PowerDNS는 유연하고 확장 가능한 오픈소스 DNS 서버이며, PowerDNS-Admin은 이를 위한 웹 기반 관리 인터페이스입니다.
-이 문서는 Kubernetes(K3s) 환경에서 Helm Chart를 활용해 PowerDNS + PowerDNS-Admin 스택을 설치하고,
-내부망 DNS 서버로 구성하는 과정을 담고 있습니다.
+📘 개요 (Overview)
+PowerDNS는 고성능 DNS 서버 소프트웨어로, 데이터베이스와의 통합이 강점입니다. 여기에 PowerAdmin이라는 웹 기반 관리 UI를 연동하면, 복잡한 DNS 설정도 GUI로 쉽게 관리할 수 있습니다.
+
+이 문서는 RHEL 9 기반 서버에서 PostgreSQL과 함께 PowerDNS를 설치하고, PowerAdmin을 연동하여 웹 기반 DNS 레코드 관리 환경을 구축하는 방법을 단계적으로 설명합니다. 이 구성은 내부 네트워크(IDC 또는 사내망) 환경에서 마스터 DNS 서버를 운영하는 데 적합합니다.
 
 ## 🧭 등장배경
-- /etc/hosts 기반 수동 관리의 확장성 한계
-- 내부망에서 독립된 DNS 인프라 필요성
-- GUI 기반의 레코드 관리와 API 자동화를 고려한 선택
-- Docker Compose → Helm Chart 기반 Kubernetes 전환 필요
+전통적인 BIND 기반 DNS는 높은 유연성과 표준 준수에도 불구하고, 다음과 같은 한계가 존재합니다.
+- 텍스트 기반 구성 파일 관리의 불편함
+- 실시간 변경의 어려움 (서비스 재시작 필요)
+- GUI 미지원
+
+이에 따라, DB 기반으로 레코드를 저장하고 실시간 변경, 백업/복원 용이성, 웹 UI 관리가 가능한 솔루션의 수요가 증가하였습니다.
+
+PowerDNS는 이러한 요구를 충족하며, 특히 다음과 같은 환경에서 적합합니다.
+- 사내 IDC에서 내부 도메인 분리 관리
+- 자동화된 DNS 레코드 등록 및 삭제
+- 멀티 테넌시 또는 UI 접근이 필요한 보안 네트워크 환경
 
 ## 🧩 주요 특징 및 구성 요소
 
-| 구성 요소                      | 설명                                 |
-| -------------------------- | ---------------------------------- |
-| **PowerDNS Authoritative** | PostgreSQL Backend 기반 권한 있는 DNS 서버 |
-| **PowerDNS-Admin**         | GUI 기반 웹 인터페이스 (API 지원 포함)         |
-| **PostgreSQL**             | 레코드 메타데이터 저장소                      |
-| **MetalLB**                | K3s 환경에서 LoadBalancer 타입의 외부 IP 제공 |
-| **Helm**                   | 배포 자동화 및 재사용 가능한 Chart 관리 도구       |
+| 구성 요소                       | 설명                                      |
+| --------------------------- | --------------------------------------- |
+| **PowerDNS (pdns)**         | PostgreSQL 기반 DNS Authoritative 서버      |
+| **pdns-backend-postgresql** | PostgreSQL과 연동되는 PowerDNS 백엔드 모듈        |
+| **PostgreSQL**              | DNS 레코드 및 설정 정보를 저장하는 RDBMS             |
+| **PowerAdmin**              | PowerDNS 관리용 PHP 기반 웹 UI                |
+| **nginx + php-fpm**         | PowerAdmin UI 제공을 위한 웹서버 및 PHP 처리기      |
+| **SELinux / Firewall**      | 보안을 위한 Linux 보안 설정과 포트 허용 관리            |
+| **systemd**                 | PowerDNS, PostgreSQL, php-fpm 등의 서비스 관리 |
+
+- 🔄 DB 백엔드 연동: PostgreSQL 같은 RDBMS를 사용하여 DNS 데이터 저장
+- ⚡ 빠른 응답 속도: 고성능 캐시 시스템 내장
+- 🔐 보안 기능: DNSSEC 및 다양한 인증 기능 지원
+- 🧱 유연한 아키텍처: 권한 DNS(Authoritative)와 재귀 DNS(Recursor)를 독립 구성 가능
 
 ## 🏗️ 아키텍처
+아래는 PowerDNS + PowerAdmin 설치 구조의 논리적 아키텍처입니다.
 
 ```bash
-[Browser]
-   |
-   | HTTP
-   v
-[MetalLB LoadBalancer: 172.16.0.242:8080]
-   |
-   v
-[PowerDNS-Admin Pod] ---> [PowerDNS API: 8081]
-                        |
-                        v
-                  [PowerDNS Pod: 53/tcp,udp]
-                        |
-                        v
-                [PostgreSQL Pod (DB Backend)]
+┌────────────┐
+│  Browser   │  ⇄  PowerAdmin UI (PHP)
+└────┬───────┘
+     │ HTTP (80)
+┌────▼───────┐
+│   Nginx    │
+│ + php-fpm  │
+└────┬───────┘
+     │ PHP 연결
+┌────▼───────┐       ┌────────────────────┐
+│ PowerAdmin │  ⇄   │     PostgreSQL     │
+└────────────┘       │   DNS Zone &      │
+                     │     Record DB     │
+                     └────────────────────┘
+                             ▲
+                             │
+                     ┌───────┴────────┐
+                     │   PowerDNS     │ ← Authoritative DNS Server
+                     │ (gpgsql mode)  │
+                     └────────────────┘
 ```
 
-- **네트워크 포트 정리**
+## ⚙️ 사용법
 
-| 서비스            | 포트             | 설명            |
-| -------------- | -------------- | ------------- |
-| PowerDNS       | 53/tcp,udp     | DNS 서비스 기본 포트 |
-| PowerDNS API   | 8081/tcp       | 관리용 REST API  |
-| PowerDNS Admin | 8080 (→ 외부 80) | GUI 인터페이스     |
-| PostgreSQL     | 5432/tcp       | 데이터베이스 연결     |
-
-## 📁 파일 구조
+### EPEL 및 기본 패키지 설치
 
 ```bash
 sudo dnf install epel-release -y
 sudo dnf install pdns pdns-backend-postgresql -y
+```
+
+### PHP 8.2 환경 구성 (PowerAdmin 호환을 위한 권장 버전)
+
+```bash
 sudo dnf install -y https://rpms.remirepo.net/enterprise/remi-release-9.rpm
 sudo dnf module reset php -y
 sudo dnf module enable php:remi-8.2 -y
 sudo dnf install -y php php-intl php-gettext php-pdo php-fpm php-pgsql
+```
 
+### PHP-FPM 설정 (Nginx 연동용)
+
+```bash
 sudo sed -i \
   -e 's/^user *= *.*/user = nginx/' \
   -e 's/^group *= *.*/group = nginx/' \
@@ -72,7 +96,11 @@ sudo sed -i \
 
 chown -R nginx:nginx /var/lib/php/session
 chmod 1733 /var/lib/php/session
+```
 
+### PowerDNS 설정 (PostgreSQL 백엔드 연동)
+
+```bash
 sudo sed -i 's/^\s*launch=bind/# launch=bind/' /etc/pdns/pdns.conf
 cat <<'EOF' | sudo tee -a /etc/pdns/pdns.conf
 # DB 백엔드 활성화 (PostgreSQL 기준)
@@ -84,7 +112,11 @@ gpgsql-user=pdns
 gpgsql-password=pdns
 gpgsql-dbname=pdns
 EOF
+```
 
+### Nginx 설치 및 PowerAdmin용 웹 서버 설정
+
+```bash
 sudo dnf install -y nginx
 
 cat <<'EOF' | sudo tee /etc/nginx/conf.d/poweradmin.conf
@@ -112,7 +144,11 @@ server {
     }
 }
 EOF
+```
 
+### PostgreSQL 17 수동 설치 및 초기화
+
+```bash
 wget https://download.postgresql.org/pub/repos/yum/17/redhat/rhel-9-x86_64/postgresql17-17.5-2PGDG.rhel9.x86_64.rpm
 wget https://download.postgresql.org/pub/repos/yum/17/redhat/rhel-9-x86_64/postgresql17-libs-17.5-2PGDG.rhel9.x86_64.rpm
 wget https://download.postgresql.org/pub/repos/yum/17/redhat/rhel-9-x86_64/postgresql17-server-17.5-2PGDG.rhel9.x86_64.rpm
@@ -122,27 +158,22 @@ wget https://download.postgresql.org/pub/repos/yum/17/redhat/rhel-9-x86_64/postg
 sudo dnf install -y ./postgresql17* --skip-broken
 sudo /usr/pgsql-17/bin/postgresql-17-setup initdb
 sudo systemctl enable postgresql-17 --now
+```
 
+### PowerAdmin 다운로드 및 배포
+
+```bash
 curl -Lo v3.9.2.zip https://github.com/poweradmin/poweradmin/archive/refs/tags/v3.9.2.zip
 unzip v3.9.2.zip
 # For Nginx (if using a different directory)
 rm -rf /usr/share/nginx/html/*
 cp -r poweradmin-3.9.2/* /usr/share/nginx/html/
 chown -R nginx:nginx /usr/share/nginx/html/
-sed -i \
--e "s/^\(\$db_host *= *\).*/\1'localhost';/" \
--e "s/^\(\$db_port *= *\).*/\1'5432';/" \
--e "s/^\(\$db_user *= *\).*/\1'pdns';/" \
--e "s/^\(\$db_pass *= *\).*/\1'pdns';/" \
--e "s/^\(\$db_name *= *\).*/\1'pdns';/" \
--e "s/^\(\$db_type *= *\).*/\1'pgsql';/" \
--e "s/^\(\$dns_hostmaster *= *\).*/\1'hostmaster.infra.com';/" \
--e "s/^\(\$dns_ns1 *= *\).*/\1'ns1.infra.com';/" \
--e "s/^\(\$dns_ns2 *= *\).*/\1'ns2.infra.com';/" \
-/usr/share/nginx/html/inc/config-defaults.inc.php
-mv -v /usr/share/nginx/html/inc/config-defaults.inc.php /usr/share/nginx/html/inc/config.inc.php
-chown nginx:nginx /usr/share/nginx/html/inc/config.inc.php
+```
 
+### PostgreSQL 사용자 및 DB 초기 생성
+
+```bash
 cat <<'EOF'> ~/pdns.sql
 -- PowerDNS PGSQL Create DB File
 CREATE USER pdns WITH ENCRYPTED PASSWORD 'pdns';
@@ -153,22 +184,37 @@ sudo -u postgres psql < ~/pdns.sql
 
 echo "127.0.0.1:5432:pdns:pdns:pdns" >> ~/.pgpass
 chmod 600 ~/.pgpass
+```
 
+### PowerDNS용 스키마 생성
+
+```bash
 psql -U pdns -h 127.0.0.1 -d pdns < "/usr/share/doc/pdns/schema.pgsql.sql"
-
 
 psql -U pdns -h 127.0.0.1 -d pdns -c '\dt'
 psql -U pdns -h 127.0.0.1 -d pdns -c '\l'
+```
 
+### 서비스 시작 및 자동 실행 등록
+
+```bash
 systemctl enable pdns php-fpm nginx --now
+```
 
+### 방화벽 및 SELinux 보안 설정
+
+```bash
 sudo firewall-cmd --permanent --add-service=http
 sudo firewall-cmd --permanent --add-service=dns
 sudo firewall-cmd --reload
 
 sudo setsebool -P httpd_can_network_connect_db 1
 sudo restorecon -Rv /usr/share/nginx/html
+```
 
+### PowerAdmin UI에서 사용하는 DB 권한 부여
+
+```bash
 cat <<'EOF' > ~/pdns-grants.sql
 -- PowerDNS: Restricted rights GRANT script for user `pdns`
 
@@ -209,7 +255,11 @@ GRANT USAGE, SELECT ON SEQUENCE log_users_id_seq TO pdns;
 EOF
 
 psql -U pdns -h 127.0.0.1 -d pdns < ~/pdns-grants.sql
+```
 
+### 최종 config.inc.php 직접 삽입 (보안 키 포함)
+
+```bash
 cat <<EOF > /usr/share/nginx/html/inc/config.inc.php
 <?php
 \$db_host = 'localhost';
@@ -226,7 +276,15 @@ cat <<EOF > /usr/share/nginx/html/inc/config.inc.php
 \$dns_ns1 = 'ns1.infra.com';
 \$dns_ns2 = 'ns2.infra.com';
 EOF
+```
 
+### 설치 마법사 디렉토리 삭제
+
+```bash
 rm -rf /usr/share/nginx/html/install
 ```
 
+## 참고 자료
+- [PowerDNS 공식문서](https://repo.powerdns.com)
+- [PowerAdmin Github 문서](https://github.com/poweradmin/poweradmin)
+- [Postgresql 공식 저장소](https://download.postgresql.org/pub/repos/yum/17/redhat/rhel-9-x86_64)

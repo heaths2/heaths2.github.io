@@ -207,6 +207,23 @@ GRANT USAGE, SELECT ON SEQUENCE log_zones_id_seq TO pdns;
 GRANT USAGE, SELECT ON SEQUENCE log_users_id_seq TO pdns;
 EOF
 
-psql -U pdns -h 127.0.0.1 -d pdns < "~/pdns-grants.sql"
+psql -U pdns -h 127.0.0.1 -d pdns < ~/pdns-grants.sql
+
+cat <<EOF > /usr/share/nginx/html/inc/config.inc.php
+<?php
+\$db_host = 'localhost';
+\$db_name = 'pdns';
+\$db_user = 'pdns';
+\$db_pass = 'pdns';
+\$db_type = 'pgsql';
+
+\$session_key = 'aH*N4axD7%q%QvEctt))9FVaztW5VSg^Wf3DsZ636YVKz2';
+
+\$iface_lang = 'en_EN';
+
+\$dns_hostmaster = 'hostmaster.infra.com';
+\$dns_ns1 = 'ns1.infra.com';
+\$dns_ns2 = 'ns2.infra.com';
+EOF
 ```
 

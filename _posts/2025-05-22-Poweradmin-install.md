@@ -1,5 +1,5 @@
 ---
-title: PowerAdmin Web UI 설치
+title: PowerDNS & PowerAdmin Web UI 설치
 author: G.G
 date: 2025-05-22 17:59 +0900
 categories: [Blog, Provisioning]
@@ -58,7 +58,7 @@ PowerDNS는 유연하고 확장 가능한 오픈소스 DNS 서버이며, PowerDN
 ## 📁 파일 구조
 
 ```bash
-sudo dnf install epel-release -y yum-utils
+sudo dnf install epel-release -y
 sudo dnf install pdns pdns-backend-postgresql
 sudo dnf install -y https://rpms.remirepo.net/enterprise/remi-release-9.rpm
 sudo dnf module reset php -y
@@ -164,5 +164,46 @@ sudo firewall-cmd --reload
 
 sudo setsebool -P httpd_can_network_connect_db 1
 sudo restorecon -Rv /usr/share/nginx/html
+
+cat <<'EOF' > ~/pdns-grants.sql
+-- PowerDNS: Restricted rights GRANT script for user `pdns`
+
+-- 권한 부여 (기존 사용자에게)
+GRANT SELECT, INSERT, DELETE, UPDATE ON supermasters TO pdns;
+GRANT SELECT, INSERT, DELETE, UPDATE ON domains TO pdns;
+GRANT SELECT, INSERT, DELETE, UPDATE ON domainmetadata TO pdns;
+GRANT SELECT, INSERT, DELETE, UPDATE ON cryptokeys TO pdns;
+GRANT SELECT, INSERT, DELETE, UPDATE ON records TO pdns;
+GRANT SELECT, INSERT, DELETE, UPDATE ON comments TO pdns;
+GRANT SELECT, INSERT, DELETE, UPDATE ON perm_items TO pdns;
+GRANT SELECT, INSERT, DELETE, UPDATE ON perm_templ TO pdns;
+GRANT SELECT, INSERT, DELETE, UPDATE ON perm_templ_items TO pdns;
+GRANT SELECT, INSERT, DELETE, UPDATE ON users TO pdns;
+GRANT SELECT, INSERT, DELETE, UPDATE ON zones TO pdns;
+GRANT SELECT, INSERT, DELETE, UPDATE ON zone_templ TO pdns;
+GRANT SELECT, INSERT, DELETE, UPDATE ON zone_templ_records TO pdns;
+GRANT SELECT, INSERT, DELETE, UPDATE ON records_zone_templ TO pdns;
+GRANT SELECT, INSERT, DELETE, UPDATE ON migrations TO pdns;
+GRANT SELECT, INSERT, DELETE, UPDATE ON log_zones TO pdns;
+GRANT SELECT, INSERT, DELETE, UPDATE ON log_users TO pdns;
+
+-- 시퀀스 권한 부여
+GRANT USAGE, SELECT ON SEQUENCE domains_id_seq TO pdns;
+GRANT USAGE, SELECT ON SEQUENCE domainmetadata_id_seq TO pdns;
+GRANT USAGE, SELECT ON SEQUENCE cryptokeys_id_seq TO pdns;
+GRANT USAGE, SELECT ON SEQUENCE records_id_seq TO pdns;
+GRANT USAGE, SELECT ON SEQUENCE comments_id_seq TO pdns;
+GRANT USAGE, SELECT ON SEQUENCE perm_items_id_seq TO pdns;
+GRANT USAGE, SELECT ON SEQUENCE perm_templ_id_seq TO pdns;
+GRANT USAGE, SELECT ON SEQUENCE perm_templ_items_id_seq TO pdns;
+GRANT USAGE, SELECT ON SEQUENCE users_id_seq TO pdns;
+GRANT USAGE, SELECT ON SEQUENCE zones_id_seq TO pdns;
+GRANT USAGE, SELECT ON SEQUENCE zone_templ_id_seq TO pdns;
+GRANT USAGE, SELECT ON SEQUENCE zone_templ_records_id_seq TO pdns;
+GRANT USAGE, SELECT ON SEQUENCE log_zones_id_seq TO pdns;
+GRANT USAGE, SELECT ON SEQUENCE log_users_id_seq TO pdns;
+EOF
+
+psql -U pdns -h 127.0.0.1 -d pdns < "/usr/share/doc/pdns/schema.pgsql.sql"
 ```
 

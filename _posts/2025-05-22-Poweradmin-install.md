@@ -212,7 +212,30 @@ sudo setsebool -P httpd_can_network_connect_db 1
 sudo restorecon -Rv /usr/share/nginx/html
 ```
 
+### 설치 마법사 실행
+
+![그림_1](/assets/img/2025-05-23/그림1.png)
+_PowerAdmin 설치 마법사 실행_
+
+![그림_2](/assets/img/2025-05-23/그림2.png)
+_PowerAdmin 언어 선택_
+
+![그림_3](/assets/img/2025-05-23/그림3.png)
+_PowerAdmin 설치 마법사 설명1_
+
+![그림_4](/assets/img/2025-05-23/그림4.png)
+_PowerAdmin PostgreSQL 데이터베이스 연결_
+
+![그림_5](/assets/img/2025-05-23/그림5.png)
+_PowerAdmin PostgreSQL 데이터베이스 연결_
+
+![그림_6](/assets/img/2025-05-23/그림6.png)
+_PowerAdmin 계정 및 네임서버 설정_
+
 ### PowerAdmin UI에서 사용하는 DB 권한 부여
+
+![그림_7](/assets/img/2025-05-23/그림7.png)
+_PowerAdmin pdns 스키마 권한 설정_
 
 ```bash
 cat <<'EOF' > ~/pdns-grants.sql
@@ -259,6 +282,9 @@ psql -U pdns -h 127.0.0.1 -d pdns < ~/pdns-grants.sql
 
 ### 최종 config.inc.php 직접 삽입 (보안 키 포함)
 
+![그림_7](/assets/img/2025-05-23/그림7.png)
+_PowerAdmin 설정 내역 저장_
+
 ```bash
 cat <<EOF > /usr/share/nginx/html/inc/config.inc.php
 <?php
@@ -280,9 +306,42 @@ EOF
 
 ### 설치 마법사 디렉토리 삭제
 
+![그림_8](/assets/img/2025-05-23/그림8.png)
+_PowerAdmin 설정 완료_
+
+![그림_9](/assets/img/2025-05-23/그림9.png)
+_PowerAdmin 설치 마법사 삭제_
+
 ```bash
 rm -rf /usr/share/nginx/html/install
 ```
+
+### PowerAdmin Web UI 사용 방법
+
+![그림_10](/assets/img/2025-05-23/그림10.png)
+_PowerAdmin Web UI 로그인_
+
+![그림_11](/assets/img/2025-05-23/그림11.png)
+_PowerAdmin Web UI Zone 생성 클릭_
+
+![그림_12](/assets/img/2025-05-23/그림12.png)
+_PowerAdmin Web UI Zone 생성_
+
+![그림_13](/assets/img/2025-05-23/그림13.png)
+_PowerAdmin Web UI Zone 수정 선택_
+
+![그림_14](/assets/img/2025-05-23/그림14.png)
+_PowerAdmin Web UI Zone 레코드 추가1_
+
+![그림_15](/assets/img/2025-05-23/그림15.png)
+_PowerAdmin Web UI Zone 레코드 추가2_
+
+![그림_16](/assets/img/2025-05-23/그림16.png)
+_PowerAdmin Web UI Zone 레코드 목록_
+
+### 조회
+
+
 
 ## 참고 자료
 - [PowerDNS 공식문서](https://repo.powerdns.com)

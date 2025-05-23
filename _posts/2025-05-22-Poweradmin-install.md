@@ -226,6 +226,6 @@ cat <<EOF > /usr/share/nginx/html/inc/config.inc.php
 \$dns_ns2 = 'ns2.infra.com';
 EOF
 
-rm -rf /usr/share/nginx/html/{install,inc/config-defaults.inc.php}
+rm -rf /usr/share/nginx/html/install
 ```
 

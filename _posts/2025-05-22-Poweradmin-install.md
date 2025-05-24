@@ -370,7 +370,403 @@ dig +short @172.16.0.52 ns1.in.infra.com
 dig +short @172.16.0.52 k8s.in.infra.com
 ```
 
+### values.yaml
+
+```yaml
+---
+# 📁 PowerAdmin/values.yaml
+
+postgresql:
+  enabled: true
+  image: postgres:16-alpine
+  database: pdns
+  username: pdns
+  password: pdns
+  storageSize: 5Gi
+  storageClass: nfs
+  securityContext:
+    runAsUser: 5000
+    runAsGroup: 5000
+    fsGroup: 5000
+
+powerdns:
+  image: alpine:3.19
+  dbHost: postgresql
+  dbUser: pdns
+  dbPassword: pdns
+  dbName: pdns
+  apiKey: changeme
+  apiAllowFrom: 0.0.0.0/0
+  webserver: "yes"
+  ports:
+    dnsTcp: 53
+    dnsUdp: 53
+    api: 8081
+
+poweradmin:
+  enabled: true
+  image: php:8.2-fpm-alpine
+  nginxImage: nginx:stable
+  phpPort: 9000
+  mountPath: /usr/share/nginx/html
+  nginxConfigName: poweradmin-nginx-config
+  service:
+    port: 80
+  ingress:
+    enabled: false
+    hostname: poweradmin.infra.com
+    className: nginx
+    tls: false
+  volume:
+    storageClass: ""
+    size: 1Gi
+
+service:
+  type: ClusterIP
+
+ingress:
+  enabled: false
+  hostname: ""
+  className: ""
+```
+{: file='PowerAdmin/values.yaml'}
+
+### values.yaml
+
+```yaml
+---
+# 📁 PowerAdmin/values.yaml
+
+postgresql:
+  enabled: true
+  image: postgres:16-alpine
+  database: pdns
+  username: pdns
+  password: pdns
+  storageSize: 5Gi
+  storageClass: nfs
+  securityContext:
+    runAsUser: 5000
+    runAsGroup: 5000
+    fsGroup: 5000
+
+powerdns:
+  image: alpine:3.19
+  dbHost: postgresql
+  dbUser: pdns
+  dbPassword: pdns
+  dbName: pdns
+  apiKey: changeme
+  apiAllowFrom: 0.0.0.0/0
+  webserver: "yes"
+  ports:
+    dnsTcp: 53
+    dnsUdp: 53
+    api: 8081
+
+poweradmin:
+  enabled: true
+  image: php:8.2-fpm-alpine
+  nginxImage: nginx:stable
+  phpPort: 9000
+  mountPath: /usr/share/nginx/html
+  nginxConfigName: poweradmin-nginx-config
+  service:
+    port: 80
+  ingress:
+    enabled: false
+    hostname: poweradmin.infra.com
+    className: nginx
+    tls: false
+  volume:
+    storageClass: ""
+    size: 1Gi
+
+service:
+  type: ClusterIP
+
+ingress:
+  enabled: false
+  hostname: ""
+  className: ""
+```
+{: file='PowerAdmin/values.yaml'}
+
+### deployment-postgresql.yaml
+
+```yaml
+---
+# 📁 PowerAdmin/templates/deployment-postgresql.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgresql-16
+  labels:
+    app: postgresql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql
+  template:
+    metadata:
+      labels:
+        app: postgresql
+    spec:
+      securityContext:
+        runAsUser: {{ .Values.postgresql.securityContext.runAsUser }}
+        runAsGroup: {{ .Values.postgresql.securityContext.runAsGroup }}
+        fsGroup: {{ .Values.postgresql.securityContext.fsGroup }}
+      initContainers:
+        - name: init-permissions
+          image: busybox
+          command:
+            - sh
+            - -c
+            - "chown -R 5000:5000 /var/lib/postgresql/data && chmod -R 755 /var/lib/postgresql/data"
+          volumeMounts:
+            - name: db-data
+              mountPath: /var/lib/postgresql/data
+          securityContext:
+            runAsUser: 0
+
+      containers:
+        - name: postgresql
+          image: {{ .Values.postgresql.image }}
+          env:
+            - name: POSTGRES_DB
+              value: {{ .Values.postgresql.database }}
+            - name: POSTGRES_USER
+              value: {{ .Values.postgresql.username }}
+            - name: POSTGRES_PASSWORD
+              value: {{ .Values.postgresql.password }}
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: db-data
+              mountPath: /var/lib/postgresql/data
+
+      volumes:
+        - name: db-data
+          persistentVolumeClaim:
+            claimName: pvc-postgresql
+        - name: init-sql
+          configMap:
+            name: pdns-init-sql
+```
+{: file='PowerAdmin/templates/deployment-postgresql.yaml'}
+
+
+### service-postgresql.yaml
+
+```yaml
+---
+# 📁 PowerAdmin/templates/service-postgresql.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql
+spec:
+  selector:
+    app: postgresql
+  ports:
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP
+  type: ClusterIP
+```
+{: file='PowerAdmin/templates/service-postgresql.yaml'}
+
+### pvc-postgresql.yaml
+
+```yaml
+---
+# 📁 PowerAdmin/templates/pvc-postgresql.yaml
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-postgresql
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: nfs
+  resources:
+    requests:
+      storage: {{ .Values.postgresql.storageSize }}
+```
+{: file='PowerAdmin/templates/pvc-postgresql.yaml'}
+
+### configmap-initdb.yaml
+
+```yaml
+---
+# 📁 PowerAdmin/templates/configmap-initdb.yaml
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pdns-init-sql
+  namespace: {{ .Release.Namespace }}
+data:
+  pdns.sql: |-
+{{ .Files.Get "sql/pdns.sql" | indent 4 }}
+  schema.pgsql.sql: |-
+{{ .Files.Get "sql/schema.pgsql.sql" | indent 4 }}
+  pdns-grants.sql: |-
+{{ .Files.Get "sql/pdns-grants.sql" | indent 4 }}
+```
+{: file='PowerAdmin/templates/configmap-initdb.yaml'}
+
+### job-postgresql.yaml
+
+```yaml
+---
+# 📁 PowerAdmin/templates/job-postgresql.yaml
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: postgresql-init
+  namespace: pdns
+spec:
+  template:
+    spec:
+      containers:
+        - name: psql
+          image: postgres:16-alpine
+          env:
+            - name: PGPASSWORD
+              value: {{ .Values.postgresql.password }}
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for PostgreSQL..."
+              until pg_isready -h postgresql -U {{ .Values.postgresql.username }}; do sleep 2; done
+
+              echo "Running SQL scripts..."
+              psql -h postgresql -U {{ .Values.postgresql.username }} -f /init/pdns.sql &&
+              psql -h postgresql -U {{ .Values.postgresql.username }} -d {{ .Values.postgresql.database }} -f /init/schema.pgsql.sql &&
+              psql -h postgresql -U {{ .Values.postgresql.username }} -d {{ .Values.postgresql.database }} -f /init/pdns-grants.sql
+          volumeMounts:
+            - name: init-sql
+              mountPath: /init
+      restartPolicy: OnFailure
+      volumes:
+        - name: init-sql
+          configMap:
+            name: pdns-init-sql
+```
+{: file='PowerAdmin/templates/job-postgresql.yaml'}
+
 ## 참고 자료
 - [PowerDNS 공식문서](https://repo.powerdns.com)
 - [PowerAdmin Github 문서](https://github.com/poweradmin/poweradmin)
 - [Postgresql 공식 저장소](https://download.postgresql.org/pub/repos/yum/17/redhat/rhel-9-x86_64)
+
+
+
+```bash
+# schema.pgsql.sql
+CREATE TABLE domains (
+  id                    SERIAL PRIMARY KEY,
+  name                  VARCHAR(255) NOT NULL,
+  master                VARCHAR(128) DEFAULT NULL,
+  last_check            INT DEFAULT NULL,
+  type                  TEXT NOT NULL,
+  notified_serial       BIGINT DEFAULT NULL,
+  account               VARCHAR(40) DEFAULT NULL,
+  options               TEXT DEFAULT NULL,
+  catalog               TEXT DEFAULT NULL,
+  CONSTRAINT c_lowercase_name CHECK (((name)::TEXT = LOWER((name)::TEXT)))
+);
+
+CREATE UNIQUE INDEX name_index ON domains(name);
+CREATE INDEX catalog_idx ON domains(catalog);
+
+
+CREATE TABLE records (
+  id                    BIGSERIAL PRIMARY KEY,
+  domain_id             INT DEFAULT NULL,
+  name                  VARCHAR(255) DEFAULT NULL,
+  type                  VARCHAR(10) DEFAULT NULL,
+  content               VARCHAR(65535) DEFAULT NULL,
+  ttl                   INT DEFAULT NULL,
+  prio                  INT DEFAULT NULL,
+  disabled              BOOL DEFAULT 'f',
+  ordername             VARCHAR(255),
+  auth                  BOOL DEFAULT 't',
+  CONSTRAINT domain_exists
+  FOREIGN KEY(domain_id) REFERENCES domains(id)
+  ON DELETE CASCADE,
+  CONSTRAINT c_lowercase_name CHECK (((name)::TEXT = LOWER((name)::TEXT)))
+);
+
+CREATE INDEX rec_name_index ON records(name);
+CREATE INDEX nametype_index ON records(name,type);
+CREATE INDEX domain_id ON records(domain_id);
+CREATE INDEX recordorder ON records (domain_id, ordername text_pattern_ops);
+
+
+CREATE TABLE supermasters (
+  ip                    INET NOT NULL,
+  nameserver            VARCHAR(255) NOT NULL,
+  account               VARCHAR(40) NOT NULL,
+  PRIMARY KEY(ip, nameserver)
+);
+
+
+CREATE TABLE comments (
+  id                    SERIAL PRIMARY KEY,
+  domain_id             INT NOT NULL,
+  name                  VARCHAR(255) NOT NULL,
+  type                  VARCHAR(10) NOT NULL,
+  modified_at           INT NOT NULL,
+  account               VARCHAR(40) DEFAULT NULL,
+  comment               VARCHAR(65535) NOT NULL,
+  CONSTRAINT domain_exists
+  FOREIGN KEY(domain_id) REFERENCES domains(id)
+  ON DELETE CASCADE,
+  CONSTRAINT c_lowercase_name CHECK (((name)::TEXT = LOWER((name)::TEXT)))
+);
+
+CREATE INDEX comments_domain_id_idx ON comments (domain_id);
+CREATE INDEX comments_name_type_idx ON comments (name, type);
+CREATE INDEX comments_order_idx ON comments (domain_id, modified_at);
+
+
+CREATE TABLE domainmetadata (
+  id                    SERIAL PRIMARY KEY,
+  domain_id             INT REFERENCES domains(id) ON DELETE CASCADE,
+  kind                  VARCHAR(32),
+  content               TEXT
+);
+
+CREATE INDEX domainidmetaindex ON domainmetadata(domain_id);
+
+
+CREATE TABLE cryptokeys (
+  id                    SERIAL PRIMARY KEY,
+  domain_id             INT REFERENCES domains(id) ON DELETE CASCADE,
+  flags                 INT NOT NULL,
+  active                BOOL,
+  published             BOOL DEFAULT TRUE,
+  content               TEXT
+);
+
+CREATE INDEX domainidindex ON cryptokeys(domain_id);
+
+
+CREATE TABLE tsigkeys (
+  id                    SERIAL PRIMARY KEY,
+  name                  VARCHAR(255),
+  algorithm             VARCHAR(50),
+  secret                VARCHAR(255),
+  CONSTRAINT c_lowercase_name CHECK (((name)::TEXT = LOWER((name)::TEXT)))
+);
+
+CREATE UNIQUE INDEX namealgoindex ON tsigkeys(name, algorithm);
+```

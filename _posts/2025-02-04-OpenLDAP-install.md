@@ -736,5 +736,31 @@ olcAuditlogFile: /tmp/auditlog.ldif
 EOF
 ```
 
+## Active Directory & SSSD
+
+```bash
+sudo dnf install -y samba-common-tools realmd oddjob oddjob-mkhomedir sssd adcli krb5-workstation sssd-tools
+```
+
+```bash
+realm discover -v infra.com
+realm join -v -U bob infra.com
+```
+
+```bash
+# hostname -f
+Get-ADComputer -Filter 'Name -like "Woker0*"' | Select-Object Name,DNSHostName
+
+Get-ADGroup SUDO | Select-Object DistinguishedName
+```
+
+```bash
+cat <<EOF | sudo tee -a /etc/sssd/sssd.conf
+use_fully_qualified_names = False
+ldap_access_filter = (memberOf=CN=SUDO,OU=INFRA,DC=infra,DC=com)
+EOF
+```
+
 ## 참조
 - [schema.OpenLDAP ](https://github.com/sudo-project/sudo/blob/main/docs/schema.OpenLDAP)
+- [RedHat 공식문서](https://docs.redhat.com/ko/documentation/red_hat_enterprise_linux/8/html/integrating_rhel_systems_directly_with_windows_active_directory/connecting-directly-to-ad_connecting-rhel-systems-directly-to-ad-using-sssd)

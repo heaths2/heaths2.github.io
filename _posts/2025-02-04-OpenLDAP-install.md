@@ -766,6 +766,14 @@ ldap_access_filter = (memberOf=CN=SUDO,OU=INFRA,DC=infra,DC=com)
 EOF
 ```
 
+```bash
+sssctl domain-status infra.com
+sssctl user-checks bob
+id bob@infra.com
+id bob
+sudo -l -U bob
+```
+
 ## 참조
 - [schema.OpenLDAP ](https://github.com/sudo-project/sudo/blob/main/docs/schema.OpenLDAP)
 - [RedHat 공식문서](https://docs.redhat.com/ko/documentation/red_hat_enterprise_linux/8/html/integrating_rhel_systems_directly_with_windows_active_directory/connecting-directly-to-ad_connecting-rhel-systems-directly-to-ad-using-sssd)

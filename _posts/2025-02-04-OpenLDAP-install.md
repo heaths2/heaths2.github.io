@@ -740,9 +740,14 @@ EOF
 
 ```bash
 sudo dnf install -y samba-common-tools realmd oddjob oddjob-mkhomedir sssd adcli krb5-workstation sssd-tools
+
+systemctl enable oddjobd.service --now
 ```
 
 ```bash
+# kinit administrator
+# kinit bob
+# klist
 realm discover -v infra.com
 realm join -v -U bob infra.com
 ```

@@ -1,9 +1,9 @@
 ---
-title: PowerDNS & PowerDNS Admin Docker 설치
+title: Jenkins 설치
 author: G.G
-date: 2025-05-04 12:17 +0900
+date: 2025-06-12 15:42 +0900
 categories: [Blog, Provisioning]
-tags: [Provisioning, Helm, PowerDNS, PowerDNS-Admin]
+tags: [Provisioning, Helm, Jenkins]
 ---
 
 ## 📘 개요
@@ -195,6 +195,37 @@ helm install metallb metallb/metallb \
 helm repo list
 helm list -A
 kubectl get all --all-namespaces
+```
+
+```bash
+# kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.17.2/cert-manager.crds.yaml
+helm repo add jetstack https://charts.jetstack.io
+helm repo update
+CERT_MANAGER_VERSION=$(helm search repo jetstack/cert-manager --versions | \
+                       awk 'NR > 1 {print $2}' | \
+                       head -n 2 | \
+                       tail -n 1)
+
+helm upgrade --install cert-manager jetstack/cert-manager \
+  --namespace cert-manager \
+  --create-namespace \
+  --version $CERT_MANAGER_VERSION \
+  --set crds.enabled=true
+```
+
+```bash
+helm repo add jenkins https://charts.jenkins.io
+helm repo update
+
+helm install jenkins jenkins/jenkins \
+--namespace jenkins \
+--create-namespace \
+--set persistence.storageClass=nfs \
+--set controller.serviceType=ClusterIP \
+--set ingress.enabled=true \
+--set ingress.className=nginx \
+--set ingress.hosts[0].name=jenkins.infra.com \
+--set ingress.hosts[0].path=/
 ```
 
 ### PowerDNS & PowerDNS-Admin Helm Chart 배포
@@ -560,10 +591,18 @@ EOF
 ### Helm Chart 설치
 
 ```bash
-helm install powerdns-admin ~/PowerDNS-Admin \
-  --namespace pdns \
+helm repo add jenkins https://charts.jenkins.io
+helm repo update
+
+helm install jenkins jenkins/jenkins \
+  --namespace jenkins \
   --create-namespace \
-  --values ~/PowerDNS-Admin/values.yaml
+  --set persistence.storageClass=nfs \
+  --set controller.serviceType=ClusterIP \
+  --set ingress.enabled=true \
+  --set ingress.className=nginx \
+  --set ingress.hosts[0].name=jenkins.infra.com \
+  --set ingress.hosts[0].path=/
 ```
 
 ### 릴리스가 존재하면 업그레이드, 없으면 신규 설치

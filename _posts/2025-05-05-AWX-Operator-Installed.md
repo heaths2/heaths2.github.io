@@ -117,10 +117,11 @@ sudo firewall-cmd --reload
 helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner
 helm repo update
 
+IP=$(ip -br address | grep -E 'eth|enp0s' | awk '{print $3}' | cut -d'/' -f1)
 helm install nfs-subdir nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
-  --namespace kube-system \
+  --namespace nfs-system \
   --create-namespace \
-  --set nfs.server=172.16.0.51 \
+  --set nfs.server=$IP \
   --set nfs.path=/data \
   --set storageClass.name=nfs \
   --set storageClass.defaultClass=true \
@@ -145,6 +146,8 @@ helm install metallb metallb/metallb \
 ### 확인
 
 ```bash
+helm repo list
+helm list -A
 kubectl get all --all-namespaces
 ```
 

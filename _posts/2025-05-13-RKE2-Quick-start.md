@@ -93,21 +93,74 @@ helm completion bash > /etc/bash_completion.d/helm
 source /etc/bash_completion.d/helm
 ```
 
+### 선택1. NFS 서버 (PVC 제공용) 구성
+
+```bash
+# NFS 설치 & 복잡 조치
+# nfs-kernel-server
+sudo dnf install -y nfs-utils
+sudo systemctl enable nfs-server --now
+
+# Export 디렉토리 생성
+sudo mkdir -p /data/db
+sudo chown -R 5000:5000 /data
+
+# /etc/exports 설정
+echo "/data *(rw,sync,no_subtree_check,no_root_squash)" | sudo tee -a /etc/exports > /dev/null
+sudo exportfs -rv
+
+# 방화벽 설정
+sudo firewall-cmd --permanent --add-service=nfs
+sudo firewall-cmd --reload
+```
+
+### 선택2. NFS StorageClass 설치
+
+```bash
+helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner
+helm repo update
+
+IP=$(ip -br address | grep -E 'eth|enp0s' | awk '{print $3}' | cut -d'/' -f1)
+helm install nfs-subdir nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
+  --namespace nfs-system \
+  --create-namespace \
+  --set nfs.server=$IP \
+  --set nfs.path=/data \
+  --set storageClass.name=nfs \
+  --set storageClass.defaultClass=true \
+  --set storageClass.reclaimPolicy=Retain \
+  --set storageClass.allowVolumeExpansion=true
+
+kubectl get storageclass
+```
+
+### 선택3. MetalLB 로드버더 설치
+
+```bash
+helm repo add metallb https://metallb.github.io/metallb
+helm repo update
+
+helm install metallb metallb/metallb \
+  --namespace metallb-system \
+  --create-namespace \
+  --set webhook.enabled=true
+```
+
 ### 📌 cert-manager 설치
 
 ```bash
 # kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.17.2/cert-manager.crds.yaml
-
 helm repo add jetstack https://charts.jetstack.io
 helm repo update
-# cert-manager 버전 목록 조회 (최신 안정 버전 확인용)
-# helm search repo jetstack/cert-manager --versions | head -5
+CERT_MANAGER_VERSION=$(helm search repo jetstack/cert-manager --versions | \
+                       awk 'NR > 1 {print $2}' | \
+                       head -n 2 | \
+                       tail -n 1)
 
-# cert-manager 설치 (v1.17.2, CRD 자동 설치 옵션 포함)
 helm upgrade --install cert-manager jetstack/cert-manager \
   --namespace cert-manager \
   --create-namespace \
-  --version v1.17.2 \
+  --version $CERT_MANAGER_VERSION \
   --set crds.enabled=true
 ```
 

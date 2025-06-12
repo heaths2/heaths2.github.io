@@ -225,9 +225,17 @@ helm upgrade --install jenkins jenkins/jenkins \
 --set ingress.enabled=true \
 --set ingress.className=nginx \
 --set ingress.hosts[0].name=jenkins.infra.com \
---set ingress.hosts[0].path=/ \
+--set ingress.hosts[0].path=/
 --set controller.javaOpts="-Djenkins.install.runSetupWizard=false"
 ```
+
+```bash
+kubectl get configmaps -n kube-system
+kubectl edit configmap rke2-coredns-rke2-coredns -n kube-system
+kubectl rollout restart deployment rke2-coredns-rke2-coredns -n kube-system
+helm uninstall jenkins -n jenkins
+```
+
 
 ### PowerDNS & PowerDNS-Admin Helm Chart 배포
 

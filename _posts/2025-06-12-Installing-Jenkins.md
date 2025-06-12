@@ -217,7 +217,7 @@ helm upgrade --install cert-manager jetstack/cert-manager \
 helm repo add jenkins https://charts.jenkins.io
 helm repo update
 
-helm install jenkins jenkins/jenkins \
+helm upgrade --install jenkins jenkins/jenkins \
 --namespace jenkins \
 --create-namespace \
 --set persistence.storageClass=nfs \
@@ -225,7 +225,8 @@ helm install jenkins jenkins/jenkins \
 --set ingress.enabled=true \
 --set ingress.className=nginx \
 --set ingress.hosts[0].name=jenkins.infra.com \
---set ingress.hosts[0].path=/
+--set ingress.hosts[0].path=/ \
+--set controller.javaOpts="-Djenkins.install.runSetupWizard=false"
 ```
 
 ### PowerDNS & PowerDNS-Admin Helm Chart 배포

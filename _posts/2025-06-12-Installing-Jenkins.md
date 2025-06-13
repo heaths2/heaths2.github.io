@@ -224,7 +224,7 @@ helm upgrade --install jenkins jenkins/jenkins \
 --set ingress.enabled=true \
 --set ingress.className=nginx \
 --set ingress.hosts[0].name=jenkins.infra.com \
---set ingress.hosts[0].path=/
+--set ingress.hosts[0].path=/ \
 --set ingress.service.port=8080
 ```
 

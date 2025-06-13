@@ -210,23 +210,12 @@ helm repo add jenkins https://charts.jenkins.io
 helm repo update
 
 # 📌 Jenkins 설치 (NFS PVC 사용 + Ingress 구성)
-helm upgrade --install jenkins jenkins/jenkins \
---namespace jenkins \
---create-namespace \
---set persistence.storageClass=nfs \                        # NFS 스토리지 사용
---set controller.serviceType=ClusterIP \                   # 내부 서비스용
---set ingress.enabled=true \                               # Ingress 사용
---set ingress.className=nginx \                            # IngressClass 설정
---set ingress.hosts[0].name=jenkins.infra.com \            # 호스트 이름
---set ingress.hosts[0].path=/ \                            # 경로
---set ingress.service.port=8080                            # 서비스 포트
-
-# NFS 스토리지 사용
-# 내부 서비스용
-# Ingress 사용
-# IngressClass 설정
-# 호스트 이름
-# 경로
+# NFS 스토리지 사용 --set persistence.storageClass=nfs
+# 내부 서비스용 --set controller.serviceType=ClusterIP
+# Ingress 사용 --set ingress.enabled=true
+# IngressClass 설정 --set ingress.className=nginx
+# 호스트 이름 --set ingress.hosts[0].name=jenkins.infra.com
+# 경로 --set ingress.hosts[0].path=/
 helm upgrade --install jenkins jenkins/jenkins \
 --namespace jenkins \
 --create-namespace \
@@ -236,6 +225,7 @@ helm upgrade --install jenkins jenkins/jenkins \
 --set ingress.className=nginx \
 --set ingress.hosts[0].name=jenkins.infra.com \
 --set ingress.hosts[0].path=/
+--set ingress.service.port=8080
 ```
 
 ### 🛠️ CoreDNS에 Ingress 도메인 반영 (선택. DNS 통신 안될 경우)

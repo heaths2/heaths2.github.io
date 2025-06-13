@@ -255,10 +255,22 @@ helm uninstall jenkins -n jenkins
 ### 🔥 방화벽 설정 (HTTP 서비스 허용)
 
 ```bash
-# 📌 HTTP 포트 방화벽 허용 (Ingress 접근을 위해 필요)
-firewall-cmd --permanent --add-service=http
-firewall-cmd --permanent --add-port=8080/tcp
-firewall-cmd --reload
+# 로그가 필요하면 아래처럼 Drop 패킷 로깅 규칙 추가 (한시적)
+sudo firewall-cmd --set-log-denied=all   # all, unicast, broadcast, multicast
+
+# Drop된 패킷 확인
+sudo journalctl -xef | grep 'REJECT'
+# 또는는
+sudo dmesg -Tw | grep 'REJECT'
+
+# Calico가 사용하는 파드 IP 대역 전체에 대해 FORWARD 허용
+sudo firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" source address="10.42.0.0/16" accept'
+
+# 또는 Calico 인터페이스 자체를 신뢰(trusted) 존으로 이동
+sudo firewall-cmd --permanent --zone=trusted --change-interface=cali+
+
+# 방화벽 다시 로드
+sudo firewall-cmd --reload
 ```
 
 ### 🔐 Jenkins 초기 설정 가이드

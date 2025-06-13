@@ -220,6 +220,22 @@ helm upgrade --install jenkins jenkins/jenkins \
 --set ingress.hosts[0].name=jenkins.infra.com \            # 호스트 이름
 --set ingress.hosts[0].path=/ \                            # 경로
 --set ingress.service.port=8080                            # 서비스 포트
+
+# NFS 스토리지 사용
+# 내부 서비스용
+# Ingress 사용
+# IngressClass 설정
+# 호스트 이름
+# 경로
+helm upgrade --install jenkins jenkins/jenkins \
+--namespace jenkins \
+--create-namespace \
+--set persistence.storageClass=nfs \
+--set controller.serviceType=ClusterIP \
+--set ingress.enabled=true \
+--set ingress.className=nginx \
+--set ingress.hosts[0].name=jenkins.infra.com \
+--set ingress.hosts[0].path=/
 ```
 
 ### 🛠️ CoreDNS에 Ingress 도메인 반영 (선택. DNS 통신 안될 경우)
@@ -241,6 +257,7 @@ helm uninstall jenkins -n jenkins
 ```bash
 # 📌 HTTP 포트 방화벽 허용 (Ingress 접근을 위해 필요)
 firewall-cmd --permanent --add-service=http
+firewall-cmd --permanent --add-port=8080/tcp
 firewall-cmd --reload
 ```
 

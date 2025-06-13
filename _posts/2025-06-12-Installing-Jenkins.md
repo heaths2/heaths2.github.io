@@ -227,6 +227,13 @@ helm upgrade --install jenkins jenkins/jenkins \
   --set controller.ingress.className=rke2-ingress-nginx
 ```
 
+### 확인
+
+```bash
+kubectl describe pod jenkins-0 -n jenkins
+kubectl logs -f pod/jenkins-0 -c jenkins -n jenkins
+```
+
 ### 🛠️ CoreDNS에 Ingress 도메인 반영 (선택. DNS 통신 안될 경우)
 
 ```bash

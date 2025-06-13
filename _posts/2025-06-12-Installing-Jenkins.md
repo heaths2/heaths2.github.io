@@ -217,14 +217,15 @@ helm repo update
 # 호스트 이름 --set ingress.hosts[0].name=jenkins.infra.com
 # 경로 --set ingress.hosts[0].path=/
 helm upgrade --install jenkins jenkins/jenkins \
-  --namespace jenkins \
-  --create-namespace \
-  --set persistence.storageClass=nfs \
-  --set controller.serviceType=ClusterIP \
-  --set ingress.enabled=true \
-  --set controller.ingress.enabled=true \
-  --set controller.ingress.hostName=jenkins.infra.com \
-  --set controller.ingress.className=rke2-ingress-nginx
+    --namespace jenkins \
+    --create-namespace \
+    --set persistence.storageClass=nfs \
+    --set controller.serviceType=ClusterIP \
+    --set ingress.enabled=true \
+    --set ingress.className=nginx \
+    --set ingress.hosts[0].name=jenkins.infra.com \
+    --set ingress.hosts[0].path=/ \
+    --set ingress.service.port=8080
 ```
 
 ### 확인

@@ -6,93 +6,75 @@ categories: [Blog, Provisioning]
 tags: [Provisioning, Helm, Jenkins]
 ---
 
-## 📘 개요
-PowerDNS는 유연하고 확장 가능한 오픈소스 DNS 서버이며, PowerDNS-Admin은 이를 위한 웹 기반 관리 인터페이스입니다.
-이 문서는 Kubernetes(K3s) 환경에서 Helm Chart를 활용해 PowerDNS + PowerDNS-Admin 스택을 설치하고,
-내부망 DNS 서버로 구성하는 과정을 담고 있습니다.
+## 📘 개요 (Overview)
+이 문서는 RKE2 기반 쿠버네티스 클러스터 환경에서 Jenkins CI/CD 시스템을 Helm Chart를 통해 설치하고 구성하는 방법을 안내합니다.
+기본적인 클러스터 설치부터 Jenkins의 Helm 배포, 스토리지(NFS), 로드밸런서(MetalLB), Ingress 설정까지 포함되어 있어 온프레미스 환경에서도 실용적으로 활용 가능합니다.
 
 ## 🧭 등장배경
-- /etc/hosts 기반 수동 관리의 확장성 한계
-- 내부망에서 독립된 DNS 인프라 필요성
-- GUI 기반의 레코드 관리와 API 자동화를 고려한 선택
-- Docker Compose → Helm Chart 기반 Kubernetes 전환 필요
+Jenkins 기반 내부 CI/CD 인프라 구축 과정에서 다음과 같은 문제가 있었습니다:
 
-## 🧩 주요 특징 및 구성 요소
+- `/etc/hosts` 기반 수동 IP 관리의 **확장성 한계**
+- **사설 DNS 인프라 구축 필요성**
+- **GUI와 API를 통한 레코드 관리** 요구
+- 기존 Docker Compose 기반 시스템의 **Kubernetes 전환 필요성**
 
-| 구성 요소                      | 설명                                 |
-| -------------------------- | ---------------------------------- |
-| **PowerDNS Authoritative** | PostgreSQL Backend 기반 권한 있는 DNS 서버 |
-| **PowerDNS-Admin**         | GUI 기반 웹 인터페이스 (API 지원 포함)         |
-| **PostgreSQL**             | 레코드 메타데이터 저장소                      |
-| **MetalLB**                | K3s 환경에서 LoadBalancer 타입의 외부 IP 제공 |
-| **Helm**                   | 배포 자동화 및 재사용 가능한 Chart 관리 도구       |
+이에 따라 **RKE2 기반 K8s 클러스터 + Helm + NFS + MetalLB**를 이용해 Jenkins를 안정적으로 배포하는 방안을 설계하게 되었습니다.
+
+
+## 📝 구성 요소 (Components)
+
+| 구성 요소            | 역할 및 설명                  |
+| ---------------- | ------------------------ |
+| **RKE2**         | 쿠버네티스 배포 (Rancher 제공)    |
+| **Helm**         | Jenkins 설치 및 패키지 관리      |
+| **k9s**          | 쿠버네티스 CLI 관리도구           |
+| **NFS**          | Jenkins 영속 볼륨 스토리지 제공    |
+| **MetalLB**      | 로드밸런서를 통한 외부 접근 설정       |
+| **cert-manager** | Ingress TLS 인증서 자동화 (옵션) |
+| **Jenkins**      | CI/CD 시스템                |
 
 ## 🏗️ 아키텍처
 
 ```bash
-[Browser]
-   |
-   | HTTP
-   v
-[MetalLB LoadBalancer: 172.16.0.242:8080]
-   |
-   v
-[PowerDNS-Admin Pod] ---> [PowerDNS API: 8081]
-                        |
-                        v
-                  [PowerDNS Pod: 53/tcp,udp]
-                        |
-                        v
-                [PostgreSQL Pod (DB Backend)]
+┌─────────────┐        ┌────────────┐
+│  Developer  │──────▶│   Ingress   │
+└─────────────┘        └────┬───────┘
+                             │
+                    ┌────────▼────────┐
+                    │   MetalLB LB    │
+                    └────────┬────────┘
+                             │
+                    ┌────────▼────────┐
+                    │    Jenkins Pod  │
+                    │(Helm Chart 기반)│
+                    └────────┬────────┘
+                             │
+                ┌────────────▼────────────┐
+                │ NFS Persistent Volume   │
+                │(nfs-subdir-provisioner)│
+                └────────────────────────┘
 ```
 
-- **네트워크 포트 정리**
-
-| 서비스            | 포트             | 설명            |
-| -------------- | -------------- | ------------- |
-| PowerDNS       | 53/tcp,udp     | DNS 서비스 기본 포트 |
-| PowerDNS API   | 8081/tcp       | 관리용 REST API  |
-| PowerDNS Admin | 8080 (→ 외부 80) | GUI 인터페이스     |
-| PostgreSQL     | 5432/tcp       | 데이터베이스 연결     |
-
-## 📁 파일 구조
-
-```bash
-PowerDNS-Admin
-├── charts
-├── [Chart.yaml](#chartyaml)
-├── templates
-│   ├── [deployment-postgresql.yaml](#deployment-postgresqlyaml)
-│   ├── [deployment-powerdns-admin.yaml](#deployment-powerdns-adminyaml)
-│   ├── [deployment-powerdns.yaml](#deployment-powerdnsyaml)
-│   ├── [metallb-config.yaml](#metallb-config.yaml)
-│   ├── [pvc-postgresql.yaml](#pvc-postgresqlyaml)
-│   ├── [service-postgresql.yaml](#service-postgresqlyaml)
-│   ├── [service-powerdns-admin.yaml](#service-powerdns-adminyaml)
-│   ├── [service-powerdns.yaml](#service-powerdnsyaml)
-└── [values.yaml](#valuesyaml)
-```
-
-## ⚙️ 사용법
+## ⚙️ 설지방법
 
 ### RKE2, k9s, Helm 설치
 
 ```bash
-# 스왑 메모리 비활성화
+# 📌 스왑 메모리 비활성화 (K8s는 swap을 비활성화해야 안정적임)
 sudo swapoff -a
 
-# curl -s https://update.rke2.io/v1-release/channels/stable
-# curl -sfL https://get.rke2.io | sh -
-# RKE2 CLI 설치
+# 📌 RKE2 설치 (서버 타입으로 지정, 버전 명시)
 curl -sfL https://get.rke2.io | INSTALL_RKE2_VERSION="v1.31.8+rke2r1" INSTALL_RKE2_TYPE="server" sh -
+
+# 📌 RKE2 서비스 자동 시작
 systemctl enable rke2-server --now
 ```
 
 ```bash
-# K9s CLI 설치
+# 📌 K9s CLI 설치 (TUI 기반 쿠버네티스 관리 도구)
 curl -sS https://webinstall.dev/k9s | bash
 
-# Helm 설치
+# 📌 Helm 설치 (Kubernetes 패키지 매니저)
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 ```
 
@@ -197,15 +179,22 @@ helm list -A
 kubectl get all --all-namespaces
 ```
 
+### 🔒 cert-manager 설치 (Ingress TLS 인증서 자동화용)
+
 ```bash
+# 📌 cert-manager CRD(커스텀 리소스 정의) 설치 (선택사항: Helm에서 crds.enabled를 true로 하면 생략 가능)
 # kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.17.2/cert-manager.crds.yaml
+# 📌 cert-manager Helm 저장소 추가 및 업데이트
 helm repo add jetstack https://charts.jetstack.io
 helm repo update
+
+# 📌 최신 cert-manager 버전 자동 추출
 CERT_MANAGER_VERSION=$(helm search repo jetstack/cert-manager --versions | \
                        awk 'NR > 1 {print $2}' | \
                        head -n 2 | \
                        tail -n 1)
 
+# 📌 cert-manager 설치 (Ingress에서 TLS 자동화에 활용)
 helm upgrade --install cert-manager jetstack/cert-manager \
   --namespace cert-manager \
   --create-namespace \
@@ -213,405 +202,53 @@ helm upgrade --install cert-manager jetstack/cert-manager \
   --set crds.enabled=true
 ```
 
+### 🧩 Jenkins Helm 설치 (Ingress + NFS + ClusterIP 구성)
+
 ```bash
+# 📌 Jenkins 공식 Helm Chart 저장소 등록
 helm repo add jenkins https://charts.jenkins.io
 helm repo update
 
+# 📌 Jenkins 설치 (NFS PVC 사용 + Ingress 구성)
 helm upgrade --install jenkins jenkins/jenkins \
 --namespace jenkins \
 --create-namespace \
---set persistence.storageClass=nfs \
---set controller.serviceType=ClusterIP \
---set ingress.enabled=true \
---set ingress.className=nginx \
---set ingress.hosts[0].name=jenkins.infra.com \
---set ingress.hosts[0].path=/
---set controller.javaOpts="-Djenkins.install.runSetupWizard=false"
+--set persistence.storageClass=nfs \                        # NFS 스토리지 사용
+--set controller.serviceType=ClusterIP \                   # 내부 서비스용
+--set ingress.enabled=true \                               # Ingress 사용
+--set ingress.className=nginx \                            # IngressClass 설정
+--set ingress.hosts[0].name=jenkins.infra.com \            # 호스트 이름
+--set ingress.hosts[0].path=/ \                            # 경로
+--set ingress.service.port=8080                            # 서비스 포트
 ```
 
+### 🛠️ CoreDNS에 Ingress 도메인 반영 (선택. DNS 통신 안될 경우)
+
 ```bash
+# 📌 CoreDNS 설정 확인 및 편집 (jenkins.infra.com 도메인 인식되도록)
 kubectl get configmaps -n kube-system
 kubectl edit configmap rke2-coredns-rke2-coredns -n kube-system
+
+# 📌 CoreDNS 재시작 (변경 적용)
 kubectl rollout restart deployment rke2-coredns-rke2-coredns -n kube-system
+
+# 📌 Jenkins Helm Chart 제거 (PVC 등은 남아 있음)
 helm uninstall jenkins -n jenkins
 ```
 
-
-### PowerDNS & PowerDNS-Admin Helm Chart 배포
-
-```bash
-helm create PowerDNS-Admin
-rm -f PowerDNS-Admin/templates/{deployment.yaml,hpa.yaml,serviceaccount.yaml,service.yaml,tests/*}
-```
-
-### values.yaml
-
-```yaml
-cat <<'EOF' | sudo tee PowerDNS-Admin/values.yaml
----
-# 📁 PowerDNS-Admin/values.yaml (설정값 중심 관리)
-
-postgresql:
-  enabled: true
-  image: postgres:16-alpine
-  database: pdns
-  username: pdns
-  password: pdns
-  storageSize: 5Gi
-
-  securityContext:
-    runAsUser: 5000
-    runAsGroup: 5000
-    fsGroup: 5000
-
-powerdns:
-  enabled: true
-  image: pschiffe/pdns-pgsql:latest
-  apiKey: changeme
-  dbHost: postgresql
-  dbUser: pdns
-  dbPassword: pdns
-  dbName: pdns
-  apiAllowFrom: 0.0.0.0/0
-  webserver: true
-
-powerdnsAdmin:
-  enabled: true
-  image: pschiffe/pdns-admin
-  db:
-    host: postgresql
-    port: 5432
-    user: pdns
-    password: pdns
-  api:
-    url: http://powerdns:8081
-    key: changeme
-
-recursor:
-  enabled: true
-  image: pschiffe/pdns-recursor:latest
-
-metallb:
-  enabled: true
-  poolName: pdns-pool
-  advertisementName: pdns-l2adv
-  addressRange: 172.16.0.241-172.16.0.250
-
-service:
-  type: ClusterIP
-
-ingress:
-  enabled: false
-  hostname: ""
-  className: ""
-EOF
-```
-{: file='PowerDNS-Admin/values.yaml'}
-
-
-### deployment-postgresql.yaml
-
-```yaml
-cat <<'EOF' | sudo tee PowerDNS-Admin/templates/deployment-postgresql.yaml
----
-# 📁 PowerDNS-Admin/templates/deployment-postgresql.yaml
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: postgresql
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: postgresql
-  template:
-    metadata:
-      labels:
-        app: postgresql
-    spec:
-      securityContext:
-        runAsUser: {{ .Values.postgresql.securityContext.runAsUser }}
-        runAsGroup: {{ .Values.postgresql.securityContext.runAsGroup }}
-        fsGroup: {{ .Values.postgresql.securityContext.fsGroup }}
-      initContainers:
-        - name: init-permissions
-          image: busybox
-          command: ["sh", "-c", "chown -R 5000:5000 /var/lib/postgresql/data && chmod -R 755 /var/lib/postgresql/data"]
-          volumeMounts:
-            - name: db-data
-              mountPath: /var/lib/postgresql/data
-          securityContext:
-            runAsUser: 0
-      containers:
-        - name: postgresql
-          image: {{ .Values.postgresql.image }}
-          env:
-            - name: POSTGRES_DB
-              value: {{ .Values.postgresql.database }}
-            - name: POSTGRES_USER
-              value: {{ .Values.postgresql.username }}
-            - name: POSTGRES_PASSWORD
-              value: {{ .Values.postgresql.password }}
-          volumeMounts:
-            - name: db-data
-              mountPath: /var/lib/postgresql/data
-      volumes:
-        - name: db-data
-          persistentVolumeClaim:
-            claimName: pvc-postgresql
-EOF
-```
-{: file='PowerDNS-Admin/templates/deployment-postgresql.yaml'}
-
-### deployment-powerdns-admin.yaml
-
-```yaml
-cat <<'EOF' | sudo tee PowerDNS-Admin/templates/deployment-powerdns-admin.yaml
----
-# 📁 PowerDNS-Admin/templates/deployment-powerdns-admin.yaml
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: powerdns-admin
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: powerdns-admin
-  template:
-    metadata:
-      labels:
-        app: powerdns-admin
-    spec:
-      containers:
-        - name: pdns-admin
-          image: {{ .Values.powerdnsAdmin.image }}
-          env:
-            - name: PDNS_ADMIN_SQLA_DB_TYPE
-              value: postgres
-            - name: PDNS_ADMIN_SQLA_DB_HOST
-              value: {{ .Values.powerdnsAdmin.db.host }}
-            - name: PDNS_ADMIN_SQLA_DB_PORT
-              value: "5432"
-            - name: PDNS_ADMIN_SQLA_DB_USER
-              value: {{ .Values.powerdnsAdmin.db.user }}
-            - name: PDNS_ADMIN_SQLA_DB_PASSWORD
-              value: {{ .Values.powerdnsAdmin.db.password }}
-            - name: PDNS_VERSION
-              value: "4.9"
-            - name: PDNS_API_URL
-              value: {{ .Values.powerdnsAdmin.api.url }}
-            - name: PDNS_API_KEY
-              value: {{ .Values.powerdnsAdmin.api.key }}
-          ports:
-            - containerPort: 8080
-EOF
-```
-{: file='PowerDNS-Admin/templates/deployment-powerdns-admin.yaml'}
-
-### deployment-powerdns.yaml
-
-```yaml
-cat <<'EOF' | sudo tee PowerDNS-Admin/templates/deployment-powerdns.yaml
----
-# 📁 PowerDNS-Admin/templates/deployment-powerdns.yaml
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: powerdns
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: powerdns
-  template:
-    metadata:
-      labels:
-        app: powerdns
-    spec:
-      containers:
-        - name: powerdns
-          image: {{ .Values.powerdns.image }}
-          env:
-            - name: PDNS_gpgsql_password
-              value: {{ .Values.powerdns.dbPassword }}
-            - name: PDNS_gpgsql_user
-              value: {{ .Values.powerdns.dbUser }}
-            - name: PDNS_gpgsql_dbname
-              value: {{ .Values.powerdns.dbName }}
-            - name: PDNS_gpgsql_host
-              value: {{ .Values.powerdns.dbHost }}
-            - name: PDNS_api
-              value: "yes"
-            - name: PDNS_api_key
-              value: {{ .Values.powerdns.apiKey }}
-            - name: PDNS_webserver
-              value: "yes"
-            - name: PDNS_webserver_address
-              value: "0.0.0.0"
-            - name: PDNS_webserver_allow_from
-              value: {{ .Values.powerdns.apiAllowFrom }}
-          ports:
-            - containerPort: 53
-              protocol: TCP
-            - containerPort: 53
-              protocol: UDP
-            - containerPort: 8081
-              protocol: TCP
-EOF
-```
-{: file='PowerDNS-Admin/templates/deployment-powerdns.yaml'}
-
-### metallb-config.yaml
-
-```yaml
-cat <<'EOF' | sudo tee PowerDNS-Admin/templates/metallb-config.yaml
----
-# 📁 PowerDNS-Admin/templates/metallb-config.yaml
-# Helm Chart에 포함되는 MetalLB 설정 파일입니다.
-
-apiVersion: metallb.io/v1beta1
-kind: IPAddressPool
-metadata:
-  name: {{ .Values.metallb.poolName }}
-  namespace: metallb-system
-spec:
-  addresses:
-    - {{ .Values.metallb.addressRange }}
-
----
-apiVersion: metallb.io/v1beta1
-kind: L2Advertisement
-metadata:
-  name: {{ .Values.metallb.advertisementName }}
-  namespace: metallb-system
-spec:
-  ipAddressPools:
-    - {{ .Values.metallb.poolName }}
-EOF
-```
-{: file='PowerDNS-Admin/templates/metallb-config.yaml'}
-
-### pvc-postgresql.yaml
-
-```yaml
-cat <<'EOF' | sudo tee PowerDNS-Admin/templates/pvc-postgresql.yaml
----
-# 📁 PowerDNS-Admin/templates/pvc-postgresql.yaml
-
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: pvc-postgresql
-spec:
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: nfs
-  resources:
-    requests:
-      storage: {{ .Values.postgresql.storageSize }}
-EOF
-```
-{: file='PowerDNS-Admin/templates/pvc-postgresql.yaml'}
-
-### service-postgresql.yaml
-
-```yaml
-cat <<'EOF' | sudo tee PowerDNS-Admin/templates/service-postgresql.yaml
----
-# 📁 PowerDNS-Admin/templates/service-postgresql.yaml
-
-apiVersion: v1
-kind: Service
-metadata:
-  name: postgresql
-spec:
-  selector:
-    app: postgresql
-  ports:
-    - port: 5432
-      targetPort: 5432
-      protocol: TCP
-  type: ClusterIP
-EOF
-```
-{: file='PowerDNS-Admin/templates/service-postgresql.yaml'}
-
-### service-powerdns-admin.yaml
-
-```yaml
-cat <<'EOF' | sudo tee PowerDNS-Admin/templates/service-powerdns-admin.yaml
----
-# 📁 PowerDNS-Admin/templates/service-powerdns-admin.yaml
-
-apiVersion: v1
-kind: Service
-metadata:
-  name: powerdns-admin
-spec:
-  selector:
-    app: powerdns-admin
-  ports:
-    - port: 8080
-      targetPort: 8080
-      protocol: TCP
-  type: LoadBalancer
-  loadBalancerIP: {{ .Values.powerdnsAdmin.serviceIP }}
-EOF
-```
-{: file='PowerDNS-Admin/templates/service-powerdns-admin.yaml'}
-
-### service-powerdns.yaml
-
-```yaml
-cat <<'EOF' | sudo tee PowerDNS-Admin/templates/service-powerdns.yaml
----
-# 📁 PowerDNS-Admin/templates/service-powerdns.yaml
-
-apiVersion: v1
-kind: Service
-metadata:
-  name: powerdns
-spec:
-  selector:
-    app: powerdns
-  ports:
-    - name: dns-tcp
-      port: 53
-      targetPort: 53
-      protocol: TCP
-    - name: dns-udp
-      port: 53
-      targetPort: 53
-      protocol: UDP
-    - name: web
-      port: 8081
-      targetPort: 8081
-      protocol: TCP
-  type: LoadBalancer
-  loadBalancerIP: {{ .Values.powerdns.serviceIP }}
-EOF
-```
-{: file='PowerDNS-Admin/templates/service-powerdns.yaml'}
-
-### Helm Chart 설치
+### 🔥 방화벽 설정 (HTTP 서비스 허용)
 
 ```bash
-helm repo add jenkins https://charts.jenkins.io
-helm repo update
+# 📌 HTTP 포트 방화벽 허용 (Ingress 접근을 위해 필요)
+firewall-cmd --permanent --add-service=http
+firewall-cmd --reload
+```
 
-helm install jenkins jenkins/jenkins \
-  --namespace jenkins \
-  --create-namespace \
-  --set persistence.storageClass=nfs \
-  --set controller.serviceType=ClusterIP \
-  --set ingress.enabled=true \
-  --set ingress.className=nginx \
-  --set ingress.hosts[0].name=jenkins.infra.com \
-  --set ingress.hosts[0].path=/
+### 🔐 Jenkins 초기 설정 가이드
+
+```bash
+# Jenkins 설치 후 다음 명령어로 초기 비밀번호 확인
+kubectl exec --namespace jenkins -it svc/jenkins -c jenkins -- /bin/cat /run/secrets/additional/chart-admin-password && echo
 ```
 
 ### 릴리스가 존재하면 업그레이드, 없으면 신규 설치
@@ -657,37 +294,5 @@ _PowerDNS-Admin Zone에 레코드 적용 확인_
 ![그림_9](/assets/img/2025-05-04/그림9.png)
 _PowerDNS-Admin Zone에 레코드 목록 확인_
 
-### DNS 호스트 적용
-
-```bash
-cat <<EOF | sudo tee /etc/resolv.conf
-# ======================= DNS 설정 파일 ========================
-# 이 설정은 Linux 시스템이 도메인 이름을 IP로 해석할 때
-# 어떤 DNS 서버를 우선적으로 사용할지 정의합니다.
-# =============================================================
-
-nameserver 172.16.0.51      # ✅ 내부 DNS (PowerDNS Authoritative 서버) - 사내 도메인 이름 해석
-nameserver 8.8.8.8          # ✅ 외부 DNS (Google Public DNS) - 외부 도메인 요청 처리
-nameserver 210.220.163.82   # ✅ 외부 DNS (SK 브로드밴드 기본 DNS)
-nameserver 219.250.36.130   # ✅ 외부 DNS (SK 브로드밴드 보조 DNS)
-nameserver 168.126.63.1     # ✅ 외부 DNS (KT 기본 DNS)
-nameserver 168.126.63.2     # ✅ 외부 DNS (KT 보조 DNS)
-nameserver 164.124.107.9    # ✅ 외부 DNS (LG U+ 기본 DNS)
-nameserver 203.248.242.2    # ✅ 외부 DNS (LG U+ 보조 DNS)
-
-search in.infra.com         # ✅ 도메인 자동 완성 - 예: wk01 → wk01.in.infra.com
-EOF
-```
-
-### DNS 확인
-
-```bash
-dig +short +search wk01
-dig +short +search wk02
-dig +short @172.16.0.51 wk01.in.infra.com
-dig +short @172.16.0.51 wk02.in.infra.com
-```
-
 ## 참고 자료
-- [PowerDNS-Admin Github 문서](https://github.com/PowerDNS-Admin/PowerDNS-Admin)
-- [PowerDNS Github 문서](https://github.com/pschiffe/docker-pdns)
+- [Jenkins 공식식 문서](https://www.jenkins.io/doc/book/installing/kubernetes/)

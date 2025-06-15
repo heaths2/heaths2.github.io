@@ -214,11 +214,13 @@ helm upgrade --install harbor harbor/harbor \
   --namespace harbor --create-namespace \
   --set expose.type=ingress \
   --set expose.ingress.hosts.core=harbor.infra.com \
-  --set expose.ingress.ingressClassName=nginx \
   --set externalURL=https://harbor.infra.com \
   --set expose.ingress.tls.enabled=true \
   --set expose.ingress.tls.secretName=harbor-tls-secret \
   --set expose.ingress.annotations."cert-manager\.io/cluster-issuer"=letsencrypt-prod
+
+# 📌 harbor-ingress에 ingressClassName patch (자동화)
+kubectl patch ingress -n harbor harbor-ingress --type='json' -p='[{"op":"add","path":"/spec/ingressClassName","value":"nginx"}]'
 ```
 
 ### 확인

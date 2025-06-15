@@ -145,7 +145,7 @@ sudo firewall-cmd --reload
 helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner
 helm repo update
 
-IP=$(ip -br address | grep -E 'eth|enp0s' | awk '{print $3}' | cut -d'/' -f1)
+IP=$(ip -br address | grep -E 'eth' | awk '{print $3}' | cut -d'/' -f1)
 helm install nfs-subdir nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
   --namespace nfs-system \
   --create-namespace \

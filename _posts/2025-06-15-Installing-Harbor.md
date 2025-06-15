@@ -210,17 +210,56 @@ helm repo add harbor https://helm.goharbor.io
 helm repo update
 
 # 📌 Harbor 설치
+sudo tee values.yaml <<'EOF'
+# values.yaml for Harbor Helm Chart
+externalURL: https://harbor.infra.com
+expose:
+  type: ingress
+  tls:
+    enabled: true
+    secretName: "harbor-ingress"
+  ingress:
+    className: "nginx"
+    hosts:
+      core: harbor.infra.com
+    annotations:
+      "cert-manager.io/cluster-issuer": "letsencrypt-prod"
+      "nginx.ingress.kubernetes.io/proxy-body-size": "0"
+      "nginx.ingress.kubernetes.io/ssl-redirect": "true"
+harborAdminPassword: "NotSoSecretPassword"
+persistence:
+  enabled: true
+  resourcePolicy: "keep"
+  persistentVolumeClaim:
+    registry:
+      storageClass: nfs
+      accessMode: ReadWriteOnce
+      size: 50Gi
+    chartmuseum:
+      storageClass: nfs
+      accessMode: ReadWriteOnce
+      size: 5Gi
+    jobservice:
+      storageClass: nfs
+      accessMode: ReadWriteOnce
+      size: 1Gi
+    database:
+      storageClass: nfs
+      accessMode: ReadWriteOnce
+      size: 5Gi
+    redis:
+      storageClass: nfs
+      accessMode: ReadWriteOnce
+      size: 1Gi
+    trivy:
+      storageClass: nfs
+      accessMode: ReadWriteOnce
+      size: 5Gi
+EOF
+
 helm upgrade --install harbor harbor/harbor \
   --namespace harbor --create-namespace \
-  --set expose.type=ingress \
-  --set expose.ingress.hosts.core=harbor.infra.com \
-  --set externalURL=https://harbor.infra.com \
-  --set expose.ingress.tls.enabled=true \
-  --set expose.ingress.tls.secretName=harbor-tls-secret \
-  --set expose.ingress.annotations."cert-manager\.io/cluster-issuer"=letsencrypt-prod
-
-# 📌 harbor-ingress에 ingressClassName patch (자동화)
-kubectl patch ingress -n harbor harbor-ingress --type='json' -p='[{"op":"add","path":"/spec/ingressClassName","value":"nginx"}]'
+  -f values.yaml
 ```
 
 ### 확인

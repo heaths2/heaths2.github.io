@@ -210,29 +210,31 @@ helm repo add jenkins https://charts.jenkins.io
 helm repo update
 
 # 📌 Jenkins 설치 (NFS PVC 사용 + Ingress 구성)
-# NFS 스토리지 사용 --set persistence.storageClass=nfs
-# 내부 서비스용 --set controller.serviceType=ClusterIP
-# Ingress 사용 --set ingress.enabled=true
-# IngressClass 설정 --set ingress.className=nginx
-# 호스트 이름 --set ingress.hosts[0].name=jenkins.infra.com
-# 경로 --set ingress.hosts[0].path=/
 helm upgrade --install jenkins jenkins/jenkins \
-    --namespace jenkins \
-    --create-namespace \
-    --set persistence.storageClass=nfs \
-    --set controller.serviceType=ClusterIP \
-    --set ingress.enabled=true \
-    --set ingress.className=nginx \
-    --set ingress.hosts[0].name=jenkins.infra.com \
-    --set ingress.hosts[0].path=/ \
-    --set ingress.service.port=8080
+  --namespace jenkins --create-namespace \
+  --set persistence.storageClass=nfs \
+  --set controller.serviceType=ClusterIP \
+  --set controller.ingress.enabled=true \
+  --set controller.ingress.hosts[0].host=jenkins.infra.com \
+  --set controller.ingress.hosts[0].paths[0]=/ \
+  --set controller.ingress.tls[0].hosts[0]=jenkins.infra.com \
+  --set controller.ingress.tls[0].secretName=jenkins-tls-secret \
+  --set controller.ingress.annotations."cert-manager\.io/cluster-issuer"=letsencrypt-prod
 ```
 
 ### 확인
 
 ```bash
+helm list -n jenkins
+helm status jenkins -n jenkins
+helm get manifest jenkins -n jenkins
+helm get values jenkins -n jenkins
+kubectl get all -n jenkins
+kubectl get ingress -n jenkins
+kubectl get certificate -n jenkins
 kubectl describe pod jenkins-0 -n jenkins
 kubectl logs -f pod/jenkins-0 -c jenkins -n jenkins
+kubectl logs jenkins-0 -n jenkins --all-containers=true
 ```
 
 ### 🛠️ CoreDNS에 Ingress 도메인 반영 (선택. DNS 통신 안될 경우)

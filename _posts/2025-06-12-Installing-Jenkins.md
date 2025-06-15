@@ -215,11 +215,17 @@ helm upgrade --install jenkins jenkins/jenkins \
   --set persistence.storageClass=nfs \
   --set controller.serviceType=ClusterIP \
   --set controller.ingress.enabled=true \
-  --set controller.ingress.hostName=jenkins.infra.com \
-  --set controller.ingress.path=/ \
+  --set controller.ingress.ingressClassName=nginx \
+  --set controller.ingress.hosts[0].host=jenkins.infra.com \
+  --set controller.ingress.hosts[0].paths[0]=/ \
   --set controller.ingress.tls[0].hosts[0]=jenkins.infra.com \
   --set controller.ingress.tls[0].secretName=jenkins-tls-secret \
   --set controller.ingress.annotations."cert-manager\.io/cluster-issuer"=letsencrypt-prod
+
+# 📌 Jenkins에 HOSTS patch (자동화)
+kubectl patch ingress -n jenkins jenkins \
+  --type='json' \
+  -p='[{"op":"add","path":"/spec/rules/0/host","value":"jenkins.infra.com"}]'
 ```
 
 ### 확인

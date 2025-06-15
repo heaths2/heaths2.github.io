@@ -167,14 +167,17 @@ helm upgrade --install cert-manager jetstack/cert-manager \
 ### 🌐 Rancher 설치
 
 ```bash
+# 📌 Rancher 공식 Helm Chart 저장소 등록
 helm repo add rancher-stable https://releases.rancher.com/server-charts/stable
 helm repo update
 
+# 📌 Rancher 설치
 helm upgrade --install rancher rancher-stable/rancher \
   --namespace cattle-system \
   --create-namespace \
   --set hostname=rke2.infra.com \
   --set bootstrapPassword=admin \
+  --set ingress.ingressClassName=nginx \
   --set ingress.tls.source=letsEncrypt \
   --set letsEncrypt.email=it@infra.com \
   --set letsEncrypt.ingress.class=nginx

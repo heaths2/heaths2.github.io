@@ -257,17 +257,11 @@ sudo firewall-cmd --set-log-denied=all   # all, unicast, broadcast, multicast
 
 # Drop된 패킷 확인
 sudo journalctl -xef | grep 'REJECT'
-# 또는는
+# 또는
 sudo dmesg -Tw | grep 'REJECT'
 
-# Calico가 사용하는 파드 IP 대역 전체에 대해 FORWARD 허용
-sudo firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" source address="10.42.0.0/16" accept'
-
-# 또는 Calico 인터페이스 자체를 신뢰(trusted) 존으로 이동
-sudo firewall-cmd --permanent --zone=trusted --change-interface=cali+
-
 # 방화벽 다시 로드
-sudo firewall-cmd --reload
+sudo systemctl stop firewalld.service
 ```
 
 ### 🔐 Jenkins 초기 설정 가이드
@@ -277,48 +271,11 @@ sudo firewall-cmd --reload
 kubectl exec --namespace jenkins -it svc/jenkins -c jenkins -- /bin/cat /run/secrets/additional/chart-admin-password && echo
 ```
 
-### 릴리스가 존재하면 업그레이드, 없으면 신규 설치
-
-```bash
-helm upgrade --install powerdns-admin ~/PowerDNS-Admin \
-  --namespace pdns \
-  --values ~/PowerDNS-Admin/values.yaml
-```
-
-### 전체 설정 내용 확인
-
-```bash
-kubectl get all -A -o wide
-```
-
-### DNS 등록
-
 ![그림_1](/assets/img/2025-05-04/그림1.png)
 _PowerDNS-Admin 계정생성 클릭_
 
 ![그림_2](/assets/img/2025-05-04/그림2.png)
 _PowerDNS-Admin 계정생성_
-
-![그림_3](/assets/img/2025-05-04/그림3.png)
-_PowerDNS-Admin 계정 로그인인_
-
-![그림_4](/assets/img/2025-05-04/그림4.png)
-_PowerDNS-Admin 계정생성 클릭_
-
-![그림_5](/assets/img/2025-05-04/그림5.png)
-_PowerDNS-Admin Zone 생성_
-
-![그림_6](/assets/img/2025-05-04/그림6.png)
-_PowerDNS-Admin Zone 클릭_
-
-![그림_7](/assets/img/2025-05-04/그림7.png)
-_PowerDNS-Admin Zone에 레코드 등록_
-
-![그림_8](/assets/img/2025-05-04/그림8.png)
-_PowerDNS-Admin Zone에 레코드 적용 확인_
-
-![그림_9](/assets/img/2025-05-04/그림9.png)
-_PowerDNS-Admin Zone에 레코드 목록 확인_
 
 ## 참고 자료
 - [Jenkins 공식 문서](https://www.jenkins.io/doc/book/installing/kubernetes/)

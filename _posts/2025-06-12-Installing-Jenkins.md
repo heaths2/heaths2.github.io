@@ -273,11 +273,11 @@ sudo systemctl stop firewalld.service
 kubectl exec --namespace jenkins -it svc/jenkins -c jenkins -- /bin/cat /run/secrets/additional/chart-admin-password && echo
 ```
 
-![그림_1](/assets/img/2025-05-04/그림1.png)
-_PowerDNS-Admin 계정생성 클릭_
+![그림_1](/assets/img/2025-06-15/그림1.png)
+_Jenkins 로그인_
 
-![그림_2](/assets/img/2025-05-04/그림2.png)
-_PowerDNS-Admin 계정생성_
+![그림_2](/assets/img/2025-06-15/그림2.png)
+_Jenkins 대시보드_
 
 ## 참고 자료
 - [Jenkins 공식 문서](https://www.jenkins.io/doc/book/installing/kubernetes/)

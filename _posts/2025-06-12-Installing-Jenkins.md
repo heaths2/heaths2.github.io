@@ -210,22 +210,33 @@ helm repo add jenkins https://charts.jenkins.io
 helm repo update
 
 # 📌 Jenkins 설치 (NFS PVC 사용 + Ingress 구성)
+sudo tee values.yaml <<'EOF'
+# values.yaml for Jenkins Helm Chart (Corrected)
+
+controller:
+  serviceType: ClusterIP
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hostName: jenkins.infra.com
+    annotations:
+      "cert-manager.io/cluster-issuer": "letsencrypt-prod"
+    hosts:
+      - host: jenkins.infra.com
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls:
+      - hosts:
+          - jenkins.infra.com
+        secretName: jenkins-tls-secret
+persistence:
+  storageClass: "nfs"
+EOF
+
 helm upgrade --install jenkins jenkins/jenkins \
   --namespace jenkins --create-namespace \
-  --set persistence.storageClass=nfs \
-  --set controller.serviceType=ClusterIP \
-  --set controller.ingress.enabled=true \
-  --set controller.ingress.ingressClassName=nginx \
-  --set controller.ingress.hosts[0].host=jenkins.infra.com \
-  --set controller.ingress.hosts[0].paths[0]=/ \
-  --set controller.ingress.tls[0].hosts[0]=jenkins.infra.com \
-  --set controller.ingress.tls[0].secretName=jenkins-tls-secret \
-  --set controller.ingress.annotations."cert-manager\.io/cluster-issuer"=letsencrypt-prod
-
-# 📌 Jenkins에 HOSTS patch (자동화)
-kubectl patch ingress -n jenkins jenkins \
-  --type='json' \
-  -p='[{"op":"add","path":"/spec/rules/0/host","value":"jenkins.infra.com"}]'
+  -f values.yaml
 ```
 
 ### 확인

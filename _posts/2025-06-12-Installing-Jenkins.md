@@ -171,14 +171,6 @@ helm install metallb metallb/metallb \
   --set webhook.enabled=true
 ```
 
-### 확인
-
-```bash
-helm repo list
-helm list -A
-kubectl get all --all-namespaces
-```
-
 ### 🔒 cert-manager 설치 (Ingress TLS 인증서 자동화용)
 
 ```bash
@@ -200,6 +192,14 @@ helm upgrade --install cert-manager jetstack/cert-manager \
   --create-namespace \
   --version $CERT_MANAGER_VERSION \
   --set crds.enabled=true
+```
+
+### 확인
+
+```bash
+helm repo list
+helm list -A
+kubectl get all --all-namespaces
 ```
 
 ### 🧩 Jenkins Helm 설치 (Ingress + NFS + ClusterIP 구성)

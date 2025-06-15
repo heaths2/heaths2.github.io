@@ -183,6 +183,26 @@ helm upgrade --install rancher rancher-stable/rancher \
   --set letsEncrypt.ingress.class=nginx
 ```
 
+```bash
+sudo tee values.yaml <<'EOF'
+# values.yaml for Rancher Helm Chart
+hostname: rke2.infra.com
+bootstrapPassword: "admin" # 실제 운영 환경에서는 이 값을 꼭 변경하세요.
+ingress:
+  ingressClassName: "nginx"
+  tls:
+    source: letsEncrypt
+letsEncrypt:
+  email: it@infra.com
+  ingress:
+    class: nginx
+EOF
+
+helm upgrade --install rancher rancher-stable/rancher \
+  --namespace cattle-system --create-namespace \
+  -f values.yaml
+```
+
 ### 🔍 클러스터 정보 확인
 
 ```bash

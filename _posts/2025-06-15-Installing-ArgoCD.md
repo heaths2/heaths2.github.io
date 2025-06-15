@@ -210,14 +210,36 @@ helm repo add argo https://argoproj.github.io/argo-helm
 helm repo update
 
 # 📌 Argo 설치
+sudo tee values.yaml <<'EOF'
+# values.yaml for Argo CD Helm Chart (Corrected)
+server:
+  ingress:
+    enabled: true
+    ingressClassName: "nginx"
+    https: true # Ingress -> Service 통신을 HTTPS로 설정
+    annotations:
+      "cert-manager.io/cluster-issuer": "letsencrypt-prod"
+    hosts:
+      - argocd.example.com
+    paths:
+      - /
+    pathType: "Prefix"
+    tls:
+      - secretName: argocd-server-tls
+        hosts:
+          - argocd.example.com
+redis:
+  enabled: true
+  persistence:
+    enabled: true
+    storageClass: "nfs"
+    accessMode: ReadWriteOnce
+    size: 8Gi
+EOF
+
 helm upgrade --install argocd argo/argo-cd \
   --namespace argocd --create-namespace \
-  --set server.ingress.enabled=true \
-  --set server.ingress.hosts[0]=argo.infra.com \
-  --set server.ingress.ingressClassName=nginx \
-  --set server.ingress.tls[0].hosts[0]=argo.infra.com \
-  --set server.ingress.tls[0].secretName=argo-tls-secret \
-  --set server.ingress.annotations."cert-manager\.io/cluster-issuer"=letsencrypt-prod
+  -f values.yaml
 ```
 
 ### 확인

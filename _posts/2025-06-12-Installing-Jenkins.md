@@ -321,4 +321,4 @@ _PowerDNS-Admin Zone에 레코드 적용 확인_
 _PowerDNS-Admin Zone에 레코드 목록 확인_
 
 ## 참고 자료
-- [Jenkins 공식식 문서](https://www.jenkins.io/doc/book/installing/kubernetes/)
+- [Jenkins 공식 문서](https://www.jenkins.io/doc/book/installing/kubernetes/)

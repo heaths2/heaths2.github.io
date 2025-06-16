@@ -63,7 +63,7 @@ Jenkins 기반 내부 CI/CD 인프라 구축 과정에서 다음과 같은 문�
 # 📌 스왑 메모리 비활성화 (K8s는 swap을 비활성화해야 안정적임)
 sudo swapoff -a
 
-# 📌 RKE2 설치 (서버 타입으로 지정, 버전 명시)
+# 📌 RKE2 설치
 curl -sfL https://get.rke2.io | INSTALL_RKE2_TYPE="server" sh -
 
 # 📌 RKE2 서비스 자동 시작
@@ -127,7 +127,7 @@ sudo dnf install -y nfs-utils
 sudo systemctl enable nfs-server --now
 
 # Export 디렉토리 생성
-sudo mkdir -p /data/db
+sudo mkdir -p /data
 sudo chown -R 5000:5000 /data
 
 # /etc/exports 설정

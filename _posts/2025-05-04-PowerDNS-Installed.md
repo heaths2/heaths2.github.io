@@ -145,7 +145,7 @@ sudo dnf install -y nfs-utils
 sudo systemctl enable nfs-server --now
 
 # Export 디렉토리 생성
-sudo mkdir -p /data/db
+sudo mkdir -p /data
 sudo chown -R 5000:5000 /data
 
 # /etc/exports 설정

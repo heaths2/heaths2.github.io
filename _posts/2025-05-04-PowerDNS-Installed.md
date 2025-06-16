@@ -84,7 +84,7 @@ sudo swapoff -a
 # curl -s https://update.rke2.io/v1-release/channels/stable
 # curl -sfL https://get.rke2.io | sh -
 # RKE2 CLI 설치
-curl -sfL https://get.rke2.io | INSTALL_RKE2_VERSION="v1.31.8+rke2r1" INSTALL_RKE2_TYPE="server" sh -
+curl -sfL https://get.rke2.io | INSTALL_RKE2_TYPE="server" sh -
 systemctl enable rke2-server --now
 ```
 

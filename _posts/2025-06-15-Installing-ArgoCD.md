@@ -63,8 +63,8 @@ Jenkins 기반 내부 CI/CD 인프라 구축 과정에서 다음과 같은 문�
 # 📌 스왑 메모리 비활성화 (K8s는 swap을 비활성화해야 안정적임)
 sudo swapoff -a
 
-# 📌 RKE2 설치 (서버 타입으로 지정, 버전 명시)
-curl -sfL https://get.rke2.io | INSTALL_RKE2_VERSION="v1.31.8+rke2r1" INSTALL_RKE2_TYPE="server" sh -
+# 📌 RKE2 설치
+curl -sfL https://get.rke2.io | INSTALL_RKE2_TYPE="server" sh -
 
 # 📌 RKE2 서비스 자동 시작
 systemctl enable rke2-server --now

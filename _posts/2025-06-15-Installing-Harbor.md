@@ -218,7 +218,7 @@ helm list -A
 kubectl get all --all-namespaces
 ```
 
-### 🧩 Jenkins Helm 설치 (Ingress + NFS + ClusterIP 구성)
+### 🧩 Harbor Helm 설치 (Ingress + NFS + ClusterIP 구성)
 
 ```bash
 # 📌 Harbor 공식 Helm Chart 저장소 등록
@@ -288,9 +288,6 @@ helm get values harbor -n harbor
 kubectl get all -n harbor
 kubectl get ingress -n harbor
 kubectl get certificate -n harbor
-kubectl describe pod harbor-0 -n jenkins
-kubectl logs -f pod/harbor-0 -c harbor -n harbor
-kubectl logs harbor-0 -n harbor --all-containers=true
 ```
 
 ### 🛠️ CoreDNS에 Ingress 도메인 반영 (선택. DNS 통신 안될 경우)
@@ -322,7 +319,7 @@ sudo dmesg -Tw | grep 'REJECT'
 sudo systemctl stop firewalld.service
 ```
 
-### 🔐 Jenkins 초기 설정 가이드
+### 🔐 Harbor 초기 설정 가이드
 
 ```bash
 # Jenkins 설치 후 다음 명령어로 초기 비밀번호 확인

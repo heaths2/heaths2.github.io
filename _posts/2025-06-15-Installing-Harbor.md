@@ -226,7 +226,7 @@ expose:
       "cert-manager.io/cluster-issuer": "letsencrypt-prod"
       "nginx.ingress.kubernetes.io/proxy-body-size": "0"
       "nginx.ingress.kubernetes.io/ssl-redirect": "true"
-harborAdminPassword: "NotSoSecretPassword"
+harborAdminPassword: "Harbor12345"
 persistence:
   enabled: true
   resourcePolicy: "keep"

@@ -21,3 +21,6 @@ Dism /online /enable-feature /featurename:Microsoft-Hyper-V -All /LimitAccess /A
 pause
 ```
 {: file='Hyper-V.bat'}
+
+## 참고 자료
+- [블로그 문서](https://geekorea.com/how-to-enable-hyper-v-windows11-home)

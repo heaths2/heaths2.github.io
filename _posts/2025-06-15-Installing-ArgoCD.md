@@ -212,27 +212,35 @@ helm repo update
 # 📌 Argo 설치
 sudo tee values.yaml <<'EOF'
 # values.yaml for Argo CD Helm Chart
+global:
+  domain: argo.infra.com  # 👈 블로그 스타일 도메인 설정
+
 server:
   ingress:
     enabled: true
-    ingressClassName: "nginx"
-    https: true # Ingress -> Service 통신을 HTTPS로 설정
+    ingressClassName: nginx
+    https: true
     annotations:
-      "cert-manager.io/cluster-issuer": "letsencrypt-prod"
-    hosts:
-      - argo.infra.com
-    paths:
-      - /
-    pathType: "Prefix"
+      cert-manager.io/cluster-issuer: "letsencrypt-prod"
     tls:
       - secretName: argocd-server-tls
         hosts:
           - argo.infra.com
+    extraArgs:
+      - --insecure  # 👈 Ingress가 TLS 처리하므로 내부는 HTTP로 동작
+
+configs:
+  params:
+    server.insecure: true  # 👈 위와 동일한 이유로 설정 (HTTP 내부 통신 허용)
+
+certificate:
+  enabled: false  # 👈 자체 인증서 비활성화 (cert-manager만 사용)
+
 redis:
   enabled: true
   persistence:
     enabled: true
-    storageClass: "nfs"
+    storageClass: nfs
     accessMode: ReadWriteOnce
     size: 8Gi
 EOF
@@ -245,16 +253,16 @@ helm upgrade --install argocd argo/argo-cd \
 ### 확인
 
 ```bash
-helm list -n jenkins
-helm status jenkins -n jenkins
-helm get manifest jenkins -n jenkins
-helm get values jenkins -n jenkins
-kubectl get all -n jenkins
-kubectl get ingress -n jenkins
-kubectl get certificate -n jenkins
-kubectl describe pod jenkins-0 -n jenkins
-kubectl logs -f pod/jenkins-0 -c jenkins -n jenkins
-kubectl logs jenkins-0 -n jenkins --all-containers=true
+helm list -n argocd
+helm status argocd -n argocd
+helm get manifest argocd -n argocd
+helm get values argocd -n argocd
+kubectl get all -n argocd
+kubectl get ingress -n argocd
+kubectl get certificate -n argocd
+kubectl describe pod argocd-0 -n argocd
+kubectl logs -f pod/argocd-0 -c argocd -n argocd
+kubectl logs argocd-0 -n argocd --all-containers=true
 ```
 
 ### 🛠️ CoreDNS에 Ingress 도메인 반영 (선택. DNS 통신 안될 경우)

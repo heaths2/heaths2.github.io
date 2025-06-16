@@ -211,7 +211,7 @@ helm repo update
 
 # 📌 Argo 설치
 sudo tee values.yaml <<'EOF'
-# values.yaml for Argo CD Helm Chart (Corrected)
+# values.yaml for Argo CD Helm Chart
 server:
   ingress:
     enabled: true
@@ -220,14 +220,14 @@ server:
     annotations:
       "cert-manager.io/cluster-issuer": "letsencrypt-prod"
     hosts:
-      - argocd.example.com
+      - argo.infra.com
     paths:
       - /
     pathType: "Prefix"
     tls:
       - secretName: argocd-server-tls
         hosts:
-          - argocd.example.com
+          - argo.infra.com
 redis:
   enabled: true
   persistence:

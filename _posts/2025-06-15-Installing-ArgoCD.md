@@ -7,52 +7,74 @@ tags: [Provisioning, Helm, ArgoCD]
 ---
 
 ## 📘 개요 (Overview)
-이 문서는 RKE2 기반 쿠버네티스 클러스터 환경에서 Jenkins CI/CD 시스템을 Helm Chart를 통해 설치하고 구성하는 방법을 안내합니다.
-기본적인 클러스터 설치부터 Jenkins의 Helm 배포, 스토리지(NFS), 로드밸런서(MetalLB), Ingress 설정까지 포함되어 있어 온프레미스 환경에서도 실용적으로 활용 가능합니다.
+이 문서는 RKE2 기반 쿠버네티스 클러스터 환경에서 ArgoCD GitOps 시스템을 Helm Chart를 통해 설치하고 구성하는 방법을 안내합니다. 기본적인 클러스터 설치부터 ArgoCD의 Helm 배포, 스토리지(NFS), 로드밸런서(MetalLB), Ingress 설정까지 포함되어 있어 온프레미스 환경에서도 실용적으로 활용 가능합니다.
 
 ## 🧭 등장배경
-Jenkins 기반 내부 CI/CD 인프라 구축 과정에서 다음과 같은 문제가 있었습니다:
+기존 CI/CD 인프라 구축 과정에서 다음과 같은 문제에 직면했습니다.
 
-- `/etc/hosts` 기반 수동 IP 관리의 **확장성 한계**
-- **사설 DNS 인프라 구축 필요성**
-- **GUI와 API를 통한 레코드 관리** 요구
-- 기존 Docker Compose 기반 시스템의 **Kubernetes 전환 필요성**
+- /etc/hosts 기반 수동 IP 관리의 확장성 한계: 수많은 서비스의 IP를 수동으로 관리하는 것은 비효율적이며, 확장에 큰 제약이 있었습니다.
+- 사설 DNS 인프라 구축 필요성: 내부 서비스들의 안정적인 이름 해결을 위해 사설 DNS 인프라의 필요성이 대두되었습니다.
+- GUI와 API를 통한 레코드 관리 요구: DNS 레코드 관리를 더욱 편리하고 자동화하기 위한 GUI 및 API 기반의 관리 시스템이 필요했습니다.
+- 기존 CI/CD 시스템의 GitOps 전환 필요성: 변경 사항을 Git 저장소에만 적용하면 자동으로 배포되는 GitOps(ArgoCD) 패러다임으로의 전환을 통해 배포의 일관성과 안정성을 확보하고자 했습니다.
 
-이에 따라 **RKE2 기반 K8s 클러스터 + Helm + NFS + MetalLB**를 이용해 Jenkins를 안정적으로 배포하는 방안을 설계하게 되었습니다.
+이에 따라 RKE2 기반 K8s 클러스터 + Helm + NFS + MetalLB를 이용하여 ArgoCD를 안정적으로 배포하는 방안을 설계하게 되었습니다.
 
 
 ## 📝 구성 요소 (Components)
 
-| 구성 요소            | 역할 및 설명                  |
-| ---------------- | ------------------------ |
-| **RKE2**         | 쿠버네티스 배포 (Rancher 제공)    |
-| **Helm**         | Jenkins 설치 및 패키지 관리      |
-| **k9s**          | 쿠버네티스 CLI 관리도구           |
-| **NFS**          | Jenkins 영속 볼륨 스토리지 제공    |
-| **MetalLB**      | 로드밸런서를 통한 외부 접근 설정       |
-| **cert-manager** | Ingress TLS 인증서 자동화 (옵션) |
-| **Jenkins**      | CI/CD 시스템                |
+| 구성 요소            | 역할 및 설명                                      |
+| ------------------ | --------------------------------------------- |
+| **RKE2** | 쿠버네티스 배포 (Rancher Labs 제공)                 |
+| **Helm** | Jenkins/ArgoCD 설치 및 쿠버네티스 패키지 관리      |
+| **k9s** | 쿠버네티스 CLI 관리 도구                           |
+| **NFS** | Jenkins/ArgoCD 영속 볼륨 스토리지 제공             |
+| **MetalLB** | 로드밸런서를 통한 외부 접근 설정                   |
+| **cert-manager** | Ingress TLS 인증서 자동화 (옵션)                 |
+| **Jenkins** | CI/CD 시스템 (주로 CI 역할)                       |
+| **ArgoCD** | GitOps 기반 CD 시스템 (주로 CD 역할)               |
+| **Git Repository** | 소스 코드 및 배포 매니페스트 저장                 |
+| **Docker Registry**| 빌드된 Docker 이미지 저장                         |
 
 ## 🏗️ 아키텍처
 
 ```bash
-┌─────────────┐        ┌────────────┐
-│  Developer  │──────▶│   Ingress   │
-└─────────────┘        └────┬───────┘
-                             │
-                    ┌────────▼────────┐
-                    │   MetalLB LB    │
-                    └────────┬────────┘
-                             │
-                    ┌────────▼────────┐
-                    │    Jenkins Pod  │
-                    │(Helm Chart 기반)│
-                    └────────┬────────┘
-                             │
-                ┌────────────▼────────────┐
-                │ NFS Persistent Volume   │
-                │(nfs-subdir-provisioner)│
-                └────────────────────────┘
+┌─────────────┐
+│  Developer  │
+└─────────────┘
+      │
+      ▼
+┌───────────────────┐     (1) Push Code, K8s Manifests
+│   Git Repository  │◀───────────────────────────────┐
+└───────────────────┘                                │
+      │                                                │
+      ▼ (2) Webhook / Polling                          │
+┌─────────────┐                                        │
+│   Jenkins   │                                        │
+│ (CI Server) │                                        │
+└──────┬──────┘                                        │
+       │                                                │
+       ▼ (3) Build, Test, Push Docker Image             │
+┌───────────────────┐                                  │
+│  Docker Registry  │                                  │
+└───────────────────┘                                  │
+       │                                                │
+       ▼ (4) Image Update Trigger (Optional)            │
+┌───────────────────┐                                  │
+│     ArgoCD        │◀─────────────────────────────────┘ (5) Git Sync & Diff
+│  (CD Controller)  │
+└───────┬───────────┘
+        │
+        ▼ (6) Apply K8s Manifests / Helm Charts
+┌───────────────────────────┐        ┌────────────┐
+│   Kubernetes Cluster      │──────▶│   Ingress  │
+│ (RKE2, Pods, Services)    │        └────┬───────┘
+└───────────┬───────────────┘             │
+            │                           ┌──▼───┐
+            ▼                           │MetalLB│
+ ┌────────────────────────┐             └───┬───┘
+ │  NFS Persistent Volume │                 │
+ │ (nfs-subdir-provisioner)│◀────────────────┘
+ └────────────────────────┘
 ```
 
 ## ⚙️ 설지방법
@@ -202,7 +224,7 @@ helm list -A
 kubectl get all --all-namespaces
 ```
 
-### 🧩 Jenkins Helm 설치 (Ingress + NFS + ClusterIP 구성)
+### 🧩 ArgoCD Helm 설치 (Ingress + NFS + ClusterIP 구성)
 
 ```bash
 # 📌 Argo 공식 Helm Chart 저장소 등록
@@ -294,7 +316,7 @@ sudo dmesg -Tw | grep 'REJECT'
 sudo systemctl stop firewalld.service
 ```
 
-### 🔐 Jenkins 초기 설정 가이드
+### 🔐 ArgoCD 초기 설정 가이드
 
 ```bash
 # Jenkins 설치 후 다음 명령어로 초기 비밀번호 확인

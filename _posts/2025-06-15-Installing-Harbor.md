@@ -265,16 +265,16 @@ helm upgrade --install harbor harbor/harbor \
 ### 확인
 
 ```bash
-helm list -n jenkins
-helm status jenkins -n jenkins
-helm get manifest jenkins -n jenkins
-helm get values jenkins -n jenkins
-kubectl get all -n jenkins
-kubectl get ingress -n jenkins
-kubectl get certificate -n jenkins
-kubectl describe pod jenkins-0 -n jenkins
-kubectl logs -f pod/jenkins-0 -c jenkins -n jenkins
-kubectl logs jenkins-0 -n jenkins --all-containers=true
+helm list -n harbor
+helm status harbor -n harbor
+helm get manifest harbor -n harbor
+helm get values harbor -n harbor
+kubectl get all -n harbor
+kubectl get ingress -n harbor
+kubectl get certificate -n harbor
+kubectl describe pod harbor-0 -n jenkins
+kubectl logs -f pod/harbor-0 -c harbor -n harbor
+kubectl logs harbor-0 -n harbor --all-containers=true
 ```
 
 ### 🛠️ CoreDNS에 Ingress 도메인 반영 (선택. DNS 통신 안될 경우)

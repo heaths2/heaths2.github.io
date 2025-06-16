@@ -262,6 +262,8 @@ kubectl get configmaps -n kube-system
 kubectl edit configmap rke2-coredns-rke2-coredns -n kube-system
 
 # 📌 CoreDNS 재시작 (변경 적용)
+kubectl delete pods -n kube-system -l k8s-app=kube-dns
+# 또는
 kubectl rollout restart deployment rke2-coredns-rke2-coredns -n kube-system
 
 # 📌 Jenkins Helm Chart 제거 (PVC 등은 남아 있음)

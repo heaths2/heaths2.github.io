@@ -30,6 +30,10 @@ curl -sSL https://install.python-poetry.org | python3 -
 
 # 설치 후 poetry가 실행되는지 확인
 poetry --version
+
+# 자동완성 등록
+echo 'eval "$(poetry completions bash)"' >> ~/.bashrc
+source ~/.bashrc
 ```
 
 ### 2️⃣ 새 프로젝트 생성
@@ -43,6 +47,15 @@ cd myprojects
 
 ```bash
 poetry add pandas yfinance ta
+# 또는
+# 기존 requirements.txt에서 패키지 일괄 추가
+poetry add $(cat requirements.txt)
+
+# 설치된 패키지 목록 확인
+poetry show
+
+# poetry 환경 shell 진입 (옵션)
+poetry shell
 ```
 
 ### 4️⃣ 실행 (개발 환경 또는 CI/CD 자동 실행 시) 🧪

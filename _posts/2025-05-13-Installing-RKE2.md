@@ -40,8 +40,19 @@ sudo swapoff -a
 # curl -sfL https://get.rke2.io | sh -
 # Control Node RKE2 CLI 설치
 curl -sfL https://get.rke2.io | INSTALL_RKE2_TYPE="server" sh -
+
+systemctl enable rke2-server --now
+```
+
+```bash
+# 스왑 메모리 비활성화
+sudo swapoff -a
+
+# curl -s https://update.rke2.io/v1-release/channels/stable
+# curl -sfL https://get.rke2.io | sh -
 # Worker Node RKE2 CLI 설치
 curl -sfL https://get.rke2.io | INSTALL_RKE2_TYPE="agent" sh -
+
 systemctl enable rke2-server --now
 ```
 

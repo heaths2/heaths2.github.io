@@ -30,7 +30,7 @@ Rancher를 설치하여 웹 기반 Kubernetes 관리 플랫폼을 구축하는 �
 
 ## 🛠️ 설치 방법
 
-### 🖥️ Control/Worker Node 공통 RKE2, k9s, Helm 설치
+### 🖥️ Control/Worker Node RKE2
 
 ```bash
 # 스왑 메모리 비활성화
@@ -53,8 +53,24 @@ sudo swapoff -a
 # Worker Node RKE2 CLI 설치
 curl -sfL https://get.rke2.io | INSTALL_RKE2_TYPE="agent" sh -
 
-systemctl enable rke2-server --now
+systemctl enable rke2-agent --now
 ```
+
+### 🖥️ Worker Node 설정
+
+```bash
+# Control Node 확인
+# sudo cat /var/lib/rancher/rke2/server/node-token
+
+cat <<'EOF' | sudo tee /etc/rancher/rke2/config.yaml
+server: https://192.168.1.51:9345
+token: K10763225c2e6056c6ffc84699662b9d31237e26d427acaa8a74104eab4852a043d::server:6ea9be43aa22b51337e4e7c7f38e7d5e
+EOF
+
+sudo systemctl enable rke2-agent --now
+```
+
+### K9s, Helm 설치
 
 ```bash
 # K9s CLI 설치
@@ -238,15 +254,6 @@ kubectl exec -it -n cattle-system rancher-5f6d98bff8-5b8sx -- reset-password
 W0515 01:02:24.741810     653 client_config.go:667] Neither --kubeconfig nor --master was specified.  Using the inClusterConfig.  This might not work.
 New password for default admin user (user-4nnzl):
 RuMIDJM_N3AYqUshnlsG
-```
-
-### 🖥️ Worker Node 설정
-
-```bash
-cat <<'EOF' | sudo tee /etc/rancher/rke2/config.yaml
-server: https://192.168.1.51:9345
-token: K10c80dfd26c5d8eb362b216f134523c053a834678f0d4e1b609da96c78faad38db::server:167bf371331b9a8636cbdf9b2681e672
-EOF
 ```
 
 ## 참고 자료

@@ -62,7 +62,7 @@ systemctl enable rke2-agent --now
 # Control Node 확인
 # sudo cat /var/lib/rancher/rke2/server/node-token
 
-cat <<'EOF' | sudo tee /etc/rancher/rke2/config.yaml
+cat << EOF | sudo tee /etc/rancher/rke2/config.yaml
 server: https://192.168.1.51:9345
 token: K10763225c2e6056c6ffc84699662b9d31237e26d427acaa8a74104eab4852a043d::server:6ea9be43aa22b51337e4e7c7f38e7d5e
 EOF

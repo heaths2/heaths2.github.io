@@ -334,7 +334,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
 type: Opaque
 data:
-  db-password: bmptbQ==  # echo -n 'npm' | base64 결과
+  db-password: $(echo -n 'npm' | base64)
 EOF
 ```
 

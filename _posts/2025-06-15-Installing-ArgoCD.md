@@ -189,7 +189,7 @@ helm install metallb metallb/metallb \
   --set webhook.enabled=true
 ```
 
-### 🔒 cert-manager 설치 (Ingress TLS 인증서 자동화용)
+### 🔒 Cert-manager 설치 (Ingress TLS 인증서 자동화용)
 
 ```bash
 # 📌 cert-manager CRD(커스텀 리소스 정의) 설치 (선택사항: Helm에서 crds.enabled를 true로 하면 생략 가능)

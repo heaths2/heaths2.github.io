@@ -667,34 +667,35 @@ version: '3.8'
 
 services:
   app:
-    image: 'docker.io/jc21/nginx-proxy-manager:latest'
+    image: 'jc21/nginx-proxy-manager:latest'
     container_name: nginx-proxy-manager_app
     restart: unless-stopped
     ports:
-      - '80:80'
-      - '443:443'
-      - '81:81'
-    volumes:
-      - ./data:/data
-      - ./data/letsencrypt:/etc/letsencrypt
+      - '80:80' # Public HTTP Port
+      - '443:443' # Public HTTPS Port
+      - '81:81' # Admin Web Port
     environment:
-      DB_MYSQL_HOST: "db"
-      DB_MYSQL_PORT: 3306
-      DB_MYSQL_USER: "npm"
-      DB_MYSQL_PASSWORD: "npm"
-      DB_MYSQL_NAME: "npm"
+      DB_POSTGRES_HOST: 'db'
+      DB_POSTGRES_PORT: '5432'
+      DB_POSTGRES_USER: 'npm'
+      DB_POSTGRES_PASSWORD: 'npm'
+      DB_POSTGRES_NAME: 'npm'
+    volumes:
+      - /data/nginx-proxy-manager:/data
+      - /data/letsencrypt:/etc/letsencrypt
+    depends_on:
+      - db
 
   db:
-    image: 'docker.io/library/mariadb:10.6'
+    image: postgres:latest
     container_name: nginx-proxy-manager_db
-    restart: unless-stopped
+    restart: unless-stopped    
     environment:
-      MYSQL_ROOT_PASSWORD: 'npm'
-      MYSQL_DATABASE: 'npm'
-      MYSQL_USER: 'npm'
-      MYSQL_PASSWORD: 'npm'
+      POSTGRES_USER: 'npm'
+      POSTGRES_PASSWORD: 'npm'
+      POSTGRES_DB: 'npm'
     volumes:
-      - ./data/mysql:/var/lib/mysql
+      - /data/postgres:/var/lib/postgresql/data
 ```
 
 

@@ -11,20 +11,6 @@ tags: [Command, Script, Poetry, Python3]
 ### 1️⃣ Poetry 설치 및 📌 설치 확인
 
 ```bash
-# pipx 설치 방법 (Python3 기반 시스템)
-python3 -m pip install --user pipx
-
-# poetry 설치 (pipx 기반)
-pipx install poetry
-
-# 설치 후 pipx가 실행되는지 확인
-pipx --version
-
-# 설치 후 poetry가 실행되는지 확인
-poetry --version
-```
-
-```bash
 # Poetry 공식 설치 스크립트 (macOS, Linux, Windows WSL 공통)
 curl -sSL https://install.python-poetry.org | python3 -
 

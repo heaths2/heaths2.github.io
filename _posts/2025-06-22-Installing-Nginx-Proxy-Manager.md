@@ -196,6 +196,8 @@ rm -rf nginx-proxy-manager/templates/{hpa.yaml,serviceaccount.yaml,tests/*}
 
 ### 🧩 NPM Helm 설치 (Ingress + NFS + ClusterIP 구성)
 
+#### A. MariaDB
+
 ```bash
 # 📌 Chart.yaml
 cat << 'EOF' > nginx-proxy-manager/Chart.yaml
@@ -622,6 +624,8 @@ spec:
   selfSigned: {}
 EOF
 ```
+
+#### B. PostgreSQL
 
 ```bash
 # 📌 nginx-proxy-manager 설치

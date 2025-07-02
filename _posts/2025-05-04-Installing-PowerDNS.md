@@ -560,8 +560,7 @@ spec:
     - port: 8080
       targetPort: 8080
       protocol: TCP
-  type: LoadBalancer
-  loadBalancerIP: {{ .Values.powerdnsAdmin.serviceIP }}
+  type: {{ .Values.powerdnsAdmin.serviceType }}
 EOF
 ```
 {: file='PowerDNS-Admin/templates/service-powerdns-admin.yaml'}

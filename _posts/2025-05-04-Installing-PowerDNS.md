@@ -234,6 +234,8 @@ powerdns:
   dbName: pdns
   apiAllowFrom: 0.0.0.0/0
   webserver: true
+  serviceType: LoadBalancer
+  serviceIP: 172.16.0.241
 
 powerdnsAdmin:
   enabled: true
@@ -246,6 +248,7 @@ powerdnsAdmin:
   api:
     url: http://powerdns:8081
     key: changeme
+  serviceType: ClusterIP
 
 recursor:
   enabled: true
@@ -257,17 +260,14 @@ metallb:
   advertisementName: pdns-l2adv
   addressRange: 172.16.0.241-172.16.0.250
 
-service:
-  type: ClusterIP
-
 ingress:
-  enabled: false
-  hostname: ""
-  className: ""
+  enabled: true # Ingress 활성화
+  hostname: "pdns.infra.com" # PowerDNS Admin 접속을 위한 호스트 이름 설정
+  className: "nginx" # 사용하는 Ingress Controller의 클래스 이름 (예: nginx, traefik 등)
+  annotations: {} # 추가 Ingress 어노테이션 (필요시)
 EOF
 ```
 {: file='PowerDNS-Admin/values.yaml'}
-
 
 ### deployment-postgresql.yaml
 
@@ -433,11 +433,12 @@ cat <<'EOF' | sudo tee PowerDNS-Admin/templates/metallb-config.yaml
 # 📁 PowerDNS-Admin/templates/metallb-config.yaml
 # Helm Chart에 포함되는 MetalLB 설정 파일입니다.
 
+{{- if .Values.metallb.enabled }}
 apiVersion: metallb.io/v1beta1
 kind: IPAddressPool
 metadata:
   name: {{ .Values.metallb.poolName }}
-  namespace: metallb-system
+  namespace: metallb-system # MetalLB가 설치된 네임스페이스
 spec:
   addresses:
     - {{ .Values.metallb.addressRange }}
@@ -447,13 +448,54 @@ apiVersion: metallb.io/v1beta1
 kind: L2Advertisement
 metadata:
   name: {{ .Values.metallb.advertisementName }}
-  namespace: metallb-system
+  namespace: metallb-system # MetalLB가 설치된 네임스페이스
 spec:
   ipAddressPools:
     - {{ .Values.metallb.poolName }}
+{{- end }}
 EOF
 ```
 {: file='PowerDNS-Admin/templates/metallb-config.yaml'}
+
+### ingress.yaml
+
+```yaml
+cat <<'EOF' | sudo tee PowerDNS-Admin/templates/ingress.yaml
+---
+# 📁 PowerDNS-Admin/templates/ingress.yaml
+# PowerDNS Admin을 위한 Ingress 설정 파일입니다.
+
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: powerdns-ingress
+  annotations:
+    {{- toYaml .Values.ingress.annotations | nindent 4 }}
+  labels:
+    app.kubernetes.io/name: powerdns-admin
+    helm.sh/chart: {{ include "powerdns-admin.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  {{- if .Values.ingress.className }}
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.ingress.hostname }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: powerdns-admin
+                port:
+                  number: 8080
+{{- end }}
+EOF
+```
+{: file='PowerDNS-Admin/templates/ingress.yaml'}
 
 ### pvc-postgresql.yaml
 
@@ -551,11 +593,65 @@ spec:
       port: 8081
       targetPort: 8081
       protocol: TCP
-  type: LoadBalancer
-  loadBalancerIP: {{ .Values.powerdns.serviceIP }}
+  type: {{ .Values.powerdns.serviceType }} # values.yaml에서 설정한 LoadBalancer 사용
+  loadBalancerIP: {{ .Values.powerdns.serviceIP }} # LoadBalancer IP 설정
 EOF
 ```
 {: file='PowerDNS-Admin/templates/service-powerdns.yaml'}
+
+### _helpers.tpl
+
+```yaml
+cat <<'EOF' | sudo tee PowerDNS-Admin/templates/_helpers.tpl
+---
+# 📁 PowerDNS-Admin/templates/_helpers.tpl
+# Helm Chart에서 공통적으로 사용되는 헬퍼 템플릿들을 정의합니다.
+
+{{/*
+Chart 이름과 버전 조합을 반환합니다.
+*/}}
+{{- define "powerdns-admin.chart" -}}
+{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+전체 이름 접두사를 생성합니다.
+*/}}
+{{- define "powerdns-admin.fullname" -}}
+{{- if .Values.fullnameOverride -}}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $name := default .Chart.Name .Values.nameOverride -}}
+{{- if contains $name .Release.Name -}}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+앱 라벨을 생성합니다.
+*/}}
+{{- define "powerdns-admin.labels" -}}
+helm.sh/chart: {{ include "powerdns-admin.chart" . }}
+{{ include "powerdns-admin.selectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end -}}
+
+{{/*
+셀렉터 라벨을 생성합니다.
+*/}}
+{{- define "powerdns-admin.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "powerdns-admin.fullname" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end -}}
+EOF
+```
+{: file='PowerDNS-Admin/templates/_helpers.tpl'}
 
 ### Helm Chart 설치
 

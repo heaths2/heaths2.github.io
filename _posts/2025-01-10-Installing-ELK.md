@@ -981,6 +981,7 @@ sysctl -w vm.max_map_count=262144
 #COMPOSE_PROJECT_NAME=myproject
 
 # Password for the 'elastic' user (at least 6 characters)
+ELASTIC_USER=elastic
 ELASTIC_PASSWORD=changeme
 
 # Password for the 'kibana_system' user (at least 6 characters)
@@ -1003,16 +1004,59 @@ ES_PORT=9200
 KIBANA_PORT=5601
 
 # Increase or decrease based on the available host memory (in bytes)
-ES_MEM_LIMIT=2147483648
-KB_MEM_LIMIT=2147483648
-LS_MEM_LIMIT=2147483648
+ES_MEM_LIMIT=3221225472
+KB_MEM_LIMIT=1073741824
+LS_MEM_LIMIT=1073741824
 
 # SAMPLE Predefined Key only to be used in POC environments
 ENCRYPTION_KEY=c34d38b3a14956121ff2170e5030b471551370178f43e5626eec58b04a30fae2
 
-ES_DISCOVERY_HOSTS=es01,es02,es03
-ES_MASTER_NODES=es01,es02,es03
-ES_JAVA_OPTS="-Xms1536m -Xmx1536m"
+#ES_DISCOVERY_HOSTS=es01,es02,es03
+#ES_MASTER_NODES=es01,es02,es03
+ES_JAVA_OPTS="-Xms2048m -Xmx2048m"
+```
+
+```yaml
+# logstash.conf
+input {
+  beats {
+    port => 5044
+    ssl => true
+    ssl_certificate_authorities => ["/usr/share/logstash/config/certs/ca/ca.crt"]
+    ssl_certificate => "/usr/share/logstash/config/certs/logstash/logstash.crt" # Logstash 자체 인증서 (Beats와의 SSL 통신용)
+    ssl_key => "/usr/share/logstash/config/certs/logstash/logstash.key" # Logstash 자체 키
+    ssl_verify_mode => "peer"
+  }
+}
+
+filter {
+  # 필요에 따라 데이터 필터링 및 변환 로직 추가
+  # 예: JSON 파싱, 필드 추가/삭제, 데이터 타입 변환 등
+}
+
+output {
+  elasticsearch {
+    hosts => ["https://es01:9200"] # Elasticsearch 클러스터의 모든 노드 지정
+    user => "${ELASTIC_USER}"
+    password => "${ELASTIC_PASSWORD}" # .env 파일의 ELASTIC_PASSWORD를 참조합니다.
+    ssl => true
+    ssl_certificate_authorities => ["/usr/share/logstash/config/certs/ca/ca.crt"]
+    index => "%{[@metadata][beat]}-%{[@metadata][version]}-%{+YYYY.MM.dd}" # 인덱스 이름 형식
+  }
+  stdout { codec => rubydebug } # 디버깅을 위해 콘솔에 출력 (운영에서는 비활성화)
+}
+```
+
+```bash
+sudo mkdir -pv /data/elk/certs \
+               /data/elk/es/data01 \
+               /data/elk/kibana/data \
+               /data/elk/logstash/data
+
+sudo chown -R 1000:1000 /data/elk/
+sudo chcon -vRt container_file_t /data/elk
+sudo semanage fcontext -a -t container_file_t "/data/elk(/.*)?"
+sudo restorecon -Rv /data/elk
 ```
 
 ```bash
@@ -1020,18 +1064,6 @@ version: "3.8"
 
 
 volumes:
- certs:
-   driver: local
- esdata01:
-   driver: local
- kibanadata:
-   driver: local
- metricbeatdata01:
-   driver: local
- filebeatdata01:
-   driver: local
- logstashdata01:
-   driver: local
 
 networks:
  default:
@@ -1067,18 +1099,6 @@ services:
           "  - name: es01\n"\
           "    dns:\n"\
           "      - es01\n"\
-          "      - localhost\n"\
-          "    ip:\n"\
-          "      - 127.0.0.1\n"\
-          "  - name: es02\n"\
-          "    dns:\n"\
-          "      - es02\n"\
-          "      - localhost\n"\
-          "    ip:\n"\
-          "      - 127.0.0.1\n"\
-          "  - name: es03\n"\
-          "    dns:\n"\
-          "      - es03\n"\
           "      - localhost\n"\
           "    ip:\n"\
           "      - 127.0.0.1\n"\
@@ -1132,8 +1152,7 @@ services:
     environment:
       - node.name=es01
       - cluster.name=${CLUSTER_NAME}
-      - discovery.seed_hosts=${ES_DISCOVERY_HOSTS}
-      - cluster.initial_master_nodes=${ES_MASTER_NODES}
+      - discovery.type=single-node
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
       - bootstrap.memory_lock=true
       - xpack.security.enabled=true
@@ -1144,104 +1163,6 @@ services:
       - xpack.security.transport.ssl.enabled=true
       - xpack.security.transport.ssl.key=certs/es01/es01.key
       - xpack.security.transport.ssl.certificate=certs/es01/es01.crt
-      - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
-      - xpack.security.transport.ssl.verification_mode=certificate
-      - xpack.license.self_generated.type=${LICENSE}
-      - ES_JAVA_OPTS=${ES_JAVA_OPTS}
-    mem_limit: ${ES_MEM_LIMIT}
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "curl -s --cacert config/certs/ca/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'",
-        ]
-      interval: 10s
-      timeout: 10s
-      retries: 120
-
-  # Elasticsearch 노드 2
-  es02:
-    depends_on:
-      setup:
-        condition: service_healthy
-    container_name: elk-es02
-    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
-    labels:
-      co.elastic.logs/module: elasticsearch
-    volumes:
-      - /data/elk/certs:/usr/share/elasticsearch/config/certs:ro
-      - /data/elk/es/data02:/usr/share/elasticsearch/data:Z
-    ports:
-      - 9201:9200
-      - 9301:9300
-    environment:
-      - node.name=es02
-      - cluster.name=${CLUSTER_NAME}
-      - discovery.seed_hosts=${ES_DISCOVERY_HOSTS}
-      - cluster.initial_master_nodes=${ES_MASTER_NODES}
-      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
-      - bootstrap.memory_lock=true
-      - xpack.security.enabled=true
-      - xpack.security.http.ssl.enabled=true
-      - xpack.security.http.ssl.key=certs/es02/es02.key
-      - xpack.security.http.ssl.certificate=certs/es02/es02.crt
-      - xpack.security.http.ssl.certificate_authorities=certs/ca/ca.crt
-      - xpack.security.transport.ssl.enabled=true
-      - xpack.security.transport.ssl.key=certs/es02/es02.key
-      - xpack.security.transport.ssl.certificate=certs/es02/es02.crt
-      - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
-      - xpack.security.transport.ssl.verification_mode=certificate
-      - xpack.license.self_generated.type=${LICENSE}
-      - ES_JAVA_OPTS=${ES_JAVA_OPTS}
-    mem_limit: ${ES_MEM_LIMIT}
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "curl -s --cacert config/certs/ca/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'",
-        ]
-      interval: 10s
-      timeout: 10s
-      retries: 120
-
-  # Elasticsearch 노드 3
-  es03:
-    depends_on:
-      setup:
-        condition: service_healthy
-    container_name: elk-es03
-    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
-    labels:
-      co.elastic.logs/module: elasticsearch
-    volumes:
-      - /data/elk/certs:/usr/share/elasticsearch/config/certs:ro
-      - /data/elk/es/data03:/usr/share/elasticsearch/data:Z
-    ports:
-      - 9202:9200
-      - 9302:9300
-    environment:
-      - node.name=es03
-      - cluster.name=${CLUSTER_NAME}
-      - discovery.seed_hosts=${ES_DISCOVERY_HOSTS}
-      - cluster.initial_master_nodes=${ES_MASTER_NODES}
-      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
-      - bootstrap.memory_lock=true
-      - xpack.security.enabled=true
-      - xpack.security.http.ssl.enabled=true
-      - xpack.security.http.ssl.key=certs/es03/es03.key
-      - xpack.security.http.ssl.certificate=certs/es03/es03.crt
-      - xpack.security.http.ssl.certificate_authorities=certs/ca/ca.crt
-      - xpack.security.transport.ssl.enabled=true
-      - xpack.security.transport.ssl.key=certs/es03/es03.key
-      - xpack.security.transport.ssl.certificate=certs/es03/es03.crt
       - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
       - xpack.security.transport.ssl.verification_mode=certificate
       - xpack.license.self_generated.type=${LICENSE}
@@ -1295,7 +1216,7 @@ services:
       timeout: 10s
       retries: 120
 
- # Logstash01 노드 1
+  # Logstash 노드 1
   logstash01:
     depends_on:
       es01:
@@ -1316,4 +1237,177 @@ services:
       - ELASTIC_USER=elastic
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
       - ELASTIC_HOSTS=https://es01:9200
+
+  # Metricbeat 노드 1
+  metricbeat01:
+    depends_on:
+      es01:
+        condition: service_healthy
+      kibana:
+        condition: service_healthy
+    container_name: elk-metricbeat01
+    image: docker.elastic.co/beats/metricbeat:${STACK_VERSION}
+    user: root
+    volumes:
+      - /data/elk/certs:/usr/share/metricbeat/certs:ro
+      - /data/elk/metricbeat/data:/usr/share/metricbeat/data
+      - "./metricbeat.yml:/usr/share/metricbeat/metricbeat.yml:ro"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "/sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro"
+      - "/proc:/hostfs/proc:ro"
+      - "/:/hostfs:ro"
+    environment:
+      - ELASTIC_USER=${ELASTIC_USER}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - ELASTIC_HOSTS=https://es01:9200
+      - KIBANA_HOSTS=http://kibana:5601
+      - LOGSTASH_HOSTS=http://logstash01:9600
+```
+
+```yaml
+# logstash.conf
+input {
+  beats {
+    port => 5044
+    ssl => true
+    ssl_certificate_authorities => ["/usr/share/logstash/config/certs/ca/ca.crt"]
+    ssl_certificate => "/usr/share/logstash/config/certs/logstash/logstash.crt" # Logstash 자체 인증서 (Beats와의 SSL 통신용)
+    ssl_key => "/usr/share/logstash/config/certs/logstash/logstash.key" # Logstash 자체 키
+    ssl_verify_mode => "peer"
+  }
+}
+
+filter {
+  # 필요에 따라 데이터 필터링 및 변환 로직 추가
+  # 예: JSON 파싱, 필드 추가/삭제, 데이터 타입 변환 등
+}
+
+output {
+  elasticsearch {
+    hosts => ["https://es01:9200"] # Elasticsearch 클러스터의 모든 노드 지정
+    user => "${ELASTIC_USER}"
+    password => "${ELASTIC_PASSWORD}" # .env 파일의 ELASTIC_PASSWORD를 참조합니다.
+    ssl => true
+    ssl_certificate_authorities => ["/usr/share/logstash/config/certs/ca/ca.crt"]
+    index => "%{[@metadata][beat]}-%{[@metadata][version]}-%{+YYYY.MM.dd}" # 인덱스 이름 형식
+  }
+  stdout { codec => rubydebug } # 디버깅을 위해 콘솔에 출력 (운영에서는 비활성화)
+}
+```
+
+```yaml
+metricbeat.config.modules:
+  path: ${path.config}/modules.d/*.yml
+  reload.enabled: false
+
+
+metricbeat.modules:
+- module: elasticsearch
+  xpack.enabled: true
+  period: 10s
+  hosts: ${ELASTIC_HOSTS}
+  ssl.certificate_authorities: "certs/ca/ca.crt"
+  ssl.certificate: "certs/es01/es01.crt"
+  ssl.key: "certs/es01/es01.key"
+  username: ${ELASTIC_USER}
+  password: ${ELASTIC_PASSWORD}
+  ssl.enabled: true
+
+
+- module: logstash
+  xpack.enabled: true
+  period: 10s
+  hosts: ${LOGSTASH_HOSTS}
+
+
+- module: kibana
+  metricsets:
+    - stats
+  period: 10s
+  hosts: ${KIBANA_HOSTS}
+  username: ${ELASTIC_USER}
+  password: ${ELASTIC_PASSWORD}
+  xpack.enabled: true
+
+
+- module: docker
+  metricsets:
+    - "container"
+    - "cpu"
+    - "diskio"
+    - "healthcheck"
+    - "info"
+    #- "image"
+    - "memory"
+    - "network"
+  hosts: ["unix:///var/run/docker.sock"]
+  period: 10s
+  enabled: true
+
+
+processors:
+  - add_host_metadata: ~
+  - add_docker_metadata: ~
+
+
+output.elasticsearch:
+  hosts: ${ELASTIC_HOSTS}
+  username: ${ELASTIC_USER}
+  password: ${ELASTIC_PASSWORD}
+  ssl:
+    certificate: "certs/es01/es01.crt"
+    certificate_authorities: "certs/ca/ca.crt"
+    key: "certs/es01/es01.key"
+    verification_mode: full
+```
+
+```bash
+  # Elasticsearch 노드 1
+  es01:
+    depends_on:
+      setup:
+        condition: service_healthy
+    container_name: elk-es01
+    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    labels:
+      co.elastic.logs/module: elasticsearch
+    volumes:
+      - /data/elk/certs:/usr/share/elasticsearch/config/certs:ro
+      - /data/elk/es/data01:/usr/share/elasticsearch/data:Z
+    ports:
+      - 9200:9200
+      - 9300:9300
+    environment:
+      - node.name=es01
+      - cluster.name=${CLUSTER_NAME}
+      - discovery.seed_hosts=${ES_DISCOVERY_HOSTS}
+      - cluster.initial_master_nodes=${ES_MASTER_NODES}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.key=certs/es01/es01.key
+      - xpack.security.http.ssl.certificate=certs/es01/es01.crt
+      - xpack.security.http.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.key=certs/es01/es01.key
+      - xpack.security.transport.ssl.certificate=certs/es01/es01.crt
+      - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.license.self_generated.type=${LICENSE}
+      - ES_JAVA_OPTS=${ES_JAVA_OPTS}
+    mem_limit: ${ES_MEM_LIMIT}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s --cacert config/certs/ca/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
 ```

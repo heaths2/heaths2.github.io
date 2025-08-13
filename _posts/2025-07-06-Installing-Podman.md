@@ -38,6 +38,28 @@ echo 'export PATH="$PATH:/usr/local/bin"' >> ~/.bashrc
 podman-compose --version
 ```
 
+- 기존 이미지 저장소 변경
+
+```bash
+/etc/containers/registries.conf
+unqualified-search-registries = ["registry.access.redhat.com", "registry.redhat.io", "docker.io"]
+unqualified-search-registries = ["docker.io"]
+```
+
+- 기본 저장소 위치 변경
+
+```bash
+# Podman 기본 데이터 경로의 SELinux 컨텍스트 확인
+semanage fcontext -l|grep "/var/lib/containers"
+
+# 새로운 경로에 Podman 접근 권한을 위한 SELinux 컨텍스트 설정 및 적용
+semanage fcontext -a -e /var/lib/containers /data/podman/database
+restorecon -Rv /data/podman/database
+
+# 변경된 컨텍스트가 올바르게 적용되었는지 최종 확인
+semanage fcontext -l|grep "/var/lib/containers"
+semanage fcontext -l|grep "/data/podman/database"
+```
 
 ## 참고 자료
 - [Jenkins 공식 문서](https://www.jenkins.io/doc/book/installing/kubernetes/)

@@ -700,6 +700,7 @@ services:
       POSTGRES_DB: 'npm'
     volumes:
       - /data/postgres:/var/lib/postgresql/data
+EOF
 ```
 
 

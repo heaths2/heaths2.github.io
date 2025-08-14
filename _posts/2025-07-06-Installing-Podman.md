@@ -33,6 +33,7 @@ sudo dnf install -y podman
 sudo dnf install -y python3-pip
 pip3 install podman-compose
 echo 'export PATH="$PATH:/usr/local/bin"' >> ~/.bashrc
+source ~/.bashrc
 
 # 설치 확인
 podman-compose --version
@@ -41,9 +42,7 @@ podman-compose --version
 - 기존 이미지 저장소 변경
 
 ```bash
-/etc/containers/registries.conf
-unqualified-search-registries = ["registry.access.redhat.com", "registry.redhat.io", "docker.io"]
-unqualified-search-registries = ["docker.io"]
+sudo sed -i 's/^unqualified-search-registries = .*$/unqualified-search-registries = ["docker.io"]/' /etc/containers/registries.conf
 ```
 
 - 기본 저장소 위치 변경

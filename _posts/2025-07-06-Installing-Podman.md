@@ -25,23 +25,20 @@ Podman은 컨테이너를 관리하고 실행하기 위한 강력한 오픈 소�
 
 ## ⚙️ 설지방법
 
+- 패키지 설치
+
 ```bash
-# Podman 설치
-sudo dnf install -y podman
+# Podman & podman-compose 패키지 설치
+sudo dnf install -y podman podman-compose
 
-# 추가 패키지 설치
-sudo dnf install -y python3-pip
-pip3 install podman-compose
-echo 'export PATH="$PATH:/usr/local/bin"' >> ~/.bashrc
-source ~/.bashrc
-
-# 설치 확인
+# podman-compose 설치 버전 확인
 podman-compose --version
 ```
 
 - 기존 이미지 저장소 변경
 
 ```bash
+# unqualified-search-registries 값 "docker.io"로 변경
 sudo sed -i 's/^unqualified-search-registries = .*$/unqualified-search-registries = ["docker.io"]/' /etc/containers/registries.conf
 ```
 

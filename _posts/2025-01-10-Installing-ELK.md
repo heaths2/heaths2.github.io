@@ -1004,9 +1004,9 @@ ES_PORT=9200
 KIBANA_PORT=5601
 
 # Increase or decrease based on the available host memory (in bytes)
-ES_MEM_LIMIT=3221225472
-KB_MEM_LIMIT=1073741824
-LS_MEM_LIMIT=1073741824
+ES_MEM_LIMIT=4294967296
+KB_MEM_LIMIT=2147483648
+LS_MEM_LIMIT=2147483648
 
 # SAMPLE Predefined Key only to be used in POC environments
 ENCRYPTION_KEY=c34d38b3a14956121ff2170e5030b471551370178f43e5626eec58b04a30fae2
@@ -1102,6 +1102,18 @@ services:
           "      - localhost\n"\
           "    ip:\n"\
           "      - 127.0.0.1\n"\
+          "  - name: es02\n"\
+          "    dns:\n"\
+          "      - es02\n"\
+          "      - localhost\n"\
+          "    ip:\n"\
+          "      - 127.0.0.1\n"\
+          "  - name: es03\n"\
+          "    dns:\n"\
+          "      - es03\n"\
+          "      - localhost\n"\
+          "    ip:\n"\
+          "      - 127.0.0.1\n"\
           "  - name: kibana\n"\
           "    dns:\n"\
           "      - kibana\n"\
@@ -1152,7 +1164,8 @@ services:
     environment:
       - node.name=es01
       - cluster.name=${CLUSTER_NAME}
-      - discovery.type=single-node
+      - discovery.seed_hosts=${ES_DISCOVERY_HOSTS}
+      - cluster.initial_master_nodes=${ES_MASTER_NODES}
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
       - bootstrap.memory_lock=true
       - xpack.security.enabled=true
@@ -1163,6 +1176,104 @@ services:
       - xpack.security.transport.ssl.enabled=true
       - xpack.security.transport.ssl.key=certs/es01/es01.key
       - xpack.security.transport.ssl.certificate=certs/es01/es01.crt
+      - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.license.self_generated.type=${LICENSE}
+      - ES_JAVA_OPTS=${ES_JAVA_OPTS}
+    mem_limit: ${ES_MEM_LIMIT}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s --cacert config/certs/ca/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+
+  # Elasticsearch 노드 2
+  es02:
+    depends_on:
+      setup:
+        condition: service_healthy
+    container_name: elk-es02
+    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    labels:
+      co.elastic.logs/module: elasticsearch
+    volumes:
+      - /data/elk/certs:/usr/share/elasticsearch/config/certs:ro
+      - /data/elk/es/data02:/usr/share/elasticsearch/data:Z
+    ports:
+      - 9201:9200
+      - 9301:9300
+    environment:
+      - node.name=es02
+      - cluster.name=${CLUSTER_NAME}
+      - discovery.seed_hosts=${ES_DISCOVERY_HOSTS}
+      - cluster.initial_master_nodes=${ES_MASTER_NODES}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.key=certs/es02/es02.key
+      - xpack.security.http.ssl.certificate=certs/es02/es02.crt
+      - xpack.security.http.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.key=certs/es02/es02.key
+      - xpack.security.transport.ssl.certificate=certs/es02/es02.crt
+      - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.license.self_generated.type=${LICENSE}
+      - ES_JAVA_OPTS=${ES_JAVA_OPTS}
+    mem_limit: ${ES_MEM_LIMIT}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s --cacert config/certs/ca/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+
+  # Elasticsearch 노드 3
+  es03:
+    depends_on:
+      setup:
+        condition: service_healthy
+    container_name: elk-es03
+    image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
+    labels:
+      co.elastic.logs/module: elasticsearch
+    volumes:
+      - /data/elk/certs:/usr/share/elasticsearch/config/certs:ro
+      - /data/elk/es/data03:/usr/share/elasticsearch/data:Z
+    ports:
+      - 9202:9200
+      - 9302:9300
+    environment:
+      - node.name=es03
+      - cluster.name=${CLUSTER_NAME}
+      - discovery.seed_hosts=${ES_DISCOVERY_HOSTS}
+      - cluster.initial_master_nodes=${ES_MASTER_NODES}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.key=certs/es03/es03.key
+      - xpack.security.http.ssl.certificate=certs/es03/es03.crt
+      - xpack.security.http.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.key=certs/es03/es03.key
+      - xpack.security.transport.ssl.certificate=certs/es03/es03.crt
       - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
       - xpack.security.transport.ssl.verification_mode=certificate
       - xpack.license.self_generated.type=${LICENSE}
@@ -1216,7 +1327,7 @@ services:
       timeout: 10s
       retries: 120
 
-  # Logstash 노드 1
+ # Logstash01 노드 1
   logstash01:
     depends_on:
       es01:
@@ -1237,6 +1348,7 @@ services:
       - ELASTIC_USER=elastic
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
       - ELASTIC_HOSTS=https://es01:9200
+
 
   # Metricbeat 노드 1
   metricbeat01:

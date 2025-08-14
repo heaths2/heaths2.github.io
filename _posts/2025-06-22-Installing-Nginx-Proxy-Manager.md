@@ -692,7 +692,7 @@ services:
       POSTGRES_PASSWORD: 'npm'
       POSTGRES_DB: 'npm'
     volumes:
-      - /data/pgsql:/var/lib/pgsql/data
+      - /data/pgsql:/var/lib/postgresql/data
 EOF
 ```
 

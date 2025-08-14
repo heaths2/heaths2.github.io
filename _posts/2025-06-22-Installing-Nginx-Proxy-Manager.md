@@ -644,28 +644,21 @@ helm upgrade --install nginx-proxy-manager ./nginx-proxy-manager \
 ### PodMan 설치 방법
 
 ```bash
-cat << 'EOF' > /etc/yum.repos.d/nginx.repo
-[nginx-stable]
-name=nginx stable repo
-baseurl=http://nginx.org/packages/centos/$releasever/$basearch/
-gpgcheck=1
-enabled=1
-gpgkey=https://nginx.org/keys/nginx_signing.key
-module_hotfixes=true
-EOF
+# Podman & podman-compose 패키지 설치
+sudo dnf install -y podman podman-compose
 
-sudo dnf update
-sudo dnf install nginx nginx-mod-headers-more
+# unqualified-search-registries 값 "docker.io"로 변경
+sudo sed -i 's/^unqualified-search-registries = .*$/unqualified-search-registries = ["docker.io"]/' /etc/containers/registries.conf
 
-sudo dnf install -y podman
-sudo dnf install -y python3-pip  # pip3 설치
-pip3 install podman-compose      # podman-compose 설치
-echo 'export PATH="$PATH:/usr/local/bin"' >> ~/.bashrc
+# podman-compose 설치 버전 확인
+podman-compose --version
 
-podman --version
-podman-compose --version # 설치 확인
+# Nginx Proxy Manager 및 데이터용 디렉토리 생성
+mkdir -pv /opt/nginx-proxy-manager
+mkdir -pv /data/{letsencrypt,nginx-proxy-manager,pgsql}
 
-cat << EOF > nginx-proxy-manager/docker-compose.yml
+# Nginx Proxy Manager용 docker-compose.yml 파일 생성
+cat << EOF > /opt/nginx-proxy-manager/docker-compose.yml
 # /opt/nginx-proxy-manager/docker-compose.yml
 version: '3.8'
 
@@ -693,13 +686,13 @@ services:
   db:
     image: postgres:latest
     container_name: nginx-proxy-manager_db
-    restart: unless-stopped    
+    restart: unless-stopped
     environment:
       POSTGRES_USER: 'npm'
       POSTGRES_PASSWORD: 'npm'
       POSTGRES_DB: 'npm'
     volumes:
-      - /data/postgres:/var/lib/postgresql/data
+      - /data/pgsql:/var/lib/pgsql/data
 EOF
 ```
 

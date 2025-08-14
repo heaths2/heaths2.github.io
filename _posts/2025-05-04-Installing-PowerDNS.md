@@ -601,7 +601,56 @@ EOF
 ### _helpers.tpl
 
 ```yaml
+{% raw %}
+cat <<'EOF' | sudo tee PowerDNS-Admin/templates/_helpers.tpl
+---
+# 📁 PowerDNS-Admin/templates/_helpers.tpl
+# Helm Chart에서 공통적으로 사용되는 헬퍼 템플릿들을 정의합니다.
 
+{{/*
+Chart 이름과 버전 조합을 반환합니다.
+*/}}
+{{- define "powerdns-admin.chart" -}}
+{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+전체 이름 접두사를 생성합니다.
+*/}}
+{{- define "powerdns-admin.fullname" -}}
+{{- if .Values.fullnameOverride -}}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $name := default .Chart.Name .Values.nameOverride -}}
+{{- if contains $name .Release.Name -}}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+앱 라벨을 생성합니다.
+*/}}
+{{- define "powerdns-admin.labels" -}}
+helm.sh/chart: {{ include "powerdns-admin.chart" . }}
+{{ include "powerdns-admin.selectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end -}}
+
+{{/*
+셀렉터 라벨을 생성합니다.
+*/}}
+{{- define "powerdns-admin.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "powerdns-admin.fullname" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end -}}
+EOF
+{% endraw %}
 ```
 {: file='PowerDNS-Admin/templates/_helpers.tpl'}
 

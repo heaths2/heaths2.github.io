@@ -696,6 +696,26 @@ services:
 EOF
 ```
 
+```bash
+# SELinux를 Permissive 모드로 설정
+sudo setenforce 0
+
+# audit.log에서 AVC(Access Vector Cache) 로그 확인
+sudo grep AVC /var/log/audit/audit.log
+
+# audit2allow로 정책 모듈 생성 및 적용
+sudo audit2allow -a -M npm
+
+# 정책 모듈 설치
+sudo semodule -i npm.pp
+
+# SELinux를 Enforcing 모드로 재설정
+sudo setenforce 1
+```
+
+```bash
+podman-compose up -d
+```
 
 ![그림_1](/assets/img/2025-06-15/그림1.png)
 _Jenkins 로그인_

@@ -700,6 +700,16 @@ EOF
 # 방화벽에서 Nginx Proxy Manager 관리 포트(81/tcp) 허용
 sudo firewall-cmd --permanent --add-port=81/tcp
 
+# 방화벽 설정 내용 적용
+sudo firewall-cmd --reload
+```
+
+```bash
+# Podman Compose를 이용한 컨테이너 실행 (백그라운드)
+podman-compose up -d
+```
+
+```bash
 # SELinux 정책 설정 시작
 
 # SELinux를 Permissive 모드로 일시 변경
@@ -717,9 +727,6 @@ cp -v npm.pp /etc/selinux/policies.d/
 
 # SELinux 정책 모듈 설치 및 적용
 sudo semodule -i npm.pp
-
-# Podman Compose를 이용한 컨테이너 실행 (백그라운드)
-podman-compose up -d
 
 # SELinux를 Enforcing 모드로 재변경 (보안 강화)
 sudo setenforce 1

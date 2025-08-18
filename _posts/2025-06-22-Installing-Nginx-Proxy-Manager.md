@@ -659,7 +659,7 @@ mkdir -pv /data/{letsencrypt,nginx/custom,pgsql,logrotate.d/nginx-proxy-manager}
 
 # 데이터 디렉토리들에 개별 컨테이너 파일 컨텍스트 영구 적용 규칙 추가
 sudo semanage fcontext -a -t container_file_t "/data/letsencrypt(/.*)?"
-sudo semanage fcontext -a -t container_file_t "/data/nginx-proxy-manager(/.*)?"
+sudo semanage fcontext -a -t container_file_t "/data/nginx(/.*)?"
 sudo semanage fcontext -a -t container_file_t "/data/pgsql(/.*)?"
 sudo semanage fcontext -a -t container_file_t "/data/logrotate.d/nginx-proxy-manager(/.*)?"
 

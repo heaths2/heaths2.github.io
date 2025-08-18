@@ -657,42 +657,41 @@ podman-compose --version
 mkdir -pv /opt/nginx-proxy-manager
 mkdir -pv /data/{letsencrypt,nginx-proxy-manager,pgsql}
 
-# Nginx Proxy Manager용 docker-compose.yml 파일 생성
+# Nginx Proxy Manager 및 데이터용 디렉토리 생성
 cat << EOF > /opt/nginx-proxy-manager/docker-compose.yml
-# /opt/nginx-proxy-manager/docker-compose.yml
 version: '3.8'
 
 services:
-  app:
-    image: 'jc21/nginx-proxy-manager:latest'
-    container_name: nginx-proxy-manager_app
-    restart: unless-stopped
-    ports:
-      - '80:80' # Public HTTP Port
-      - '443:443' # Public HTTPS Port
-      - '81:81' # Admin Web Port
-    environment:
-      DB_POSTGRES_HOST: 'db'
-      DB_POSTGRES_PORT: '5432'
-      DB_POSTGRES_USER: 'npm'
-      DB_POSTGRES_PASSWORD: 'npm'
-      DB_POSTGRES_NAME: 'npm'
-    volumes:
-      - /data/nginx-proxy-manager:/data
-      - /data/letsencrypt:/etc/letsencrypt
-    depends_on:
-      - db
+  app:
+    image: 'jc21/nginx-proxy-manager:latest'
+    container_name: nginx-proxy-manager_app
+    restart: unless-stopped
+    ports:
+      - '80:80' # Public HTTP Port
+      - '443:443' # Public HTTPS Port
+      - '81:81' # Admin Web Port
+    environment:
+      DB_POSTGRES_HOST: 'db'
+      DB_POSTGRES_PORT: '5432'
+      DB_POSTGRES_USER: 'npm'
+      DB_POSTGRES_PASSWORD: 'npm'
+      DB_POSTGRES_NAME: 'npm'
+    volumes:
+      - /data/nginx-proxy-manager:/data
+      - /data/letsencrypt:/etc/letsencrypt
+    depends_on:
+      - db
 
-  db:
-    image: postgres:latest
-    container_name: nginx-proxy-manager_db
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: 'npm'
-      POSTGRES_PASSWORD: 'npm'
-      POSTGRES_DB: 'npm'
-    volumes:
-      - /data/pgsql:/var/lib/postgresql/data
+  db:
+    image: postgres:latest
+    container_name: nginx-proxy-manager_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: 'npm'
+      POSTGRES_PASSWORD: 'npm'
+      POSTGRES_DB: 'npm'
+    volumes:
+      - /data/pgsql:/var/lib/postgresql/data
 EOF
 ```
 

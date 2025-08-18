@@ -688,6 +688,7 @@ services:
     volumes:
       - /data/nginx:/data
       - /data/letsencrypt:/etc/letsencrypt
+      - /data/logrotate.d/nginx-proxy-manager:/etc/logrotate.d/nginx-proxy-manager
     depends_on:
       - db
 

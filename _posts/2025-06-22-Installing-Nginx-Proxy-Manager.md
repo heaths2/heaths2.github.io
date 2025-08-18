@@ -727,6 +727,9 @@ cp -v npm.pp /etc/selinux/policies.d/
 # SELinux 정책 모듈 설치 및 적용
 sudo semodule -i npm.pp
 
+# 컨테이너 재시작
+podman restart nginx-proxy-manager_app nginx-proxy-manager_db
+
 # SELinux를 Enforcing 모드로 재변경 (보안 강화)
 sudo setenforce 1
 ```

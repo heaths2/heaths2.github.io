@@ -686,7 +686,7 @@ services:
       DB_POSTGRES_PASSWORD: 'npm'
       DB_POSTGRES_NAME: 'npm'
     volumes:
-      - /data/nginx-proxy-manager:/data
+      - /data/nginx:/data
       - /data/letsencrypt:/etc/letsencrypt
     depends_on:
       - db

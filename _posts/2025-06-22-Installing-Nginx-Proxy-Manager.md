@@ -696,6 +696,23 @@ EOF
 ```
 
 ```bash
+# Nginx Proxy Manager 설치 디렉토리로 이동
+cd /opt/nginx-proxy-manager
+
+# /data/letsencrypt에 컨테이너 파일 컨텍스트 영구 적용 규칙 추가
+sudo semanage fcontext -a -t container_file_t "/data/letsencrypt(/.*)?"
+
+# /data/nginx-proxy-manager에 컨테이너 파일 컨텍스트 영구 적용 규칙 추가
+sudo semanage fcontext -a -t container_file_t "/data/nginx-proxy-manager(/.*)?"
+
+# /data/pgsql에 컨테이너 파일 컨텍스트 영구 적용 규칙 추가
+sudo semanage fcontext -a -t container_file_t "/data/pgsql(/.*)?"
+
+# 규칙 추가 후 적용 (컨텍스트 업데이트)
+sudo restorecon -Rv /data
+```
+
+```bash
 # 방화벽에서 Nginx Proxy Manager 관리 포트(81/tcp) 허용
 sudo firewall-cmd --permanent --add-port=81/tcp
 
@@ -706,32 +723,6 @@ sudo firewall-cmd --reload
 ```bash
 # Podman Compose를 이용한 컨테이너 실행 (백그라운드)
 podman-compose up -d
-```
-
-```bash
-# SELinux 정책 설정 시작
-
-# SELinux를 Permissive 모드로 일시 변경
-sudo setenforce 0
-
-# audit.log에서 AVC(Access Vector Cache) 로그 확인
-sudo grep AVC /var/log/audit/audit.log
-
-# audit2allow를 이용한 SELinux 정책 모듈(npm.pp) 자동 생성
-sudo audit2allow -a -M npm
-
-# 생성된 정책 모듈(.pp)을 정책 디렉토리로 이동
-mkdir -pv /etc/selinux/policies.d
-cp -v npm.pp /etc/selinux/policies.d/
-
-# SELinux 정책 모듈 설치 및 적용
-sudo semodule -i npm.pp
-
-# 컨테이너 재시작
-podman restart nginx-proxy-manager_app nginx-proxy-manager_db
-
-# SELinux를 Enforcing 모드로 재변경 (보안 강화)
-sudo setenforce 1
 ```
 
 ![그림_1](/assets/img/2025-06-15/그림1.png)

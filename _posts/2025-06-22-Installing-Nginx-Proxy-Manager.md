@@ -668,6 +668,7 @@ sudo restorecon -Rv /data
 
 # Nginx Proxy Manager 및 데이터용 디렉토리 생성
 cat << EOF > /opt/nginx-proxy-manager/docker-compose.yml
+# /opt/nginx-proxy-manager/docker-compose.yml
 version: '3.8'
 
 services:
@@ -685,10 +686,15 @@ services:
       DB_POSTGRES_USER: 'npm'
       DB_POSTGRES_PASSWORD: 'npm'
       DB_POSTGRES_NAME: 'npm'
+      TZ: 'Asia/Seoul'
     volumes:
       - /data/nginx:/data
       - /data/letsencrypt:/etc/letsencrypt
       - /data/logrotate.custom:/etc/logrotate.d/nginx-proxy-manager
+    healthcheck:
+      test: ["CMD", "/usr/bin/check-health"]
+      interval: 10s
+      timeout: 3s
     depends_on:
       - db
 
@@ -700,6 +706,7 @@ services:
       POSTGRES_USER: 'npm'
       POSTGRES_PASSWORD: 'npm'
       POSTGRES_DB: 'npm'
+      TZ: 'Asia/Seoul'
     volumes:
       - /data/pgsql:/var/lib/postgresql/data
 EOF

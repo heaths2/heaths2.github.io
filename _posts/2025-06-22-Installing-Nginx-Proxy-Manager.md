@@ -655,7 +655,16 @@ podman-compose --version
 
 # Nginx Proxy Manager 및 데이터용 디렉토리 생성
 mkdir -pv /opt/nginx-proxy-manager
-mkdir -pv /data/{letsencrypt,nginx-proxy-manager,pgsql}
+mkdir -pv /data/{letsencrypt,nginx/custom,pgsql,logrotate.d/nginx-proxy-manager}
+
+# 데이터 디렉토리들에 개별 컨테이너 파일 컨텍스트 영구 적용 규칙 추가
+sudo semanage fcontext -a -t container_file_t "/data/letsencrypt(/.*)?"
+sudo semanage fcontext -a -t container_file_t "/data/nginx-proxy-manager(/.*)?"
+sudo semanage fcontext -a -t container_file_t "/data/pgsql(/.*)?"
+sudo semanage fcontext -a -t container_file_t "/data/logrotate.d/nginx-proxy-manager(/.*)?"
+
+# 영구 규칙 적용
+sudo restorecon -Rv /data
 
 # Nginx Proxy Manager 및 데이터용 디렉토리 생성
 cat << EOF > /opt/nginx-proxy-manager/docker-compose.yml
@@ -696,23 +705,6 @@ EOF
 ```
 
 ```bash
-# Nginx Proxy Manager 설치 디렉토리로 이동
-cd /opt/nginx-proxy-manager
-
-# /data/letsencrypt에 컨테이너 파일 컨텍스트 영구 적용 규칙 추가
-sudo semanage fcontext -a -t container_file_t "/data/letsencrypt(/.*)?"
-
-# /data/nginx-proxy-manager에 컨테이너 파일 컨텍스트 영구 적용 규칙 추가
-sudo semanage fcontext -a -t container_file_t "/data/nginx-proxy-manager(/.*)?"
-
-# /data/pgsql에 컨테이너 파일 컨텍스트 영구 적용 규칙 추가
-sudo semanage fcontext -a -t container_file_t "/data/pgsql(/.*)?"
-
-# 규칙 추가 후 적용 (컨텍스트 업데이트)
-sudo restorecon -Rv /data
-```
-
-```bash
 # 방화벽에서 Nginx Proxy Manager 관리 포트(81/tcp) 허용
 sudo firewall-cmd --permanent --add-port=81/tcp
 
@@ -721,6 +713,9 @@ sudo firewall-cmd --reload
 ```
 
 ```bash
+# Nginx Proxy Manager 설치 디렉토리로 이동
+cd /opt/nginx-proxy-manager
+
 # Podman Compose를 이용한 컨테이너 실행 (백그라운드)
 podman-compose up -d
 ```

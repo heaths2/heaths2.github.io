@@ -712,7 +712,7 @@ services:
 EOF
 
 # 로그 순환 설정
-cat << EOF > /data/logrotate.d/logrotate.custom
+cat << 'EOF' > /data/logrotate.d/logrotate.custom
 # /data/logrotate.d/logrotate.custom
 /data/logs/*_access.log /data/logs/*/access.log {
     su npm npm

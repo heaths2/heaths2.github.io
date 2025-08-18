@@ -655,13 +655,13 @@ podman-compose --version
 
 # Nginx Proxy Manager 및 데이터용 디렉토리 생성
 mkdir -pv /opt/nginx-proxy-manager
-mkdir -pv /data/{letsencrypt,nginx/custom,pgsql,logrotate.custom}
+mkdir -pv /data/{letsencrypt,nginx/custom,pgsql,logrotate.d}
 
 # 데이터 디렉토리들에 개별 컨테이너 파일 컨텍스트 영구 적용 규칙 추가
 sudo semanage fcontext -a -t container_file_t "/data/letsencrypt(/.*)?"
 sudo semanage fcontext -a -t container_file_t "/data/nginx(/.*)?"
 sudo semanage fcontext -a -t container_file_t "/data/pgsql(/.*)?"
-sudo semanage fcontext -a -t container_file_t "/data/logrotate.custom(/.*)?"
+sudo semanage fcontext -a -t container_file_t "/data/logrotate.d(/.*)?"
 
 # 영구 규칙 적용
 sudo restorecon -Rv /data
@@ -690,7 +690,7 @@ services:
     volumes:
       - /data/nginx:/data
       - /data/letsencrypt:/etc/letsencrypt
-      - /data/logrotate.custom:/etc/logrotate.d/nginx-proxy-manager
+      - /data/logrotate.d/logrotate.custom:/etc/logrotate.d/nginx-proxy-manager
     healthcheck:
       test: ["CMD", "/usr/bin/check-health"]
       interval: 10s
@@ -709,6 +709,38 @@ services:
       TZ: 'Asia/Seoul'
     volumes:
       - /data/pgsql:/var/lib/postgresql/data
+EOF
+
+# 로그 순환 설정
+cat << EOF > /data/logrotate.d/logrotate.custom
+# /data/logrotate.d/logrotate.custom
+/data/logs/*_access.log /data/logs/*/access.log {
+    su npm npm
+    create 0644
+    weekly
+    rotate 4
+    missingok
+    notifempty
+    compress
+    sharedscripts
+    postrotate
+    kill -USR1 `cat /run/nginx/nginx.pid 2>/dev/null` 2>/dev/null || true
+    endscript
+}
+
+/data/logs/*_error.log /data/logs/*/error.log {
+    su npm npm
+    create 0644
+    weekly
+    rotate 10
+    missingok
+    notifempty
+    compress
+    sharedscripts
+    postrotate
+    kill -USR1 `cat /run/nginx/nginx.pid 2>/dev/null` 2>/dev/null || true
+    endscript
+}
 EOF
 ```
 

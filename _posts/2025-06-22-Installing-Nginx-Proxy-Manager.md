@@ -644,13 +644,13 @@ helm upgrade --install nginx-proxy-manager ./nginx-proxy-manager \
 ### PodMan 설치 방법
 
 ```bash
-# Podman & podman-compose 패키지 설치
+# Podman 및 Podman Compose 패키지 설치
 sudo dnf install -y podman podman-compose
 
-# unqualified-search-registries 값 "docker.io"로 변경
+# 컨테이너 레지스트리 기본값 설정 (docker.io)
 sudo sed -i 's/^unqualified-search-registries = .*$/unqualified-search-registries = ["docker.io"]/' /etc/containers/registries.conf
 
-# podman-compose 설치 버전 확인
+# Podman Compose 설치 버전 확인
 podman-compose --version
 
 # Nginx Proxy Manager 및 데이터용 디렉토리 생성
@@ -663,58 +663,66 @@ cat << EOF > /opt/nginx-proxy-manager/docker-compose.yml
 version: '3.8'
 
 services:
-  app:
-    image: 'jc21/nginx-proxy-manager:latest'
-    container_name: nginx-proxy-manager_app
-    restart: unless-stopped
-    ports:
-      - '80:80' # Public HTTP Port
-      - '443:443' # Public HTTPS Port
-      - '81:81' # Admin Web Port
-    environment:
-      DB_POSTGRES_HOST: 'db'
-      DB_POSTGRES_PORT: '5432'
-      DB_POSTGRES_USER: 'npm'
-      DB_POSTGRES_PASSWORD: 'npm'
-      DB_POSTGRES_NAME: 'npm'
-    volumes:
-      - /data/nginx-proxy-manager:/data
-      - /data/letsencrypt:/etc/letsencrypt
-    depends_on:
-      - db
+  app:
+    image: 'jc21/nginx-proxy-manager:latest'
+    container_name: nginx-proxy-manager_app
+    restart: unless-stopped
+    ports:
+      - '80:80' # Public HTTP Port
+      - '443:443' # Public HTTPS Port
+      - '81:81' # Admin Web Port
+    environment:
+      DB_POSTGRES_HOST: 'db'
+      DB_POSTGRES_PORT: '5432'
+      DB_POSTGRES_USER: 'npm'
+      DB_POSTGRES_PASSWORD: 'npm'
+      DB_POSTGRES_NAME: 'npm'
+    volumes:
+      - /data/nginx-proxy-manager:/data
+      - /data/letsencrypt:/etc/letsencrypt
+    depends_on:
+      - db
 
-  db:
-    image: postgres:latest
-    container_name: nginx-proxy-manager_db
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: 'npm'
-      POSTGRES_PASSWORD: 'npm'
-      POSTGRES_DB: 'npm'
-    volumes:
-      - /data/pgsql:/var/lib/postgresql/data
+  db:
+    image: postgres:latest
+    container_name: nginx-proxy-manager_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: 'npm'
+      POSTGRES_PASSWORD: 'npm'
+      POSTGRES_DB: 'npm'
+    volumes:
+      - /data/pgsql:/var/lib/postgresql/data
 EOF
 ```
 
 ```bash
-# SELinux를 Permissive 모드로 설정
+# 방화벽에서 Nginx Proxy Manager 관리 포트(81/tcp) 허용
+sudo firewall-cmd --permanent --add-port=81/tcp
+
+# SELinux 정책 설정 시작
+
+# SELinux를 Permissive 모드로 일시 변경
 sudo setenforce 0
 
 # audit.log에서 AVC(Access Vector Cache) 로그 확인
 sudo grep AVC /var/log/audit/audit.log
 
-# audit2allow로 정책 모듈 생성 및 적용
+# audit2allow를 이용한 SELinux 정책 모듈(npm.pp) 자동 생성
 sudo audit2allow -a -M npm
 
-# 정책 모듈 설치
+# 생성된 정책 모듈(.pp)을 정책 디렉토리로 이동
+mkdir -pv /etc/selinux/policies.d
+cp -v npm.pp /etc/selinux/policies.d/
+
+# SELinux 정책 모듈 설치 및 적용
 sudo semodule -i npm.pp
 
-# SELinux를 Enforcing 모드로 재설정
-sudo setenforce 1
-```
-
-```bash
+# Podman Compose를 이용한 컨테이너 실행 (백그라운드)
 podman-compose up -d
+
+# SELinux를 Enforcing 모드로 재변경 (보안 강화)
+sudo setenforce 1
 ```
 
 ![그림_1](/assets/img/2025-06-15/그림1.png)

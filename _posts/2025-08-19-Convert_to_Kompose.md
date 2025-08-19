@@ -57,4 +57,4 @@ kubectl apply -f nodejs-app-deployment.yaml
 ```
 
 ## 참고 자료
-- [Jenkins 공식 문서](https://kubernetes.io/ko/docs/tasks/configure-pod-container/translate-compose-kubernetes/)
+- [Kompose 공식 문서](https://kubernetes.io/ko/docs/tasks/configure-pod-container/translate-compose-kubernetes/)

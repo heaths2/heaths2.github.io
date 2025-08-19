@@ -44,9 +44,10 @@ sudo mv -v ./kompose /usr/local/bin/kompose
 kompose convert
 
 # 다중 파일 변환: -f 옵션 사용을 통한 여러 Docker Compose 파일 동시 변환.
-kompose -f docker-compose.yml -f docker-guestbook.yml convert
+kompose convert -f docker-compose.yml -f docker-guestbook.yml -o k8s
+kompose convert -f docker-compose.yml -o k8s
 # 또는
-kompose --file docker-compose.yml --file docker-guestbook.yml convert
+kompose convert --file docker-compose.yml --file docker-guestbook.yml  --out k8s
 ```
 
 - **쿠버네티스 리소스 파일 적용**

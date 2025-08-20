@@ -655,7 +655,7 @@ podman-compose --version
 
 # Nginx Proxy Manager 및 데이터용 디렉토리 생성
 mkdir -pv /opt/nginx-proxy-manager
-mkdir -pv /data/{letsencrypt,nginx/custom,pgsql,logrotate.d}
+mkdir -pv /data/{letsencrypt,nginx,pgsql,logrotate.d}
 
 # 데이터 디렉토리들에 개별 컨테이너 파일 컨텍스트 영구 적용 규칙 추가
 sudo semanage fcontext -a -t container_file_t "/data/letsencrypt(/.*)?"

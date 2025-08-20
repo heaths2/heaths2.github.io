@@ -301,7 +301,7 @@ sudo dmesg -Tw | grep 'REJECT'
 sudo systemctl stop firewalld.service
 ```
 
-
+📝 PodMan Jenkins 설치 방법
 
 ```bash
 # Podman 및 Podman Compose 패키지 설치

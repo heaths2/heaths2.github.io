@@ -641,7 +641,7 @@ helm upgrade --install nginx-proxy-manager ./nginx-proxy-manager \
 초기 비밀번호 (Password): changeme
 ```
 
-### PodMan 설치 방법
+### 📝 PodMan 설치 방법
 
 ```bash
 # Podman 및 Podman Compose 패키지 설치

@@ -386,11 +386,75 @@ services:
       JAVA_OPTS: "-Djava.util.logging.config.file=/var/jenkins_home/log.properties"
 ```
 
+```bash
+# Podman 및 Podman Compose 패키지 설치
+sudo dnf install -y podman podman-compose
+
+# 컨테이너 레지스트리 기본값 설정 (docker.io)
+sudo sed -i 's/^unqualified-search-registries = .*$/unqualified-search-registries = ["docker.io"]/' /etc/containers/registries.conf
+
+# Podman Compose 설치 버전 확인
+podman-compose --version
+
+# Jenkins 및 데이터용 디렉토리 생성
+mkdir -pv /opt/jenkins
+mkdir -pv /data/jenkins
+
+# 데이터 디렉토리들에 개별 컨테이너 파일 컨텍스트 영구 적용 규칙 추가
+sudo semanage fcontext -a -t container_file_t "/data/jenkins(/.*)?"
+
+# 영구 규칙 적용
+sudo restorecon -Rv /data
+
+# Jenkins 및 데이터용 디렉토리 생성
+cat << EOF > /opt/jenkins/docker-compose.yml
+# /opt/jenkins/docker-compose.yml
+version: '3.8'
+
+services:
+  # Jenkins 컨테이너 추가
+  jenkins:
+    container_name: jenkins
+    image: jenkins/jenkins:lts
+    ports:
+      - "8080:8080" # Jenkins 웹 포트
+      - "50000:50000" # Jenkins 에이전트 통신 포트
+    volumes:
+      - /data/jenkins:/var/jenkins_home # Jenkins 데이터 영구 저장
+      - /var/run/podman/podman.sock:/var/run/docker.sock # Podman 소켓 공유 (컨테이너 제어용)
+    restart: unless-stopped
+    user: root # 컨테이너 내부에서 root 권한으로 Podman/Docker 명령 실행
+    environment:
+      TZ: 'Asia/Seoul'
+      JAVA_OPTS: "-Djava.util.logging.config.file=/var/jenkins_home/log.properties"
+```
+
+```bash
+# 방화벽에서 Jenkins 관리 포트(8080/tcp) 허용
+sudo firewall-cmd --permanent --add-port=8080/tcp
+
+# 방화벽 설정 내용 적용
+sudo firewall-cmd --reload
+```
+
+```bash
+# Jenkins 설치 디렉토리로 이동
+cd /opt/jenkins
+
+# Podman Compose를 이용한 컨테이너 실행 (백그라운드)
+podman-compose up -d
+```
+
 ### 🔐 Jenkins 초기 설정 가이드
 
 ```bash
 # Jenkins 설치 후 다음 명령어로 초기 비밀번호 확인
 kubectl exec --namespace jenkins -it svc/jenkins -c jenkins -- /bin/cat /run/secrets/additional/chart-admin-password && echo
+```
+
+```bash
+# Jenkins 설치 후 다음 명령어로 초기 비밀번호 확인
+podman exec -it jenkins cat /var/jenkins_home/secrets/initialAdminPassword
 ```
 
 ![그림_1](/assets/img/2025-06-15/그림1.png)

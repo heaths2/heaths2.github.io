@@ -760,6 +760,147 @@ cd /opt/nginx-proxy-manager
 podman-compose up -d
 ```
 
+```bash
+# 기본 프록시 설정 확인
+podman exec -it nginx-proxy-manager_app cat /etc/nginx/conf.d/include/proxy.conf
+```
+
+> ```bash
+> add_header       X-Served-By $host;
+> proxy_set_header Host $host;
+> proxy_set_header X-Forwarded-Scheme $scheme;
+> proxy_set_header X-Forwarded-Proto  $scheme;
+> proxy_set_header X-Forwarded-For    $proxy_add_x_forwarded_for;
+> proxy_set_header X-Real-IP          $remote_addr;
+> proxy_pass       $forward_scheme://$server:$port$request_uri;
+> ```
+
+```bash
+# 기본 프록시 설정
+podman exec -it nginx-proxy-manager_app cat /data/nginx/proxy_host/1.conf
+```
+
+> ```bash
+> # ------------------------------------------------------------
+> # www.infra.com
+> # ------------------------------------------------------------
+> 
+> 
+> 
+> map $scheme $hsts_header {
+>     https   "max-age=63072000; preload";
+> }
+> 
+> server {
+>   set $forward_scheme http;
+>   set $server         "127.0.0.1";
+>   set $port           80;
+> 
+>   listen 80;
+> listen [::]:80;
+> 
+> 
+>   server_name www.infra.com;
+> http2 off;
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+>   access_log /data/logs/proxy-host-1_access.log proxy;
+>   error_log /data/logs/proxy-host-1_error.log warn;
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+>   location / {
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+>     # Proxy!
+>     include conf.d/include/proxy.conf;
+>   }
+> 
+> 
+>   # Custom
+>   include /data/nginx/custom/server_proxy[.]conf;
+> }
+> ```
+
+> ```bash
+> # ------------------------------------------------------------
+> # www.infra.com
+> # ------------------------------------------------------------
+> 
+> 
+> 
+> map $scheme $hsts_header {
+>     https   "max-age=63072000; preload";
+> }
+> 
+> server {
+>   set $forward_scheme http;
+>   set $server         "127.0.0.1";
+>   set $port           80;
+> 
+>   listen 80;
+> listen [::]:80;
+> 
+> 
+>   server_name www.infra.com;
+> http2 off;
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+>   access_log /data/logs/proxy-host-1_access.log proxy;
+>   error_log /data/logs/proxy-host-1_error.log warn;
+> 
+>   access_log /data/logs/www_access.log;
+>   error_log /data/logs/www_error.log;
+> 
+>   location / {
+>     add_header       X-Served-By $host;
+>     proxy_set_header Host $host;
+>     proxy_set_header X-Forwarded-Scheme $scheme;
+>     proxy_set_header X-Forwarded-Proto  $scheme;
+>     proxy_set_header X-Forwarded-For    $proxy_add_x_forwarded_for;
+>     proxy_set_header X-Real-IP          $remote_addr;
+>     proxy_pass       http://backend;
+>   }
+> 
+> 
+> 
+> 
+> 
+>   # Custom
+>   include /data/nginx/custom/server_proxy[.]conf;
+> }
+> ```
+
 ![그림_1](/assets/img/2025-06-15/그림1.png)
 _Jenkins 로그인_
 

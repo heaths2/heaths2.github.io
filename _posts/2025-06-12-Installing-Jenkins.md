@@ -301,6 +301,91 @@ sudo dmesg -Tw | grep 'REJECT'
 sudo systemctl stop firewalld.service
 ```
 
+```bash
+version: '3.8'
+
+services:
+  # Nginx Proxy Manager (웹 프록시 관리)
+  app:
+    image: 'jc21/nginx-proxy-manager:latest'
+    container_name: nginx-proxy-manager_app
+    restart: unless-stopped
+    ports:
+      - '80:80'    # HTTP 포트
+      - '443:443'  # HTTPS 포트
+      - '81:81'    # 관리자 웹 포트
+    environment:
+      DB_POSTGRES_HOST: 'db'
+      DB_POSTGRES_PORT: '5432'
+      DB_POSTGRES_USER: 'npm'
+      DB_POSTGRES_PASSWORD: 'npm'
+      DB_POSTGRES_NAME: 'npm'
+      TZ: 'Asia/Seoul'
+    volumes:
+      - /data/nginx:/data
+      - /data/letsencrypt:/etc/letsencrypt
+      - /data/logrotate.d/logrotate.custom:/etc/logrotate.d/nginx-proxy-manager
+    healthcheck:
+      test: ["CMD", "/usr/bin/check-health"]
+      interval: 10s
+      timeout: 3s
+    depends_on:
+      - db
+
+  # Nginx Proxy Manager용 PostgreSQL 데이터베이스
+  db:
+    image: postgres:latest
+    container_name: nginx-proxy-manager_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: 'npm'
+      POSTGRES_PASSWORD: 'npm'
+      POSTGRES_DB: 'npm'
+      TZ: 'Asia/Seoul'
+    volumes:
+      - /data/pgsql:/var/lib/postgresql/data
+
+  # 웹 애플리케이션 서버 1 (Tomcat)
+  was1:
+    container_name: was1
+    image: tomcat:latest
+    volumes:
+      - /data/tomcat/was1/webapps/ROOT:/usr/local/tomcat/webapps/ROOT
+    ports:
+      - "8081:8080"
+    restart: always
+    environment:
+      TZ: 'Asia/Seoul'
+
+  # 웹 애플리케이션 서버 2 (Tomcat)
+  was2:
+    container_name: was2
+    image: tomcat:latest
+    volumes:
+      - /data/tomcat/was2/webapps/ROOT:/usr/local/tomcat/webapps/ROOT
+    ports:
+      - "8082:8080"
+    restart: always
+    environment:
+      TZ: 'Asia/Seoul'
+
+  # Jenkins 컨테이너 추가
+  jenkins:
+    container_name: jenkins
+    image: jenkins/jenkins:lts
+    ports:
+      - "8080:8080" # Jenkins 웹 포트
+      - "50000:50000" # Jenkins 에이전트 통신 포트
+    volumes:
+      - /data/jenkins:/var/jenkins_home # Jenkins 데이터 영구 저장
+      - /var/run/podman/podman.sock:/var/run/docker.sock # Podman 소켓 공유 (컨테이너 제어용)
+    restart: unless-stopped
+    user: root # 컨테이너 내부에서 root 권한으로 Podman/Docker 명령 실행
+    environment:
+      TZ: 'Asia/Seoul'
+      JAVA_OPTS: "-Djava.util.logging.config.file=/var/jenkins_home/log.properties"
+```
+
 ### 🔐 Jenkins 초기 설정 가이드
 
 ```bash

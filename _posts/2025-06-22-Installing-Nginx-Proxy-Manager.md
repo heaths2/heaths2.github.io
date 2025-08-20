@@ -760,6 +760,43 @@ cd /opt/nginx-proxy-manager
 podman-compose up -d
 ```
 
+![그림_1](/assets/img/2025-06-22/그림1.png)
+_NPM 로그인_
+
+![그림_2](/assets/img/2025-06-22/그림2.png)
+_NPM 로그인 계정정보 변경_
+
+![그림_3](/assets/img/2025-06-22/그림3.png)
+_NPM 로그인 계정 비밀번호 변경_
+
+![그림_3](/assets/img/2025-06-22/그림3.png)
+_NPM 로그인 계정 비밀번호 변경_
+
+![그림_4](/assets/img/2025-06-22/그림4.png)
+_NPM Proxy 호스트 선택_
+
+![그림_5](/assets/img/2025-06-22/그림5.png)
+_NPM Proxy 호스트 추가_
+
+- **UPStream 등록**
+
+```bash
+# Upstream 설정 파일 생성
+mkdir -pv /data/nginx/nginx/custom/
+
+cat << EOF > /data/nginx/nginx/custom/http.conf
+upstream backend {
+    server 172.16.0.43:8081;
+    server 172.16.0.43:8082;
+}
+EOF
+
+# 변경된 Nginx 설정을 적용하기 위한 컨테이너 재시작
+podman restart nginx-proxy-manager_app
+```
+
+- **기본 프록시 설정 확인**
+
 ```bash
 # 기본 프록시 설정 확인
 podman exec -it nginx-proxy-manager_app cat /etc/nginx/conf.d/include/proxy.conf
@@ -775,8 +812,10 @@ podman exec -it nginx-proxy-manager_app cat /etc/nginx/conf.d/include/proxy.conf
 > proxy_pass       $forward_scheme://$server:$port$request_uri;
 > ```
 
+- **특정 호스트 프록시 설정 확인**
+
 ```bash
-# 기본 프록시 설정
+# 특정 호스트 프록시 설정 확인
 podman exec -it nginx-proxy-manager_app cat /data/nginx/proxy_host/1.conf
 ```
 
@@ -842,20 +881,28 @@ podman exec -it nginx-proxy-manager_app cat /data/nginx/proxy_host/1.conf
 > }
 > ```
 
-```bash
-# Upstream 설정 파일 생성
-mkdir -pv /data/nginx/nginx/custom/
+![그림_6](/assets/img/2025-06-22/그림6.png)
+_NPM Proxy 호스트 등록_
 
-cat << EOF > /data/nginx/nginx/custom/http.conf
-upstream backend {
-    server 172.16.0.43:8081;
-    server 172.16.0.43:8082;
-}
-EOF
+![그림_7](/assets/img/2025-06-22/그림7.png)
+_NPM Proxy Upstrem 설정_
 
-# 변경된 Nginx 설정을 적용하기 위한 컨테이너 재시작
-podman restart nginx-proxy-manager_app
-```
+> ```bash
+>   access_log /data/logs/www_access.log;
+>   error_log /data/logs/www_error.log;
+> 
+>   location / {
+>     add_header       X-Served-By $host;
+>     proxy_set_header Host $host;
+>     proxy_set_header X-Forwarded-Scheme $scheme;
+>     proxy_set_header X-Forwarded-Proto  $scheme;
+>     proxy_set_header X-Forwarded-For    $proxy_add_x_forwarded_for;
+>     proxy_set_header X-Real-IP          $remote_addr;
+>     proxy_pass       http://backend;
+>   }
+> ```
+
+- **특정 호스트 프록시 설정 변경 확인**
 
 > ```bash
 > # ------------------------------------------------------------
@@ -916,11 +963,11 @@ podman restart nginx-proxy-manager_app
 > }
 > ```
 
-![그림_1](/assets/img/2025-06-15/그림1.png)
-_Jenkins 로그인_
+![그림_8](/assets/img/2025-06-22/그림8.png)
+_NPM Proxy 호스트 목록 확인_
 
-![그림_2](/assets/img/2025-06-15/그림2.png)
-_Jenkins 대시보드_
+![그림_9](/assets/img/2025-06-22/그림9.png)
+_NPM Proxy Load Balancing 확인_
 
 ## 참고 자료
 - [Nginx 공식 문서](https://docs.nginx.com/nginx/admin-guide/installing-nginx/installing-nginx-open-source/)

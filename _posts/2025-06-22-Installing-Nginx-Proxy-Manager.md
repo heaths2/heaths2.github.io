@@ -842,6 +842,21 @@ podman exec -it nginx-proxy-manager_app cat /data/nginx/proxy_host/1.conf
 > }
 > ```
 
+```bash
+# Upstream 설정 파일 생성
+mkdir -pv /data/nginx/nginx/custom/
+
+cat << EOF > /data/nginx/nginx/custom/http.conf
+upstream backend {
+    server 172.16.0.43:8081;
+    server 172.16.0.43:8082;
+}
+EOF
+
+# 변경된 Nginx 설정을 적용하기 위한 컨테이너 재시작
+podman restart nginx-proxy-manager_app
+```
+
 > ```bash
 > # ------------------------------------------------------------
 > # www.infra.com

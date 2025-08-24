@@ -131,5 +131,50 @@ cd /opt/vaultwarden
 podman-compose up -d
 ```
 
+![그림_1](/assets/img/2025-08-24/그림1.png)
+_Vaultwarden Proxy 호스트 등록_
+
+![그림_2](/assets/img/2025-08-24/그림2.png)
+_Vaultwarden Proxy 호스트 ssl 등록_
+
+![그림_3](/assets/img/2025-08-24/그림3.png)
+_Vaultwarden 계정만들기 선택_
+
+![그림_4](/assets/img/2025-08-24/그림4.png)
+_Vaultwarden 계정 입력_
+
+![그림_5](/assets/img/2025-08-24/그림5.png)
+_Vaultwarden 계정 비밀번호 입력 및 생성_
+
+![그림_6](/assets/img/2025-08-24/그림6.png)
+_Vaultwarden 비밀번호 관리자 로그인 화면_
+
+![그림_7](/assets/img/2025-08-24/그림7.png)
+_Vaultwarden Bitwarden 비밀번호 관리자 확장 프로그램 설치_
+
+![그림_8](/assets/img/2025-08-24/그림8.png)
+_Vaultwarden Bitwarden 비밀번호 관리자 확장 프로그램 추가_
+
+![그림_9](/assets/img/2025-08-24/그림9.png)
+_Vaultwarden Bitwarden 비밀번호 관리자 자체 호스팅 등록 선택_
+
+![그림_10](/assets/img/2025-08-24/그림10.png)
+_Vaultwarden Bitwarden 비밀번호 관리자 자체 호스팅 주소 입력_
+
+![그림_11](/assets/img/2025-08-24/그림11.png)
+_Vaultwarden Bitwarden 비밀번호 관리자 로그인_
+
+![그림_12](/assets/img/2025-08-24/그림12.png)
+_Vaultwarden Bitwarden 비밀번호 관리자 웹사이트 등록_
+
+![그림_13](/assets/img/2025-08-24/그림13.png)
+_Vaultwarden Bitwarden 비밀번호 관리자 웹사이트 목록_
+
+![그림_14](/assets/img/2025-08-24/그림14.png)
+_Vaultwarden Bitwarden 비밀번호 관리자 웹사이트 접속 테스트-1_
+
+![그림_15](/assets/img/2025-08-24/그림15.png)
+_Vaultwarden Bitwarden 비밀번호 관리자 웹사이트 접속 테스트-2_
+
 ## 참고 자료
 - [Vaultwarden Github 공식 문서](https://github.com/dani-garcia/vaultwarden)

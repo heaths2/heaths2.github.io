@@ -969,5 +969,81 @@ _NPM Proxy 호스트 목록 확인_
 ![그림_9](/assets/img/2025-06-22/그림9.png)
 _NPM Proxy Load Balancing 확인_
 
+- **자체 서명(Self-Signed) 인증서** 발급 및 등록
+
+> ```bash
+> #!//usr/bin/env bash
+> # =============================================
+> # Script: Certificate.sh
+> # Author: GG
+> # Purpose: *.infra.com 용 self-signed wildcard SSL cert 생성
+> # Requires: openssl
+> # =============================================
+> 
+> DOMAIN="infra.com"
+> CERT_DIR="./certs"
+> DAYS_VALID=365
+> 
+> mkdir -p ${CERT_DIR}
+> 
+> echo "[+] Generating Private Key..."
+> openssl genrsa -out ${CERT_DIR}/${DOMAIN}.key 2048
+> 
+> echo "[+] Creating CSR with SAN (Subject Alternative Name)..."
+> cat > ${CERT_DIR}/${DOMAIN}.cnf <<EOF
+> [req]
+> default_bits       = 2048
+> prompt             = no
+> default_md         = sha256
+> req_extensions     = req_ext
+> distinguished_name = dn
+> 
+> [dn]
+> C=KR
+> ST=Seoul
+> L=Seoul
+> O=Infra
+> OU=Dev
+> CN=*.${DOMAIN}
+> 
+> [req_ext]
+> subjectAltName = @alt_names
+> 
+> [alt_names]
+> DNS.1 = *.${DOMAIN}
+> DNS.2 = ${DOMAIN}
+> EOF
+> 
+> openssl req -new -key ${CERT_DIR}/${DOMAIN}.key \
+>     -out ${CERT_DIR}/${DOMAIN}.csr \
+>     -config ${CERT_DIR}/${DOMAIN}.cnf
+> 
+> echo "[+] Generating Self-Signed Certificate..."
+> openssl x509 -req -in ${CERT_DIR}/${DOMAIN}.csr \
+>     -signkey ${CERT_DIR}/${DOMAIN}.key \
+>     -out ${CERT_DIR}/${DOMAIN}.crt \
+>     -days ${DAYS_VALID} -extfile ${CERT_DIR}/${DOMAIN}.cnf -extensions req_ext
+> 
+> echo "[+] Done!"
+> echo "Generated files:"
+> ls -l ${CERT_DIR}/${DOMAIN}.key ${CERT_DIR}/${DOMAIN}.crt ${CERT_DIR}/${DOMAIN}.csr
+> 
+> echo "[+] Certificate details:"
+> openssl x509 -in ${CERT_DIR}/${DOMAIN}.crt -noout -text | grep "Not"
+> # openssl x509 -in certs/infra.com.crt -noout -dates
+> ```
+
+![그림_10](/assets/img/2025-06-22/그림10.png)
+_NPM Proxy Certificate 등록_
+
+![그림_11](/assets/img/2025-06-22/그림11.png)
+_NPM Proxy Certificate 인증서 목록(비활성화)_
+
+![그림_12](/assets/img/2025-06-22/그림12.png)
+_NPM Proxy Certificate 인증서 SSL 적용_
+
+![그림_13](/assets/img/2025-06-22/그림13.png)
+_NPM Proxy Certificate 인증서 목록(활성화)_
+
 ## 참고 자료
 - [Nginx 공식 문서](https://docs.nginx.com/nginx/admin-guide/installing-nginx/installing-nginx-open-source/)

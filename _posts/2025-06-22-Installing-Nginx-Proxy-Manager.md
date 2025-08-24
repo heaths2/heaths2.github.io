@@ -672,7 +672,8 @@ cat << EOF > /opt/nginx-proxy-manager/docker-compose.yml
 version: '3.8'
 
 services:
-  app:
+  # Nginx Proxy Manager (웹 프록시 관리)
+  npm:
     image: 'jc21/nginx-proxy-manager:latest'
     container_name: nginx-proxy-manager_app
     restart: unless-stopped
@@ -681,7 +682,7 @@ services:
       - '443:443' # Public HTTPS Port
       - '81:81' # Admin Web Port
     environment:
-      DB_POSTGRES_HOST: 'db'
+      DB_POSTGRES_HOST: 'pgsql'
       DB_POSTGRES_PORT: '5432'
       DB_POSTGRES_USER: 'npm'
       DB_POSTGRES_PASSWORD: 'npm'
@@ -696,9 +697,10 @@ services:
       interval: 10s
       timeout: 3s
     depends_on:
-      - db
+      - pgsql
 
-  db:
+  # Nginx Proxy Manager용 PostgreSQL 데이터베이스
+  pgsql:
     image: postgres:latest
     container_name: nginx-proxy-manager_db
     restart: unless-stopped

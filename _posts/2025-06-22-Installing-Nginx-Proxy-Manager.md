@@ -666,7 +666,7 @@ sudo semanage fcontext -a -t container_file_t "/data/logrotate.d(/.*)?"
 # 영구 규칙 적용
 sudo restorecon -Rv /data
 
-# Nginx Proxy Manager 및 데이터용 디렉토리 생성
+# Nginx Proxy Manager docker-compose 파일 생성
 cat << EOF > /opt/nginx-proxy-manager/docker-compose.yml
 # /opt/nginx-proxy-manager/docker-compose.yml
 version: '3.8'

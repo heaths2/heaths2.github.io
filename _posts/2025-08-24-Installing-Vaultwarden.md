@@ -45,21 +45,23 @@ sudo sed -i 's/^unqualified-search-registries = .*$/unqualified-search-registrie
 - 기본 저장소 위치 변경
 
 ```bash
-# Podman 기본 데이터 경로의 SELinux 컨텍스트 확인
-semanage fcontext -l|grep "/var/lib/containers"
+#  Vaultwarden Password Manager 및 데이터용 디렉토리 생성
+mkdir -pv /opt/vaultwarden
+mkdir -pv /data/{letsencrypt,nginx,pgsql,logrotate.d,vaultwarden}
 
-# 새로운 경로에 Podman 접근 권한을 위한 SELinux 컨텍스트 설정 및 적용
-semanage fcontext -a -e /var/lib/containers /data/podman/database
-restorecon -Rv /data/podman/database
+# 데이터 디렉토리들에 개별 컨테이너 파일 컨텍스트 영구 적용 규칙 추가
+sudo semanage fcontext -a -t container_file_t "/data/letsencrypt(/.*)?"
+sudo semanage fcontext -a -t container_file_t "/data/nginx(/.*)?"
+sudo semanage fcontext -a -t container_file_t "/data/pgsql(/.*)?"
+sudo semanage fcontext -a -t container_file_t "/data/logrotate.d(/.*)?"
+sudo semanage fcontext -a -t container_file_t "/data/vaultwarden(/.*)?"
 
-# 변경된 컨텍스트가 올바르게 적용되었는지 최종 확인
-semanage fcontext -l|grep "/var/lib/containers"
-semanage fcontext -l|grep "/data/podman/database"
+# 영구 규칙 적용
+sudo restorecon -Rv /data
 ```
 
 ```bash
-mkdir -pv /opt/vaultwarden
-
+# Vaultwarden Password Manager docker-compose 파일 생성
 cat << 'EOF' > /opt/vaultwarden/docker-compose.yml
 # /opt/vaultwarden/docker-compose.yml
 version: '3.8'
@@ -121,5 +123,13 @@ services:
 EOF
 ```
 
+```bash
+# Vaultwarden Password Manager 설치 디렉토리로 이동
+cd /opt/vaultwarden
+
+# Podman Compose를 이용한 컨테이너 실행 (백그라운드)
+podman-compose up -d
+```
+
 ## 참고 자료
-- [Jenkins 공식 문서](https://www.jenkins.io/doc/book/installing/kubernetes/)
+- [Vaultwarden Github 공식 문서](https://github.com/dani-garcia/vaultwarden)

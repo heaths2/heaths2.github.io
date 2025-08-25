@@ -121,6 +121,38 @@ services:
     expose:
       - "80"
 EOF
+
+# 로그 순환 설정
+cat << 'EOF' > /data/logrotate.d/logrotate.custom
+# /data/logrotate.d/logrotate.custom
+/data/logs/*_access.log /data/logs/*/access.log {
+    su npm npm
+    create 0644
+    weekly
+    rotate 4
+    missingok
+    notifempty
+    compress
+    sharedscripts
+    postrotate
+    kill -USR1 `cat /run/nginx/nginx.pid 2>/dev/null` 2>/dev/null || true
+    endscript
+}
+
+/data/logs/*_error.log /data/logs/*/error.log {
+    su npm npm
+    create 0644
+    weekly
+    rotate 10
+    missingok
+    notifempty
+    compress
+    sharedscripts
+    postrotate
+    kill -USR1 `cat /run/nginx/nginx.pid 2>/dev/null` 2>/dev/null || true
+    endscript
+}
+EOF
 ```
 
 ```bash

@@ -62,7 +62,7 @@ sudo restorecon -Rv /data
 
 ```bash
 # Vaultwarden Password Manager docker-compose 파일 생성
-cat << 'EOF' > /opt/vaultwarden/docker-compose.yml
+cat << EOF > /opt/vaultwarden/docker-compose.yml
 # /opt/vaultwarden/docker-compose.yml
 version: '3.8'
 

@@ -113,7 +113,7 @@ services:
     container_name: vaultwarden
     restart: unless-stopped
     environment:
-      DOMAIN: https://pw.infra.com
+      DOMAIN: https://vault.infra.com
       ADMIN_TOKEN: "$(openssl rand -base64 32)"
       TZ: "Asia/Seoul"
     volumes:

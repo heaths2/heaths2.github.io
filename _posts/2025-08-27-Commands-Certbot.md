@@ -1,5 +1,5 @@
 ---
-title: Certbot 사용법
+title: Certbot SSL 인증서 발급 방법
 author: G.G
 date: 2025-08-27 21:10 +0900
 categories: [Blog, Command]
@@ -29,185 +29,71 @@ Certbot은 Let's Encrypt에서 제공하는 무료 SSL/TLS 인증서 발급 자�
 - 패키지 설치
 
 ```bash
-# Podman & podman-compose 패키지 설치
-sudo dnf install -y podman podman-compose
-
-# podman-compose 설치 버전 확인
-podman-compose --version
-```
-
-- 기존 이미지 저장소 변경
-
-```bash
-# unqualified-search-registries 값 "docker.io"로 변경
-sudo sed -i 's/^unqualified-search-registries = .*$/unqualified-search-registries = ["docker.io"]/' /etc/containers/registries.conf
-```
-
-- 기본 저장소 위치 변경
-
-```bash
-#  Vaultwarden Password Manager 및 데이터용 디렉토리 생성
-mkdir -pv /opt/vaultwarden
-mkdir -pv /data/{letsencrypt,nginx,pgsql,logrotate.d,vaultwarden}
-
-# 데이터 디렉토리들에 개별 컨테이너 파일 컨텍스트 영구 적용 규칙 추가
-sudo semanage fcontext -a -t container_file_t "/data/letsencrypt(/.*)?"
-sudo semanage fcontext -a -t container_file_t "/data/nginx(/.*)?"
-sudo semanage fcontext -a -t container_file_t "/data/pgsql(/.*)?"
-sudo semanage fcontext -a -t container_file_t "/data/logrotate.d(/.*)?"
-sudo semanage fcontext -a -t container_file_t "/data/vaultwarden(/.*)?"
-
-# 영구 규칙 적용
-sudo restorecon -Rv /data
-```
-
-```bash
-# Vaultwarden Password Manager docker-compose 파일 생성
-cat << EOF > /opt/vaultwarden/docker-compose.yml
-# /opt/vaultwarden/docker-compose.yml
-version: '3.8'
-
-services:
-  # Nginx Proxy Manager (웹 프록시 관리)
-  npm:
-    image: 'jc21/nginx-proxy-manager:latest'
-    container_name: nginx-proxy-manager_app
-    restart: unless-stopped
-    ports:
-      - '80:80'
-      - '443:443'
-      - '81:81'
-    environment:
-      DB_POSTGRES_HOST: 'pgsql'
-      DB_POSTGRES_PORT: '5432'
-      DB_POSTGRES_USER: 'npm'
-      DB_POSTGRES_PASSWORD: 'npm'
-      DB_POSTGRES_NAME: 'npm'
-      TZ: 'Asia/Seoul'
-    volumes:
-      - /data/nginx:/data
-      - /data/letsencrypt:/etc/letsencrypt
-      - /data/logrotate.d/logrotate.custom:/etc/logrotate.d/nginx-proxy-manager
-    healthcheck:
-      test: ["CMD", "/usr/bin/check-health"]
-      interval: 10s
-      timeout: 3s
-    depends_on:
-      - pgsql
-
-  # Nginx Proxy Manager용 PostgreSQL 데이터베이스
-  pgsql:
-    image: postgres:latest
-    container_name: nginx-proxy-manager_db
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: 'npm'
-      POSTGRES_PASSWORD: 'npm'
-      POSTGRES_DB: 'npm'
-      TZ: 'Asia/Seoul'
-    volumes:
-      - /data/pgsql:/var/lib/postgresql/data
-
-  # Vaultwarden (비밀번호 관리)
-  vaultwarden:
-    image: vaultwarden/server:latest
-    container_name: vaultwarden
-    restart: unless-stopped
-    environment:
-      DOMAIN: https://vault.infra.local
-      ADMIN_TOKEN: "$(openssl rand -base64 32)"
-      TZ: "Asia/Seoul"
-    volumes:
-      - /data/vaultwarden:/data
-    expose:
-      - "80"
+sudo install -m 600 /dev/null /data/letsencrypt/cloudflare.ini
+cat << EOF > /data/letsencrypt/cloudflare.ini
+2Hn9DhMCzd8gP-jxXi23IYu0Jx2McXJ18kmkkY3k
 EOF
+```
 
-# 로그 순환 설정
-cat << 'EOF' > /data/logrotate.d/logrotate.custom
-# /data/logrotate.d/logrotate.custom
-/data/logs/*_access.log /data/logs/*/access.log {
-    su npm npm
-    create 0644
-    weekly
-    rotate 4
-    missingok
-    notifempty
-    compress
-    sharedscripts
-    postrotate
-    kill -USR1 `cat /run/nginx/nginx.pid 2>/dev/null` 2>/dev/null || true
-    endscript
-}
+- Cloudflare 인증서 발급
 
-/data/logs/*_error.log /data/logs/*/error.log {
-    su npm npm
-    create 0644
-    weekly
-    rotate 10
-    missingok
-    notifempty
-    compress
-    sharedscripts
-    postrotate
-    kill -USR1 `cat /run/nginx/nginx.pid 2>/dev/null` 2>/dev/null || true
-    endscript
-}
+```bash
+cat << 'EOF' > Certificate.sh
+#!/usr/bin/env bash
+
+# Cloudflare API 토큰 파일 경로 (보안을 위해 권한을 600으로 설정하세요)
+CF_CREDENTIALS="/data/letsencrypt/cloudflare.ini"
+
+# 사용자로부터 도메인 이름 입력 받기
+read -p "도메인 이름을 입력하세요 (예: yourdomain.com): " DOMAIN_NAME
+WILDCARD_DOMAIN="*.$DOMAIN_NAME"
+EMAIL_ADDRESS="it@$DOMAIN_NAME"
+
+# 사용자에게 선택지를 보여줍니다.
+echo "원하는 작업을 선택하세요:"
+echo "1) SSL 인증서 발급 (certonly)"
+echo "2) 인증서 갱신 (renew)"
+echo "3) 인증서 폐기 (revoke)"
+read -p "번호를 입력하세요: " choice
+
+case $choice in
+    1)
+        echo "SSL 인증서를 발급합니다..."
+        sudo certbot certonly \
+            --dns-cloudflare \
+            --dns-cloudflare-credentials $CF_CREDENTIALS \
+            --non-interactive \
+            --agree-tos \
+            --preferred-challenges dns-01 \
+            --dns-cloudflare-propagation-seconds 60 \
+            -m $EMAIL_ADDRESS \
+            -d $DOMAIN_NAME \
+            -d $WILDCARD_DOMAIN
+        echo "SSL 인증서 발급이 완료되었습니다."
+        ;;
+    2)
+        echo "SSL 인증서를 갱신합니다..."
+        sudo certbot renew --dry-run
+        # 실제로 갱신할 때는 --dry-run을 제외하고 사용하세요.
+        # sudo certbot renew
+        echo "SSL 인증서 갱신이 완료되었습니다."
+        ;;
+    3)
+        echo "SSL 인증서를 폐기합니다..."
+        sudo certbot revoke --cert-name $DOMAIN_NAME
+        echo "SSL 인증서 폐기가 완료되었습니다."
+        ;;
+    *)
+        echo "잘못된 선택입니다. 1, 2, 3 중 하나를 입력하세요."
+        exit 1
+        ;;
+esac
 EOF
 ```
 
 ```bash
-# Vaultwarden Password Manager 설치 디렉토리로 이동
-cd /opt/vaultwarden
-
-# Podman Compose를 이용한 컨테이너 실행 (백그라운드)
-podman-compose up -d
+bash Certificate.sh
 ```
-
-![그림_1](/assets/img/2025-08-24/그림1.png)
-_Vaultwarden Proxy 호스트 등록_
-
-![그림_2](/assets/img/2025-08-24/그림2.png)
-_Vaultwarden Proxy 호스트 ssl 등록_
-
-![그림_3](/assets/img/2025-08-24/그림3.png)
-_Vaultwarden 계정만들기 선택_
-
-![그림_4](/assets/img/2025-08-24/그림4.png)
-_Vaultwarden 계정 입력_
-
-![그림_5](/assets/img/2025-08-24/그림5.png)
-_Vaultwarden 계정 비밀번호 입력 및 생성_
-
-![그림_6](/assets/img/2025-08-24/그림6.png)
-_Vaultwarden 비밀번호 관리자 로그인 화면_
-
-![그림_7](/assets/img/2025-08-24/그림7.png)
-_Vaultwarden Bitwarden 비밀번호 관리자 확장 프로그램 설치_
-
-![그림_8](/assets/img/2025-08-24/그림8.png)
-_Vaultwarden Bitwarden 비밀번호 관리자 확장 프로그램 추가_
-
-![그림_9](/assets/img/2025-08-24/그림9.png)
-_Vaultwarden Bitwarden 비밀번호 관리자 자체 호스팅 등록 선택_
-
-![그림_10](/assets/img/2025-08-24/그림10.png)
-_Vaultwarden Bitwarden 비밀번호 관리자 자체 호스팅 주소 입력_
-
-![그림_11](/assets/img/2025-08-24/그림11.png)
-_Vaultwarden Bitwarden 비밀번호 관리자 로그인_
-
-![그림_12](/assets/img/2025-08-24/그림12.png)
-_Vaultwarden Bitwarden 비밀번호 관리자 웹사이트 등록_
-
-![그림_13](/assets/img/2025-08-24/그림13.png)
-_Vaultwarden Bitwarden 비밀번호 관리자 웹사이트 목록_
-
-![그림_14](/assets/img/2025-08-24/그림14.png)
-_Vaultwarden Bitwarden 비밀번호 관리자 웹사이트 접속 테스트-1_
-
-![그림_15](/assets/img/2025-08-24/그림15.png)
-_Vaultwarden Bitwarden 비밀번호 관리자 웹사이트 접속 테스트-2_
 
 ## 참고 자료
-- [Vaultwarden Github 공식 문서](https://github.com/dani-garcia/vaultwarden)
+- [Certbot 문서](https://certbot-dns-cloudflare.readthedocs.io/)

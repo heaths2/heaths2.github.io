@@ -344,6 +344,7 @@ services:
     environment:
       TZ: 'Asia/Seoul'
       JAVA_OPTS: "-Djava.util.logging.config.file=/var/jenkins_home/log.properties"
+EOF
 ```
 
 ```bash

@@ -823,7 +823,7 @@ podman exec -it nginx-proxy-manager_app cat /data/nginx/proxy_host/1.conf
 
 > ```bash
 > # ------------------------------------------------------------
-> # www.infra.com
+> # npm.infra.local
 > # ------------------------------------------------------------
 > 
 > 
@@ -841,7 +841,7 @@ podman exec -it nginx-proxy-manager_app cat /data/nginx/proxy_host/1.conf
 > listen [::]:80;
 > 
 > 
->   server_name www.infra.com;
+>   server_name npm.infra.local;
 > http2 off;
 > 
 > 
@@ -890,8 +890,8 @@ _NPM Proxy 호스트 등록_
 _NPM Proxy Upstrem 설정_
 
 > ```bash
->   access_log /data/logs/www_access.log;
->   error_log /data/logs/www_error.log;
+>   access_log /data/logs/npm_access.log;
+>   error_log /data/logs/npm_error.log;
 > 
 >   location / {
 >     add_header       X-Served-By $host;
@@ -908,7 +908,7 @@ _NPM Proxy Upstrem 설정_
 
 > ```bash
 > # ------------------------------------------------------------
-> # www.infra.com
+> # npm.infra.local
 > # ------------------------------------------------------------
 > 
 > 
@@ -926,7 +926,7 @@ _NPM Proxy Upstrem 설정_
 > listen [::]:80;
 > 
 > 
->   server_name www.infra.com;
+>   server_name npm.infra.local;
 > http2 off;
 > 
 > 
@@ -943,8 +943,8 @@ _NPM Proxy Upstrem 설정_
 >   access_log /data/logs/proxy-host-1_access.log proxy;
 >   error_log /data/logs/proxy-host-1_error.log warn;
 > 
->   access_log /data/logs/www_access.log;
->   error_log /data/logs/www_error.log;
+>   access_log /data/logs/npm_access.log;
+>   error_log /data/logs/npm_error.log;
 > 
 >   location / {
 >     add_header       X-Served-By $host;
@@ -953,7 +953,7 @@ _NPM Proxy Upstrem 설정_
 >     proxy_set_header X-Forwarded-Proto  $scheme;
 >     proxy_set_header X-Forwarded-For    $proxy_add_x_forwarded_for;
 >     proxy_set_header X-Real-IP          $remote_addr;
->     proxy_pass       http://backend;
+>     proxy_pass       http://npm;
 >   }
 > 
 > 

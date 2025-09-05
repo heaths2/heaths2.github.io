@@ -787,10 +787,13 @@ _NPM Proxy 호스트 추가_
 mkdir -pv /data/nginx/nginx/custom/
 
 cat << EOF > /data/nginx/nginx/custom/http.conf
-upstream npm {
-    server 172.16.0.43:8081;
-    server 172.16.0.43:8082;
-}
+    upstream npm {
+        server 172.16.0.43:81;
+    }
+    upstream backend {
+        server 172.16.0.43:8081;
+        server 172.16.0.43:8082;
+    }    
 EOF
 
 # 변경된 Nginx 설정을 적용하기 위한 컨테이너 재시작
@@ -814,10 +817,10 @@ podman exec -it nginx-proxy-manager_app cat /etc/nginx/conf.d/include/proxy.conf
 > proxy_pass       $forward_scheme://$server:$port$request_uri;
 > ```
 
-- **특정 호스트 프록시 설정 확인**
+- **NPM 호스트 프록시 설정 확인**
 
 ```bash
-# 특정 호스트 프록시 설정 확인
+# NPM 호스트 프록시 설정 확인
 podman exec -it nginx-proxy-manager_app cat /data/nginx/proxy_host/1.conf
 ```
 
@@ -889,6 +892,9 @@ _NPM Proxy 호스트 등록_
 ![그림_7](/assets/img/2025-06-22/그림7.png)
 _NPM Proxy Upstrem 설정_
 
+
+> * NPM 
+>
 > ```bash
 >   access_log /data/logs/npm_access.log;
 >   error_log /data/logs/npm_error.log;
@@ -904,7 +910,24 @@ _NPM Proxy Upstrem 설정_
 >   }
 > ```
 
-- **특정 호스트 프록시 설정 변경 확인**
+> * www 예시 
+>
+> ```bash
+>   access_log /data/logs/www_access.log;
+>   error_log /data/logs/www_error.log;
+> 
+>   location / {
+>     add_header       X-Served-By $host;
+>     proxy_set_header Host $host;
+>     proxy_set_header X-Forwarded-Scheme $scheme;
+>     proxy_set_header X-Forwarded-Proto  $scheme;
+>     proxy_set_header X-Forwarded-For    $proxy_add_x_forwarded_for;
+>     proxy_set_header X-Real-IP          $remote_addr;
+>     proxy_pass       http://backend;
+>   }
+> ```
+
+- **NPM 호스트 프록시 설정 변경 확인**
 
 > ```bash
 > # ------------------------------------------------------------

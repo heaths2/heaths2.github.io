@@ -542,11 +542,11 @@ sed -i -e 's/hostname: .*/hostname: reg.infra.local/' \
 bash install.sh
 ```
 
-![그림_1](/assets/img/2025-06-15/그림1.png)
-_Jenkins 로그인_
+![그림_3](/assets/img/2025-06-15/그림3.png)
+_Harbor 로그인_
 
-![그림_2](/assets/img/2025-06-15/그림2.png)
-_Jenkins 대시보드_
+![그림_4](/assets/img/2025-06-15/그림4.png)
+_Harbor 대시보드_
 
 ## 참고 자료
 - [Harbor 공식 문서](https://goharbor.io/)

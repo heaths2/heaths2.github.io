@@ -326,6 +326,222 @@ sudo systemctl stop firewalld.service
 kubectl exec --namespace jenkins -it svc/jenkins -c jenkins -- /bin/cat /run/secrets/additional/chart-admin-password && echo
 ```
 
+### CA 인증서 생성
+
+```bash
+# PKI 구조 생성 및 이동
+mkdir -p /data/ssl/{rootCA,certs,private,csr}
+cd /data/ssl
+
+# CA 관리를 위한 파일 생성
+touch rootCA/index.txt
+echo 1000 > rootCA/serial
+
+# 2.1 루트 CA 개인키 생성 (RSA 4096비트)
+# NPM 호환성을 위해 비밀번호 없이 생성합니다.
+openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:4096 -out private/root.key.pem
+chmod 400 private/root.key.pem
+
+# 2.2 루트 CA 인증서 생성 (자체 서명)
+openssl req -x509 -new -key private/root.key.pem -sha256 \
+  -days 7300 \
+  -out rootCA/root.crt.pem \
+  -subj "/C=KR/ST=Seoul/O=Infra/OU=InfraRootCA/CN=Infra Root CA"
+chmod 444 rootCA/root.crt.pem
+
+# 3.1 와일드카드 도메인 개인키 생성 (RSA 4096비트)
+# 파일명에 도메인을 포함하여 생성합니다.
+openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:4096 -out private/infra.local.key.pem
+chmod 400 private/infra.local.key.pem
+
+# 3.2 인증서 서명 요청서(CSR) 생성
+cat > csr_ext.cnf <<EOF
+[ req ]
+distinguished_name = req_distinguished_name
+req_extensions = v3_req
+prompt = no
+
+[ req_distinguished_name ]
+C = KR
+ST = Seoul
+L = Seoul
+O = Infra
+OU = Web
+CN = *.infra.local
+
+[ v3_req ]
+subjectAltName = @alt_names
+
+[ alt_names ]
+DNS.1 = *.infra.local
+DNS.2 = infra.local
+EOF
+
+openssl req -new -key private/infra.local.key.pem \
+  -out csr/infra.local.csr.pem \
+  -config csr_ext.cnf
+
+# 3.3 루트 CA로 CSR 서명 (최종 인증서 생성)
+cat > v3_ca_sign.cnf <<EOF
+[ v3_ca_sig ]
+basicConstraints = CA:FALSE
+keyUsage = digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth, clientAuth
+subjectAltName = @alt_names
+
+[ alt_names ]
+DNS.1 = *.infra.local
+DNS.2 = infra.local
+EOF
+
+openssl x509 -req -in csr/infra.local.csr.pem \
+  -CA rootCA/root.crt.pem -CAkey private/root.key.pem -CAcreateserial \
+  -out certs/infra.local.crt.pem \
+  -days 825 \
+  -sha256 \
+  -extfile v3_ca_sign.cnf -extensions v3_ca_sig
+chmod 444 certs/infra.local.crt.pem
+
+# 4.1 와일드카드 도메인 개인키 생성 (RSA 4096비트)
+# 파일명에 도메인을 포함하여 생성합니다.
+openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:4096 -out private/infra.io.key.pem
+chmod 400 private/infra.io.key.pem
+
+# 4.2 인증서 서명 요청서(CSR) 생성
+cat > csr_io_ext.cnf <<EOF
+[ req ]
+distinguished_name = req_distinguished_name
+req_extensions = v3_req
+prompt = no
+
+[ req_distinguished_name ]
+C = KR
+ST = Seoul
+L = Seoul
+O = Infra
+OU = Web
+CN = *.infra.io
+
+[ v3_req ]
+subjectAltName = @alt_names
+
+[ alt_names ]
+DNS.1 = *.infra.io
+DNS.2 = infra.io
+EOF
+
+openssl req -new -key private/infra.io.key.pem \
+  -out csr/infra.io.csr.pem \
+  -config csr_io_ext.cnf
+
+# 4.3 루트 CA로 CSR 서명 (최종 인증서 생성)
+cat > v3_io_ca_sign.cnf <<EOF
+[ v3_io_ca_sig ]
+basicConstraints = CA:FALSE
+keyUsage = digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth, clientAuth
+subjectAltName = @alt_names
+
+[ alt_names ]
+DNS.1 = *.infra.io
+DNS.2 = infra.io
+EOF
+
+openssl x509 -req -in csr/infra.io.csr.pem \
+  -CA rootCA/root.crt.pem -CAkey private/root.key.pem -CAcreateserial \
+  -out certs/infra.io.crt.pem \
+  -days 825 \
+  -sha256 \
+  -extfile v3_io_ca_sign.cnf -extensions v3_io_ca_sig
+chmod 444 certs/infra.io.crt.pem
+
+# 생성된 인증서 정보 확인
+openssl x509 -in certs/infra.local.crt.pem -noout -text
+openssl x509 -in certs/infra.io.crt.pem -noout -text
+
+# NPM 웹 UI 접속 후 다음 파일들 업로드:
+# [infra.local]
+# Certificate Key: private/infra.local.key.pem
+# Certificate: certs/infra.local.crt.pem
+# Intermediate Certificate: rootCA/root.crt.pem
+
+# [infra.io]
+# Certificate Key: private/infra.io.key.pem
+# Certificate: certs/infra.io.crt.pem
+# Intermediate Certificate: rootCA/root.crt.pem
+```
+
+### Docker 엔진을 통한 Harbor 설치
+
+```bash
+# 이전 버전 제거
+sudo dnf remove docker \
+                  docker-client \
+                  docker-client-latest \
+                  docker-common \
+                  docker-latest \
+                  docker-latest-logrotate \
+                  docker-logrotate \
+                  docker-engine \
+                  podman \
+                  runc
+
+# RPM 저장소 설정
+sudo dnf -y install dnf-plugins-core
+sudo dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
+
+# Docker 엔진 설치
+sudo dnf install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+# Docker 엔진 서비스가 자동으로 시작되도록 구성
+sudo systemctl enable --now docker
+```
+
+```bash
+# 디렉토리 생성
+mkdir -pv /opt/harbor
+mkdir -pv /data
+
+# 데이터 디렉토리들에 개별 컨테이너 파일 컨텍스트 영구 적용 규칙 추가
+sudo semanage fcontext -a -t container_file_t "/data(/.*)?"
+
+# 영구 규칙 적용
+sudo restorecon -Rv /data
+
+# 디렉토리 이동
+cd /opt/harbor
+
+# Harbor 원격 저장소에서 모든 태그 목록을 가져옵니다.
+LATEST_VERSION=$(git ls-remote --tags https://github.com/goharbor/harbor.git | grep -E "v[0-9]+\.[0-9]+\.[0-9]+$" | awk '{print $2}' | sort -V | tail -n 1 | sed 's/refs\/tags\/v//')
+
+# 최신 버전을 출력합니다.
+echo "Harbor의 최신 버전은: $LATEST_VERSION 입니다."
+
+# curl 명령어로 온라인 설치 파일을 다운로드
+curl -L -o "harbor-online-installer-v${LATEST_VERSION}.tgz" "https://github.com/goharbor/harbor/releases/download/v${LATEST_VERSION}/harbor-online-installer-v${LATEST_VERSION}.tgz"
+
+# curl 명령어로 오프라인 설치 파일을 다운로드
+#curl -L -o "harbor-offline-installer-v${LATEST_VERSION}.tgz" "https://github.com/goharbor/harbor/releases/download/v${LATEST_VERSION}/harbor-offline-installer-v${LATEST_VERSION}.tgz"
+
+# tar를 사용하여 설치 프로그램 패키지 추출
+tar -xzvf harbor-o*.tgz
+
+# 현재 디렉토리로 옮기기
+mv -v harbor/* .
+
+# harbor 구성 파일 복사
+cp -v harbor.yml.tmpl harbor.yml
+
+# 📝 harbor.yml 파일 수정
+sed -i -e 's/hostname: .*/hostname: reg.infra.local/' \
+       -e 's|certificate: .*|certificate: /data/ssl/certs/infra.local.crt.pem|' \
+       -e 's|private_key: .*|private_key: /data/ssl/private/infra.local.key.pem|' \
+       -e 's|data_volume: .*|data_volume: /data/harbor|' harbor.yml
+
+# 설치 프로그램 스크립트 실행
+bash install.sh
+```
+
 ![그림_1](/assets/img/2025-06-15/그림1.png)
 _Jenkins 로그인_
 
@@ -333,4 +549,6 @@ _Jenkins 로그인_
 _Jenkins 대시보드_
 
 ## 참고 자료
-- [Jenkins 공식 문서](https://www.jenkins.io/doc/book/installing/kubernetes/)
+- [Harbor 공식 문서](https://goharbor.io/)
+- [Harbor Github 문서](https://github.com/goharbor/harbor/tags)
+

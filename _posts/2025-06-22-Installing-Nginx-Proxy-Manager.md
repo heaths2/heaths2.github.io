@@ -787,7 +787,7 @@ _NPM Proxy 호스트 추가_
 mkdir -pv /data/nginx/nginx/custom/
 
 cat << EOF > /data/nginx/nginx/custom/http.conf
-upstream backend {
+upstream npm {
     server 172.16.0.43:8081;
     server 172.16.0.43:8082;
 }
@@ -900,7 +900,7 @@ _NPM Proxy Upstrem 설정_
 >     proxy_set_header X-Forwarded-Proto  $scheme;
 >     proxy_set_header X-Forwarded-For    $proxy_add_x_forwarded_for;
 >     proxy_set_header X-Real-IP          $remote_addr;
->     proxy_pass       http://backend;
+>     proxy_pass       http://npm;
 >   }
 > ```
 

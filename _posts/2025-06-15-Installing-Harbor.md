@@ -558,6 +558,46 @@ _Harbor 대시보드_
 ![그림_5](/assets/img/2025-06-15/그림5.png)
 _Harbor 스캐너 활성화_
 
+![그림_6](/assets/img/2025-06-15/그림6.png)
+_Harbor 프로젝트 생성_
+
+```bash
+# Harbor 로그인
+podman login reg.infra.local
+Username: admin
+Password: Harbor12345
+Login Succeeded!
+```
+
+```bash
+# 공식 이미지 내려받기 (Pull)
+podman pull docker.io/jenkins/jenkins:lts
+
+# 이미지 태그 변경 (Tag)
+podman tag docker.io/jenkins/jenkins:lts reg.infra.local/devops/jenkins:lts
+
+# 이미지 업로드 (Push)
+podman push reg.infra.local/devops/jenkins:lts
+
+# 이미지 사용 (Use)
+podman run --name jenkins \
+--restart unless-stopped \
+-p 8080:8080 \
+-p 50000:50000 \
+-v /data/jenkins:/var/jenkins_home \
+-v /var/run/podman/podman.sock:/var/run/docker.sock \
+-e TZ="Asia/Seoul" \
+-e JAVA_OPTS="-Djava.util.logging.config.file=/var/jenkins_home/log.properties" \
+--user root \
+-d reg.infra.local/devops/jenkins:lts
+```
+
+![그림_7](/assets/img/2025-06-15/그림6.png)
+_Harbor 업로드된 이미지 목록_
+
+![그림_8](/assets/img/2025-06-15/그림8.png)
+_Harbor 업로드된 이미지 상세정보_
+
 ## 참고 자료
 - [Harbor 공식 문서](https://goharbor.io/)
 - [Harbor Github 문서](https://github.com/goharbor/harbor/tags)

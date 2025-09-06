@@ -105,10 +105,13 @@ systemctl enable --now container-portainer
 _Portainer 계정 생성_
 
 ![그림_2](/assets/img/2025-09-06/그림2.png)
-_Portainer Wizard(Socket 인식) → Home_
+_Portainer 시작 → Home_
 
 ![그림_3](/assets/img/2025-09-06/그림3.png)
 _Portainer 컨테이너 정보_
+
+![그림_3](/assets/img/2025-09-06/그림4.png)
+_Portainer 컨테이너 목록_
 
 ## 참고 자료
 - [Portainer 공식 문서](https://docs.portainer.io/start/install-ce/server/podman/linux)

@@ -538,8 +538,15 @@ sed -i -e 's/hostname: .*/hostname: reg.infra.local/' \
        -e 's|private_key: .*|private_key: /data/ssl/private/infra.local.key.pem|' \
        -e 's|data_volume: .*|data_volume: /data/harbor|' harbor.yml
 
-# 설치 프로그램 스크립트 실행
-bash install.sh
+# 설치 프로그램 스크립트 실행(※ Trivy 취약점 점검 도구 활성화)
+bash install.sh --with-trivy
+```
+
+- Harbor Container Registry 로그인 
+
+```bash
+# TLS 검증을 하지 않고 로그인합니다.
+podman login --tls-verify=false reg.infra.local
 ```
 
 ![그림_3](/assets/img/2025-06-15/그림3.png)

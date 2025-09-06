@@ -555,6 +555,9 @@ _Harbor 로그인_
 ![그림_4](/assets/img/2025-06-15/그림4.png)
 _Harbor 대시보드_
 
+![그림_5](/assets/img/2025-06-15/그림5.png)
+_Harbor 스캐너 활성화_
+
 ## 참고 자료
 - [Harbor 공식 문서](https://goharbor.io/)
 - [Harbor Github 문서](https://github.com/goharbor/harbor/tags)

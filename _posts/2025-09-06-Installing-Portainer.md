@@ -110,8 +110,31 @@ _Portainer 시작 → Home_
 ![그림_3](/assets/img/2025-09-06/그림3.png)
 _Portainer 컨테이너 정보_
 
-![그림_3](/assets/img/2025-09-06/그림4.png)
+![그림_4](/assets/img/2025-09-06/그림4.png)
 _Portainer 컨테이너 목록_
+
+![그림_5](/assets/img/2025-09-06/그림5.png)
+_Portainer 도커 추가_
+
+![그림_6](/assets/img/2025-09-06/그림6.png)
+_Portainer 독립형 도커 선택_
+
+```bash
+docker run -d \
+  -p 9001:9001 \
+  --name portainer_agent \
+  --restart=always \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v /var/lib/docker/volumes:/var/lib/docker/volumes \
+  -v /:/host \
+  portainer/agent:2.33.1
+```
+
+![그림_7](/assets/img/2025-09-06/그림7.png)
+_Portainer Agent 추가_
+
+![그림_8](/assets/img/2025-09-06/그림8.png)
+_Portainer 추가된 도커 목록_
 
 ## 참고 자료
 - [Portainer 공식 문서](https://docs.portainer.io/start/install-ce/server/podman/linux)

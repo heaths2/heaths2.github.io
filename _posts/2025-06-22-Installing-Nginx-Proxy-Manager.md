@@ -747,19 +747,21 @@ EOF
 ```
 
 ```bash
-# 방화벽에서 Nginx Proxy Manager 관리 포트(81/tcp) 허용
-sudo firewall-cmd --permanent --add-port=81/tcp
-
-# 방화벽 설정 내용 적용
-sudo firewall-cmd --reload
-```
-
-```bash
 # Nginx Proxy Manager 설치 디렉토리로 이동
 cd /opt/nginx-proxy-manager
 
 # Podman Compose를 이용한 컨테이너 실행 (백그라운드)
 podman-compose up -d
+
+# 🛠️ 컨테이너별 systemd 서비스 파일 생성
+podman generate systemd --name nginx-proxy-manager_app --files --new
+podman generate systemd --name nginx-proxy-manager_db --files --new
+
+# 📂 생성된 서비스 파일 시스템에 등록
+cp -v container-* /usr/lib/systemd/system/
+
+# 🚀 서비스 활성화 및 즉시 시작
+systemctl enable --now container-nginx-proxy-manager_*
 ```
 
 ![그림_1](/assets/img/2025-06-22/그림1.png)

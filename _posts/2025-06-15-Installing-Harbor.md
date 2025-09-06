@@ -604,6 +604,16 @@ _Harbor 업로드된 이미지 태크 등록_
 ![그림_10](/assets/img/2025-06-15/그림10.png)
 _Harbor 업로드된 이미지 태크 정보_
 
+- `curl` 목록 조회
+
+```bash
+# Harbor의 레포지토리 목록 확인
+curl --insecure -u 'admin:Harbor12345' https://reg.infra.local/v2/_catalog
+
+# curl 명령어로 태그 목록 확인
+curl --insecure -u 'admin:Harbor12345' https://reg.infra.local/v2/devops/jenkins/tags/list
+```
+
 ## 참고 자료
 - [Harbor 공식 문서](https://goharbor.io/)
 - [Harbor Github 문서](https://github.com/goharbor/harbor/tags)

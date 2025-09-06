@@ -596,7 +596,13 @@ podman run --name jenkins \
 _Harbor 업로드된 이미지 목록_
 
 ![그림_8](/assets/img/2025-06-15/그림8.png)
-_Harbor 업로드된 이미지 상세정보_
+_Harbor 업로드된 이미지 상세 정보_
+
+![그림_9](/assets/img/2025-06-15/그림9.png)
+_Harbor 업로드된 이미지 태크 등록_
+
+![그림_10](/assets/img/2025-06-15/그림10.png)
+_Harbor 업로드된 이미지 태크 정보_
 
 ## 참고 자료
 - [Harbor 공식 문서](https://goharbor.io/)

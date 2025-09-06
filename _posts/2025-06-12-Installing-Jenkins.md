@@ -348,19 +348,20 @@ EOF
 ```
 
 ```bash
-# 방화벽에서 Jenkins 관리 포트(8080/tcp) 허용
-sudo firewall-cmd --permanent --add-port=8080/tcp
-
-# 방화벽 설정 내용 적용
-sudo firewall-cmd --reload
-```
-
-```bash
 # Jenkins 설치 디렉토리로 이동
 cd /opt/jenkins
 
 # Podman Compose를 이용한 컨테이너 실행 (백그라운드)
 podman-compose up -d
+
+# 🛠️ 컨테이너 systemd 서비스 파일 생성
+podman generate systemd --name jenkins --files --new
+
+# 📂 생성된 서비스 파일 시스템에 등록
+cp -v container-* /usr/lib/systemd/system/
+
+# 🚀 서비스 활성화 및 즉시 시작
+systemctl enable --now container-jenkins
 ```
 
 ### 🔐 Jenkins 초기 설정 가이드

@@ -70,6 +70,7 @@ services:
   npm:
     image: 'jc21/nginx-proxy-manager:latest'
     container_name: nginx-proxy-manager_app
+    hostname: nginx-proxy-manager_app
     restart: unless-stopped
     ports:
       - '80:80'
@@ -86,6 +87,7 @@ services:
       - /data/nginx:/data
       - /data/letsencrypt:/etc/letsencrypt
       - /data/logrotate.d/logrotate.custom:/etc/logrotate.d/nginx-proxy-manager
+      - /data/profile/.bashrc:/root/.bashrc   # bashrc 파일 매핑
     healthcheck:
       test: ["CMD", "/usr/bin/check-health"]
       interval: 10s
@@ -97,6 +99,7 @@ services:
   pgsql:
     image: postgres:latest
     container_name: nginx-proxy-manager_db
+    hostname: nginx-proxy-manager_db
     restart: unless-stopped
     environment:
       POSTGRES_USER: 'npm'
@@ -105,11 +108,13 @@ services:
       TZ: 'Asia/Seoul'
     volumes:
       - /data/pgsql:/var/lib/postgresql/data
+      - /data/profile/.bashrc:/root/.bashrc   # bashrc 파일 매핑
 
   # Vaultwarden (비밀번호 관리)
   vaultwarden:
     image: vaultwarden/server:latest
     container_name: vaultwarden
+    hostname: vaultwarden
     restart: unless-stopped
     environment:
       DOMAIN: https://vault.infra.local
@@ -117,6 +122,7 @@ services:
       TZ: "Asia/Seoul"
     volumes:
       - /data/vaultwarden:/data
+      - /data/profile/.bashrc:/root/.bashrc   # bashrc 파일 매핑
     expose:
       - "80"
 EOF

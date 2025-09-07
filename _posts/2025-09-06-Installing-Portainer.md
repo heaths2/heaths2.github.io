@@ -73,6 +73,7 @@ services:
   portainer:
     image: portainer/portainer-ce:lts
     container_name: portainer
+    hostname: portainer
     restart: always
     privileged: true
     ports:
@@ -81,6 +82,7 @@ services:
     volumes:
       - /run/podman/podman.sock:/var/run/docker.sock
       - /data/portainer:/data
+      - /data/profile/.bashrc:/root/.bashrc   # bashrc 파일 매핑
 EOF
 ```
 

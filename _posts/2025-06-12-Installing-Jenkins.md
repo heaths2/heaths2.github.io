@@ -333,11 +333,13 @@ services:
   jenkins:
     container_name: jenkins
     image: jenkins/jenkins:lts
+    hostname: jenkins
     ports:
       - "8080:8080" # Jenkins 웹 포트
       - "50000:50000" # Jenkins 에이전트 통신 포트
     volumes:
       - /data/jenkins:/var/jenkins_home # Jenkins 데이터 영구 저장
+      - /data/profile/.bashrc:/root/.bashrc   # bashrc 파일 매핑
       - /var/run/podman/podman.sock:/var/run/docker.sock # Podman 소켓 공유 (컨테이너 제어용)
     restart: unless-stopped
     user: root # 컨테이너 내부에서 root 권한으로 Podman/Docker 명령 실행

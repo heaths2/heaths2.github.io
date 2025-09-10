@@ -123,8 +123,8 @@ services:
     hostname: vaultwarden
     restart: unless-stopped
     environment:
-      DOMAIN: https://vault.hanpass.com
-      ADMIN_TOKEN: "kZ7ql3475hpvPVRfo3S/A7gqhRL23r/mE347l14WeVw="
+      DOMAIN: https://vault.infra.local
+      ADMIN_TOKEN: "$(openssl rand -base64 32)"
       TZ: "Asia/Seoul"
     volumes:
       - /data/vaultwarden:/data

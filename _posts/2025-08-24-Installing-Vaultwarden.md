@@ -60,9 +60,9 @@ sudo restorecon -Rv /data
 ```
 
 ```bash
-# Vaultwarden Password Manager docker-compose 파일 생성
-cat << EOF > /opt/vaultwarden/docker-compose.yml
-# /opt/vaultwarden/docker-compose.yml
+# docker-compose 파일 생성
+cat << EOF > /opt/nginx-proxy-manager/docker-compose.yml
+# /opt/nginx-proxy-manager/docker-compose.yml
 version: '3.8'
 
 services:
@@ -109,7 +109,13 @@ services:
     volumes:
       - /data/pgsql:/var/lib/postgresql/data
       - /data/profile/.bashrc:/root/.bashrc   # bashrc 파일 매핑
+EOF
 
+cat << EOF > /opt/vaultwarden/docker-compose.yml
+# /opt/vaultwarden/docker-compose.yml
+version: '3.8'
+
+services:
   # Vaultwarden (비밀번호 관리)
   vaultwarden:
     image: vaultwarden/server:latest
@@ -117,14 +123,14 @@ services:
     hostname: vaultwarden
     restart: unless-stopped
     environment:
-      DOMAIN: https://vault.infra.local
-      ADMIN_TOKEN: "$(openssl rand -base64 32)"
+      DOMAIN: https://vault.hanpass.com
+      ADMIN_TOKEN: "kZ7ql3475hpvPVRfo3S/A7gqhRL23r/mE347l14WeVw="
       TZ: "Asia/Seoul"
     volumes:
       - /data/vaultwarden:/data
-      - /data/profile/.bashrc:/root/.bashrc   # bashrc 파일 매핑
-    expose:
-      - "80"
+      - /data/profile/.bashrc:/root/.bashrc
+    ports:
+      - 8000:80
 EOF
 
 # 로그 순환 설정

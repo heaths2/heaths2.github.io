@@ -79,6 +79,8 @@ services:
     ports:
       - "8000:8000"
       - "9443:9443"
+    environment:
+      TZ: 'Asia/Seoul'
     volumes:
       - /run/podman/podman.sock:/var/run/docker.sock
       - /data/portainer:/data

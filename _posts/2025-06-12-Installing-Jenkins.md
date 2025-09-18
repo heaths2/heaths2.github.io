@@ -340,7 +340,6 @@ services:
     volumes:
       - /data/jenkins:/var/jenkins_home # Jenkins 데이터 영구 저장
       - /data/profile/.bashrc:/root/.bashrc   # bashrc 파일 매핑
-      - /var/run/podman/podman.sock:/var/run/docker.sock # Podman 소켓 공유 (컨테이너 제어용)
       - /data/profile/.ssh:/root/.ssh # 호스트의 SSH 키 디렉터리를 컨테이너에 마운트
     restart: unless-stopped
     user: root # 컨테이너 내부에서 root 권한으로 Podman/Docker 명령 실행

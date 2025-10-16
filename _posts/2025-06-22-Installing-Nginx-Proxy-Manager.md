@@ -678,7 +678,6 @@ services:
     container_name: nginx-proxy-manager_app
     hostname: nginx-proxy-manager_app
     restart: unless-stopped
-    user: '5000:5000'
     ports:
       - '80:80' # Public HTTP Port
       - '443:443' # Public HTTPS Port
@@ -690,6 +689,8 @@ services:
       DB_POSTGRES_PASSWORD: 'npm'
       DB_POSTGRES_NAME: 'npm'
       TZ: 'Asia/Seoul'
+      PUID: 0
+      PGID: 0      
     volumes:
       - /data/nginx:/data
       - /data/letsencrypt:/etc/letsencrypt
@@ -708,12 +709,13 @@ services:
     container_name: nginx-proxy-manager_db
     hostname: nginx-proxy-manager_db
     restart: unless-stopped
-    user: '5001:5001'
     environment:
       POSTGRES_USER: 'npm'
       POSTGRES_PASSWORD: 'npm'
       POSTGRES_DB: 'npm'
       TZ: 'Asia/Seoul'
+      PUID: 0
+      PGID: 0      
     volumes:
       - /data/pgsql:/var/lib/postgresql/data
       - /data/profile/.bashrc:/root/.bashrc   # bashrc 파일 매핑
@@ -723,7 +725,6 @@ EOF
 cat << 'EOF' > /data/logrotate.d/logrotate.custom
 # /data/logrotate.d/logrotate.custom
 /data/logs/*_access.log /data/logs/*/access.log {
-    su npm npm
     create 0644
     weekly
     rotate 4
@@ -737,7 +738,6 @@ cat << 'EOF' > /data/logrotate.d/logrotate.custom
 }
 
 /data/logs/*_error.log /data/logs/*/error.log {
-    su npm npm
     create 0644
     weekly
     rotate 10
@@ -753,27 +753,6 @@ EOF
 ```
 
 ```bash
-# NPM
-sudo groupadd -g 5000 npm
-sudo useradd -u 5000 -g 5000 -r -s /usr/sbin/nologin npm
-
-# PostgreSQL
-sudo groupadd -g 5001 pgsql
-sudo useradd -u 5001 -g 5001 -r -s /usr/sbin/nologin pgsql
-
-# mkdir -pv /data/{nginx,letsencrypt,pgsql,logs,profile}
-
-# 소유자 지정
-chown -R npm:npm /data/nginx /data/letsencrypt /data/logs
-chown -R pgsql:pgsql /data/pgsql
-chown -R root:root /data/logrotate.d /data/profile
-
-# 권한 최소화
-chmod 750 /data/nginx /data/letsencrypt /data/logs
-chmod 700 /data/pgsql
-chmod 755 /data/logrotate.d /data/profile
-
-
 # Nginx Proxy Manager 설치 디렉토리로 이동
 cd /opt/nginx-proxy-manager
 

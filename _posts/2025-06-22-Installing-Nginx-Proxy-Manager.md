@@ -655,13 +655,10 @@ podman-compose --version
 
 # Nginx Proxy Manager 및 데이터용 디렉토리 생성
 mkdir -pv /opt/nginx-proxy-manager
-mkdir -pv /data/{letsencrypt,nginx,pgsql,logrotate.d}
+mkdir -pv /data/npm/{letsencrypt,nginx,pgsql,logrotate.d}
 
 # 데이터 디렉토리들에 개별 컨테이너 파일 컨텍스트 영구 적용 규칙 추가
-sudo semanage fcontext -a -t container_file_t "/data/letsencrypt(/.*)?"
-sudo semanage fcontext -a -t container_file_t "/data/nginx(/.*)?"
-sudo semanage fcontext -a -t container_file_t "/data/pgsql(/.*)?"
-sudo semanage fcontext -a -t container_file_t "/data/logrotate.d(/.*)?"
+sudo semanage fcontext -a -t container_file_t "/data/npm(/.*)?"
 
 # 영구 규칙 적용
 sudo restorecon -Rv /data
@@ -672,59 +669,85 @@ cat << EOF > /opt/nginx-proxy-manager/docker-compose.yml
 version: '3.8'
 
 services:
-  # Nginx Proxy Manager (웹 프록시 관리)
-  npm:
+  # 🌐 Nginx Proxy Manager (웹 프록시 관리)
+  app:
     image: 'jc21/nginx-proxy-manager:latest'
     container_name: nginx-proxy-manager_app
     hostname: nginx-proxy-manager_app
     restart: unless-stopped
     ports:
+      # These ports are in format <host-port>:<container-port>
       - '80:80' # Public HTTP Port
       - '443:443' # Public HTTPS Port
       - '81:81' # Admin Web Port
+      # Add any other Stream port you want to expose
+      # - '21:21' # FTP
     environment:
+      TZ: 'Asia/Seoul'
+      PUID: 0
+      PGID: 0
+      INITIAL_ADMIN_EMAIL: admin@infra.local
+      INITIAL_ADMIN_PASSWORD: mail1234
+      # Postgres parameters:
       DB_POSTGRES_HOST: 'pgsql'
       DB_POSTGRES_PORT: '5432'
       DB_POSTGRES_USER: 'npm'
       DB_POSTGRES_PASSWORD: 'npm'
       DB_POSTGRES_NAME: 'npm'
-      TZ: 'Asia/Seoul'
-      PUID: 0
-      PGID: 0      
+      # Uncomment this if IPv6 is not enabled on your host
+      # DISABLE_IPV6: 'true'
     volumes:
-      - /data/nginx:/data
-      - /data/letsencrypt:/etc/letsencrypt
-      - /data/logrotate.d/logrotate.custom:/etc/logrotate.d/nginx-proxy-manager
-      - /data/profile/.bashrc:/root/.bashrc   # bashrc 파일 매핑
-    healthcheck:
-      test: ["CMD", "/usr/bin/check-health"]
-      interval: 10s
-      timeout: 3s
+      - npm_nginx:/data
+      - npm_letsencrypt:/etc/letsencrypt
+      - /data/npm/logrotate.d/logrotate.custom:/etc/logrotate.d/nginx-proxy-manager
+      - /data/profile/.bashrc:/root/.bashrc
     depends_on:
-      - pgsql
+      - db
 
-  # Nginx Proxy Manager용 PostgreSQL 데이터베이스
-  pgsql:
-    image: postgres:latest
+  # 🗄️ PostgreSQL 데이터베이스
+  db:
+    image: postgres:17
     container_name: nginx-proxy-manager_db
     hostname: nginx-proxy-manager_db
-    restart: unless-stopped
     environment:
+      TZ: 'Asia/Seoul'
+      PUID: 999
+      PGID: 999
       POSTGRES_USER: 'npm'
       POSTGRES_PASSWORD: 'npm'
       POSTGRES_DB: 'npm'
-      TZ: 'Asia/Seoul'
-      PUID: 0
-      PGID: 0      
     volumes:
-      - /data/pgsql:/var/lib/postgresql/data
-      - /data/profile/.bashrc:/root/.bashrc   # bashrc 파일 매핑
+      - npm_pgsql:/var/lib/postgresql
+      - /data/profile/.bashrc:/root/.bashrc
+
+# ✅ Podman 볼륨 정의 (모두 /data/npm/ 하위)
+volumes:
+  npm_nginx:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /data/npm/
+
+  npm_letsencrypt:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /data/npm/letsencrypt
+
+  npm_pgsql:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /data/npm/pgsql
 EOF
 
 # 로그 순환 설정
-cat << 'EOF' > /data/logrotate.d/logrotate.custom
+cat << 'EOF' > /data/npm/logrotate.d/logrotate.custom
 # /data/logrotate.d/logrotate.custom
-/data/logs/*_access.log /data/logs/*/access.log {
+/data/npm/logs/*_access.log /data/npm/logs/*/access.log {
     create 0644
     weekly
     rotate 4
@@ -737,7 +760,7 @@ cat << 'EOF' > /data/logrotate.d/logrotate.custom
     endscript
 }
 
-/data/logs/*_error.log /data/logs/*/error.log {
+/data/npm/logs/*_error.log /data/npm/logs/*/error.log {
     create 0644
     weekly
     rotate 10
@@ -781,17 +804,28 @@ _NPM Proxy 호스트 추가_
 - **UPStream 등록**
 
 ```bash
-# Upstream 설정 파일 생성
-mkdir -pv /data/nginx/nginx/custom/
+# eth0 인터페이스의 IP 주소만 추출
+IP=$(ip -br a show eth0 | awk '{print $3}' | cut -d'/' -f1)
 
-cat << EOF > /data/nginx/nginx/custom/http.conf
+# Upstream 디렉토리 생성
+mkdir -pv /data/npm/nginx/custom/
+
+# http.conf 생성
+cat << EOF > /data/npm/nginx/custom/http.conf
     upstream npm {
-        server 172.16.0.43:81;
+        server ${IP}:81;
     }
     upstream backend {
-        server 172.16.0.43:8081;
-        server 172.16.0.43:8082;
-    }    
+        server ${IP}:8081;
+        server ${IP}:8082;
+    }
+EOF
+
+# root_top.conf 생성
+cat << EOF > /data/npm/nginx/custom/root_top.conf
+# GEOIP2 모듈 활성화
+load_module /usr/lib/nginx/modules/ngx_http_geoip2_module.so;
+load_module /usr/lib/nginx/modules/ngx_stream_geoip2_module.so;
 EOF
 
 # 변경된 Nginx 설정을 적용하기 위한 컨테이너 재시작

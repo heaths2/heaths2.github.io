@@ -689,7 +689,7 @@ services:
       INITIAL_ADMIN_EMAIL: admin@infra.local
       INITIAL_ADMIN_PASSWORD: mail1234
       # Postgres parameters:
-      DB_POSTGRES_HOST: 'pgsql'
+      DB_POSTGRES_HOST: 'db'
       DB_POSTGRES_PORT: '5432'
       DB_POSTGRES_USER: 'npm'
       DB_POSTGRES_PASSWORD: 'npm'

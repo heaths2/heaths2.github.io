@@ -334,6 +334,7 @@ services:
     image: jenkins/jenkins:lts
     container_name: jenkins
     hostname: jenkins
+    restart: unless-stopped    
     ports:
       - "8080:8080" # Jenkins 웹 포트
       - "50000:50000" # Jenkins 에이전트 통신 포트
@@ -341,7 +342,6 @@ services:
       - data:/var/jenkins_home # Jenkins 데이터 영구 저장
       - /data/profile/.bashrc:/root/.bashrc   # bashrc 파일 매핑
       - /data/profile/.ssh:/root/.ssh # 호스트의 SSH 키 디렉터리를 컨테이너에 마운트
-    restart: unless-stopped
     user: root # 컨테이너 내부에서 root 권한으로 Podman/Docker 명령 실행
     environment:
       TZ: 'Asia/Seoul'

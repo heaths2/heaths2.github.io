@@ -11,6 +11,12 @@ tags: [Command, Script, WSL, Windows]
 ### WSL 설치 및 📌 설치 확인
 
 ```bash
+# Linux용 Windows 하위 시스템 사용
+dism /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
+
+# Virtual Machine 기능 사용
+dism /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
+
 # WSL 엔진 + Hyper-V 설치
 wsl --install
 
@@ -64,4 +70,5 @@ usbipd detach --busid 4-4
 ```
 
 ## 참고 자료
+- [필수 패키지 설치](https://learn.microsoft.com/ko-kr/windows/wsl/install-manual)
 - [공식 문서](https://learn.microsoft.com/ko-kr/windows/wsl/install)

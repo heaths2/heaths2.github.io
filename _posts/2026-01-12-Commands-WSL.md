@@ -30,7 +30,9 @@ wsl --set-default-version 2
 wsl  --list --online
 # 또는
 # wsl -l -o
+```
 
+```bash
 # 이미지 배포
 wsl --install --from-file D:\WSL\Rocky-9-WSL-Base.latest.x86_64.wsl --name Rocky9.7
 

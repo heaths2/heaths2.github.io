@@ -18,7 +18,7 @@ Kubernetes는 분산 시스템에서 컨테이너 애플리케이션을 자동�
 사용자 계정 생성 후 운영하고 싶은 경우 사용자 계정을 생성합니다.
 
 ```bash
-#!/bin/bash
+#!/usr/bin/env bash
 
 # --- 설정 변수 ---
 username="k8s"

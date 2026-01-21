@@ -18,12 +18,35 @@ Kubernetes는 분산 시스템에서 컨테이너 애플리케이션을 자동�
 사용자 계정 생성 후 운영하고 싶은 경우 사용자 계정을 생성합니다.
 
 ```bash
+#!/bin/bash
+
+# --- 설정 변수 ---
 username="k8s"
 password="1234"
-useradd -m "$username" -d "/home/$username" -p "$(openssl passwd -6 "$password")" -s /bin/bash -c "Kubernetes"
+comment="Kubernetes User"
 
-# sudoers 권한 추가
-sudo sed -i '/^root\s\+ALL=(ALL:ALL) ALL/a k8s     ALL=(ALL:ALL) ALL' /etc/sudoers
+# 1. 사용자 생성
+echo "Creating user: $username..."
+sudo useradd -m "$username" \
+  -d "/home/$username" \
+  -p "$(openssl passwd -6 "$password")" \
+  -s /bin/bash \
+  -c "$comment"
+
+# 2. sudoers 설정 파일 생성 (/etc/sudoers.d/ 이용)
+# 핵심 변경 사항: NOPASSWD: 옵션 추가
+echo "Configuring passwordless sudo..."
+echo "$username ALL=(ALL:ALL) NOPASSWD: ALL" | sudo tee "/etc/sudoers.d/$username" > /dev/null
+
+# 3. 권한 설정 (0440 필수)
+sudo chmod 0440 "/etc/sudoers.d/$username"
+
+# 4. 설정 검증
+if sudo visudo -c; then
+    echo "✅ Success! User '$username' created with passwordless sudo access."
+else
+    echo "❌ Error: Sudoers configuration failed."
+fi
 ```
 
 ### Swap 메모리 비활성화

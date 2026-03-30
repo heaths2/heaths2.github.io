@@ -17,9 +17,6 @@ dism /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all
 # Virtual Machine 기능 사용
 dism /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
 
-# WSL 엔진 + Hyper-V 설치
-wsl --install
-
 # 커널 업데이트
 wsl --update
 
@@ -32,6 +29,10 @@ wsl --list --verbose
 # wsl --set-default-version <1|2>
 wsl --set-default-version 2
 
+# WSL 엔진 + Hyper-V 설치
+# Ubuntu 기본설치
+wsl --install
+
 # Microsoft 공식 이미지 조회
 wsl  --list --online
 # 또는
@@ -40,10 +41,10 @@ wsl  --list --online
 
 ```bash
 # 이미지 배포
-wsl --install --from-file D:\WSL\Rocky-9-WSL-Base.latest.x86_64.wsl --name Rocky9.7
+wsl --install --from-file D:\VM\WSL\Rocky-9-WSL-Base.latest.x86_64.wsl --name Rocky9 --version 2
 
 # 특정 사용자로 서버 접속
-wsl -d Rocky9.7 -u bob
+wsl -d Rocky9 -u bob
 ```
 
 ### WSL에 USBIPD 설치

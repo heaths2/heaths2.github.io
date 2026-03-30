@@ -13,10 +13,12 @@ tags: [Command, Script, WSL, Windows]
 ```bash
 # Linux용 Windows 하위 시스템 사용
 dism /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
-
+# Linux용 Windows 하위 시스템 기능 Enable 확인
+dism /online /get-featureinfo /featurename:Microsoft-Windows-Subsystem-Linux
 # Virtual Machine 기능 사용
 dism /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
-
+# Virtual Machine 기능 Enable 확인
+dism /online /get-featureinfo /featurename:VirtualMachinePlatform
 # 커널 업데이트
 wsl --update
 

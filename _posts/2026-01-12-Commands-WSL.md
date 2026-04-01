@@ -62,6 +62,16 @@ cat << EOF > /etc/resolv.conf
 nameserver 8.8.8.8
 nameserver 1.1.1.1
 EOF
+
+# Python3 설치
+sudo dnf install -y python3.12 python3.12-pip python3.12-devel
+sudo python3.12 -m pip install --upgrade pip setuptools wheel
+
+sudo alternatives --install /usr/bin/python python /usr/bin/python3.9 1
+sudo alternatives --install /usr/bin/python python /usr/bin/python3.12 2
+
+sudo alternatives --install /usr/bin/pip pip /usr/bin/pip3.9 1
+sudo alternatives --install /usr/bin/pip pip /usr/bin/pip3.12 2
 ```
 
 ```bash

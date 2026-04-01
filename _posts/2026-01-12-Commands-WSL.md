@@ -31,22 +31,36 @@ wsl --list --verbose
 # wsl --set-default-version <1|2>
 wsl --set-default-version 2
 
-# WSL 엔진 + Hyper-V 설치
-# Ubuntu 기본설치
-wsl --install
-
 # Microsoft 공식 이미지 조회
 wsl  --list --online
 # 또는
 # wsl -l -o
+
+# WSL 엔진 + Hyper-V 설치
+# Ubuntu 기본설치
+# wsl --install
+# 이미지 배포
+wsl --install --from-file D:\VM\WSL\Rocky-9-WSL-Base.latest.x86_64.wsl --name Rocky9 --version 2
 ```
 
 ```bash
-# 이미지 배포
-wsl --install --from-file D:\VM\WSL\Rocky-9-WSL-Base.latest.x86_64.wsl --name Rocky9 --version 2
-
 # 특정 사용자로 서버 접속
 wsl -d Rocky9 -u bob
+
+# wsl -d Rocky9 -u bob 옵션 생략
+# wsl /etc/resolv.conf 자동 생성 비활성화
+cat << EOF >> /etc/wsl.conf
+
+[user]
+default=bob
+
+[network]
+generateResolvConf = false
+EOF
+```
+
+```bash
+wsl --shutdown
 ```
 
 ### WSL에 USBIPD 설치

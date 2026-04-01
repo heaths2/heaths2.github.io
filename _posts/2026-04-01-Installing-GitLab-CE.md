@@ -1,5 +1,5 @@
 ---
-title: Portainer 설치 가이드
+title: GitLab Community Edition 설치 가이드
 author: G.G
 date: 2026-04-01 18:05 +0900
 categories: [Blog, Provisioning]

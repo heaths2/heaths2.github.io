@@ -72,6 +72,14 @@ usbipd attach --wsl --busid 4-4
 usbipd detach --busid 4-4
 ```
 
+### WSL MSI 설치
+
+```bash
+# WSL 명령어 오류시
+curl -O https://github.com/microsoft/WSL/releases/download/2.6.3/wsl.2.6.3.0.x64.msi
+```
+
 ## 참고 자료
-- [필수 패키지 설치](https://learn.microsoft.com/ko-kr/windows/wsl/install-manual)
-- [공식 문서](https://learn.microsoft.com/ko-kr/windows/wsl/install)
+
+- [WSL 설치 가이드](https://learn.microsoft.com/ko-kr/windows/wsl/install-manual)
+- [WSL Git 공식주소](https://github.com/microsoft/WSL)

@@ -134,4 +134,4 @@ sudo chmod 644 /etc/cron.d/asciinema-cleanup
 
 ## 참고 자료
 
-- [Certbot 문서](https://certbot-dns-cloudflare.readthedocs.io/)
+- [Asciinema 공식 문서](https://docs.asciinema.org/getting-started/)

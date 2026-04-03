@@ -72,6 +72,9 @@ sudo alternatives --install /usr/bin/python python /usr/bin/python3.12 2
 
 sudo alternatives --install /usr/bin/pip pip /usr/bin/pip3.9 1
 sudo alternatives --install /usr/bin/pip pip /usr/bin/pip3.12 2
+
+# cgroup V2 확인
+podman info | grep cgroup
 ```
 
 ```bash

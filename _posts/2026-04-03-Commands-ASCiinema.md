@@ -124,7 +124,8 @@ sudo chmod 1777 /var/log/asciinema
 
 # 2. 크론 작업 내용을 파일로 생성 (root 권한 필요)
 sudo tee /etc/cron.d/asciinema-cleanup <<'EOF'
-# 매일 새벽 2시에 90일이 지난 asciinema 로그(.cast) 삭제
+# 매시간 정각마다 실행하여 90일이 지난 asciinema 로그(.cast) 삭제
+# 매시간 0분에 실행 (00:00, 01:00, ...) / 90일 초과 cast 파일 삭제
 0 * * * * root /usr/bin/find /var/log/asciinema -type f -name "*.cast" -mtime +90 -delete
 EOF
 

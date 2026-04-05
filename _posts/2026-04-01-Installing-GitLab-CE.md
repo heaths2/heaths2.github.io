@@ -57,7 +57,7 @@ sudo sed -i 's/^unqualified-search-registries = .*$/unqualified-search-registrie
 ```bash
 # 디렉토리 생성
 mkdir -pv /opt/gitlab/{apps,runners/01}
-mkdir -pv /data/gitlab/{config,logs,data,backups,runner-config}
+mkdir -pv /data/gitlab/{config,logs,data,backups,runner-configs}
 
 # 데이터 디렉토리들에 개별 컨테이너 파일 컨텍스트 영구 적용 규칙 추가
 sudo semanage fcontext -a -t container_file_t "/data(/.*)?"
@@ -83,30 +83,6 @@ services:
         external_url 'http://git.infra.local:8929'
         gitlab_rails['gitlab_shell_ssh_port'] = 2424
 
-        # --- AD(LDAP) 연동 설정 ---
-        gitlab_rails['ldap_enabled'] = true
-        gitlab_rails['ldap_servers'] = {
-          'main' => {
-            'label' => 'LDAP',
-            'host' => '172.16.200.2',
-            'port' => 389,
-            'uid' => 'sAMAccountName',
-            'bind_dn' => 'CN=administrator,OU=Users,DC=infra,DC=local',
-            'password' => '\${PASSWORD_AD}',
-            'encryption' => 'plain',
-            'verify_certificates' => false,
-            'timeout' => 10,
-            'active_directory' => true,
-            'user_filter' => '(memberOf=CN=git,OU=Users,DC=infra,DC=local)',
-            'base' => 'DC=infra,DC=local',
-            'lowercase_usernames' => 'true',
-            'retry_empty_result_with_codes' => [80],
-            'allow_username_or_email_login' => false,
-            'block_auto_created_users' => false
-          }
-        }
-    env_file:
-      - .env
     ports:
       - '8929:8929'
       - '443:443'
@@ -118,23 +94,43 @@ services:
       - '/data/gitlab/data:/var/opt/gitlab'
       - '/data/gitlab/backups:/var/opt/gitlab/backups'
     shm_size: '256m'
+    networks:
+      net:
+        ipv4_address: 10.90.0.100
+
+networks:
+  net:
+    name: gitlab_net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.90.0.0/24
+          ip_range: 10.90.0.100/30
+          gateway: 10.90.0.1
 EOF
 
 cat << EOF > /opt/gitlab/gitlab-runner/01/docker-compose.yml
 # /opt/gitlab/gitlab-runner/01/docker-compose.yml
 
 services:
-  gitlab-runner:
+  gitlab-runner-01:
     image: 'gitlab/gitlab-runner:latest'
-    container_name: gitlab-runner
+    container_name: gitlab-runner-01
     restart: always
-    depends_on:
-      - gitlab
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
-      - '/data/gitlab/runner-config:/etc/gitlab-runner' # 명시적 경로 매핑
+      - '/data/gitlab/runner-configs/01:/etc/gitlab-runner:Z'
     environment:
       TZ: 'Asia/Seoul'
+    networks:
+      - net
+    extra_hosts:
+      - "git.infra.local:10.90.0.100"  # 고정된 서버 IP를 바라보게 설정
+
+networks:
+  net:
+    name: gitlab_net
+    external: true  # 위에서 생성된 네트워크를 공유
 EOF
 
 cat << EOF > /opt/gitlab/.env
@@ -162,11 +158,27 @@ systemctl enable --now container-gitlab
 ```
 
 ```bash
-podman exec -it gitlab-runner-01 gitlab-runner register
-Runtime platform                                    arch=amd64 os=linux pid=16 revision=ac71f4d8 version=18.10.0
+podman exec -it gitlab-runner-01 gitlab-runner register \
+  --non-interactive \
+  --url http://git.infra.local:8929 \
+  --token glrt-hHyWVbnCHIt73kLogp6xZG86MQp0OjEKdToxCw.01.121ltcr96 \
+  --name java21-runner-01 \
+  --executor docker \
+  --docker-image eclipse-temurin:21-jdk-jammy
+Runtime platform                                    arch=amd64 os=linux pid=15 revision=ac71f4d8 version=18.10.0
 Running in system-mode.
 
-Enter the GitLab instance URL (for example, https://gitlab.com/):
+Verifying runner... is valid                        correlation_id=01KNEFTYG1DQ8QXE0D4SWVVYZP runner=hHyWVbnCH runner_name=java21-runner-01
+Runner registered successfully. Feel free to start it, but if it's running already the config should be automatically reloaded!
+
+Configuration (with the authentication token) was saved in "/etc/gitlab-runner/config.toml"
+```
+
+
+```bash
+podman exec -it gitlab-runner-01 gitlab-runner list
+
+podman exec -it gitlab-runner-01 gitlab-runner unregister --all-runners
 ```
 
 

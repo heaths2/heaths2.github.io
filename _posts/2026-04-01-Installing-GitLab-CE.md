@@ -17,15 +17,24 @@ GitLab은 **소스 코드 관리(SCM, Source Code Management)**를 중심으로 
 ## 📂 디렉토리 구조 (Tree 구조)
 
 ```bash
-/opt/gitlab
-├── docker-compose.yml     # GitLab 서비스 정의
-└── .env                  # 환경 변수 (LDAP 비밀번호)
+/opt/gitlab/
+├── apps
+│   └── java21-sample
+│       └── docker-compose.yml
+├── docker-compose.yml
+│── .env
+└── runners
+    ├── build
+    │   └── docker-compose.yml
+    └── deploy
+        └── docker-compose.yml
 
-/data/gitlab
-├── config                # GitLab 설정 (/etc/gitlab)
-├── logs                  # 로그 (/var/log/gitlab)
-├── data                  # 실제 데이터 (/var/opt/gitlab)
-└── backups               # 백업 파일
+/data/gitlab/
+├── backups
+├── config
+├── data
+├── logs
+└── runner-configs
 ```
 
 ## ⚙️ 설치방법
@@ -56,7 +65,7 @@ sudo sed -i 's/^unqualified-search-registries = .*$/unqualified-search-registrie
 
 ```bash
 # 디렉토리 생성
-mkdir -pv /opt/gitlab/{apps,runners/01}
+mkdir -pv /opt/gitlab/{apps,runners/{build,deploy}}
 mkdir -pv /data/gitlab/{config,logs,data,backups,runner-configs}
 
 # 데이터 디렉토리들에 개별 컨테이너 파일 컨텍스트 영구 적용 규칙 추가
@@ -109,19 +118,47 @@ networks:
           gateway: 10.90.0.1
 EOF
 
-cat << EOF > /opt/gitlab/gitlab-runner/01/docker-compose.yml
-# /opt/gitlab/gitlab-runner/01/docker-compose.yml
+cat cat << EOF > /opt/gitlab/gitlab-runner/build/docker-compose.yml
+# /opt/gitlab/gitlab-runner/build/docker-compose.yml
 
 services:
-  gitlab-runner-01:
+  gitlab-runner-build:
     image: 'gitlab/gitlab-runner:latest'
-    container_name: gitlab-runner-01
+    container_name: gitlab-runner-build
     restart: always
     volumes:
-      - '/var/run/docker.sock:/var/run/docker.sock'
-      - '/data/gitlab/runner-configs/01:/etc/gitlab-runner:Z'
+      - /data/gitlab/runner-configs/build:/etc/gitlab-runner:Z
+      - /run/podman/podman.sock:/var/run/docker.sock:Z
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     environment:
-      TZ: 'Asia/Seoul'
+      - TZ=Asia/Seoul
+    networks:
+      - net
+    extra_hosts:
+      - "git.infra.local:10.90.0.100"  # 고정된 서버 IP를 바라보게 설정
+
+networks:
+  net:
+    name: gitlab_net
+    external: true  # 위에서 생성된 네트워크를 공유
+EOF
+
+cat cat << EOF > /opt/gitlab/gitlab-runner/deploy/docker-compose.yml
+# /opt/gitlab/gitlab-runner/deploy/docker-compose.yml
+
+services:
+  gitlab-runner-deploy:
+    image: 'gitlab/gitlab-runner:latest'
+    container_name: gitlab-runner-deploy
+    restart: always
+    volumes:
+      - /data/gitlab/runner-configs/deploy:/etc/gitlab-runner:Z
+      - /run/podman/podman.sock:/var/run/docker.sock:Z
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    environment:
+      - TZ=Asia/Seoul
     networks:
       - net
     extra_hosts:
@@ -136,6 +173,72 @@ EOF
 cat << EOF > /opt/gitlab/.env
 PASSWORD_AD=testing1234
 EOF
+
+podman exec -it gitlab-runner-build gitlab-runner register \
+  --non-interactive \
+  --url http://git.infra.local:8929 \
+  --token glrt-hHyWVbnCHIt73kLogp6xZG86MQp0OjEKdToxCw.01.121ltcr96 \
+  --executor docker \
+  --docker-image eclipse-temurin:21-jdk-jammy
+
+podman exec -it gitlab-runner-deploy gitlab-runner register \
+  --non-interactive \
+  --url http://git.infra.local:8929 \
+  --token glrt-7rO4ZLXibG0l-M-OBTetn286MQp0OjEKdToxCw.01.1214ofaop \
+  --executor shell
+
+concurrent = 1
+check_interval = 0
+shutdown_timeout = 0
+
+[session_server]
+  session_timeout = 1800
+
+[[runners]]
+  name = "java21-build-runner"
+  url = "http://git.infra.local:8929"
+  id = 1
+  token = "glrt-hHyWVbnCHIt73kLogp6xZG86MQp0OjEKdToxCw.01.121ltcr96"
+  token_obtained_at = 2026-04-05T14:22:11Z
+  token_expires_at = 0001-01-01T00:00:00Z
+  executor = "docker"
+  [runners.cache]
+    MaxUploadedArchiveSize = 0
+    [runners.cache.s3]
+    [runners.cache.gcs]
+    [runners.cache.azure]
+  [runners.docker]
+    tls_verify = false
+    image = "eclipse-temurin:21-jdk-jammy"
+    privileged = false
+    disable_entrypoint_overwrite = false
+    oom_kill_disable = false
+    disable_cache = false
+    volumes = ["/cache"]
+    volume_keep = false
+    shm_size = 0
+    network_mtu = 0
+    extra_hosts = ["git.infra.local:10.90.0.100"]
+concurrent = 1
+check_interval = 0
+shutdown_timeout = 0
+
+[session_server]
+  session_timeout = 1800
+
+[[runners]]
+  name = "java21-deploy-runner"
+  url = "http://git.infra.local:8929"
+  id = 2
+  token = "glrt-7rO4ZLXibG0l-M-OBTetn286MQp0OjEKdToxCw.01.1214ofaop"
+  token_obtained_at = 2026-04-05T14:22:24Z
+  token_expires_at = 0001-01-01T00:00:00Z
+  executor = "shell"
+  [runners.cache]
+    MaxUploadedArchiveSize = 0
+    [runners.cache.s3]
+    [runners.cache.gcs]
+    [runners.cache.azure]
 ```
 
 ```bash

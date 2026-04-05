@@ -89,6 +89,7 @@ podman inspect nginx | jq '.[0].NetworkSettings.Networks'
 podman volume inspect $(podman volume ls -q) --format "table {{.Name}}\t{{.Mountpoint}}"
 
 # 특정 컨테이너 마운트 경로 확인
+podman inspect nginx --format '{{range .Mounts}}{{.Type}} | {{.Source}} -> {{.Destination}}{{println}}{{end}}'
 podman inspect nginx --format '{{range .Mounts}}{{.Source}} -> {{.Destination}}{{println}}{{end}}'
 
 # 컨테이너 실행 (백그라운드)

@@ -10,6 +10,9 @@ tags: [Command, Script, WSL, Windows]
 
 ### WSL 설치 및 📌 설치 확인
 
+![그림_1](/assets/img/2026-01-12/그림1.png)
+_Windows 기능 켜기/끄기_
+
 ```bash
 # Linux용 Windows 하위 시스템 사용
 dism /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart

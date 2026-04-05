@@ -56,10 +56,9 @@ nslookup -type=SRV _kerberos._tcp.infra.local
 ```
 
 {: .prompt-tip }
-> - 👉 목적
->
-> AD 서버 자동 탐색 가능 여부 확인
-> DNS 깨지면 → SSSD 100% 실패
+> 💡 **목적**
+> - AD 서버 자동 탐색 가능 여부 확인
+> - DNS 깨지면 → SSSD 100% 실패
 
 - 도메인 탐색 및 Join
 
@@ -88,10 +87,9 @@ sudo authselect current
 ```
 
 {: .prompt-tip }
-> - 👉 효과
-> 
-> 로그인 시 /home 자동 생성
-> sudo 권한 연동 가능
+> 💡 **목적**
+> - 로그인 시 /home 자동 생성
+> - sudo 권한 연동 가능
 
 - AD 연결 검증
 

@@ -79,6 +79,18 @@ sudo restorecon -Rv /data
 > ```
 
 ```bash
+# 컨테이너 네트워크 확인
+podman network inspect $(podman network ls -q) | jq -r '.[] | "\(.name): \(.plugins[0].ipam.ranges[0][0].subnet // .subnets[0].subnet)"'
+
+# 특정 컨테이너 IP 확인
+podman inspect nginx | jq '.[0].NetworkSettings.Networks'
+
+# 컨테이너 마운트 경로 확인
+podman volume inspect $(podman volume ls -q) --format "table {{.Name}}\t{{.Mountpoint}}"
+
+# 특정 컨테이너 마운트 경로 확인
+podman inspect nginx --format '{{range .Mounts}}{{.Source}} -> {{.Destination}}{{println}}{{end}}'
+
 # 컨테이너 실행 (백그라운드)
 podman compose -f docker-compose.yml up -d
 

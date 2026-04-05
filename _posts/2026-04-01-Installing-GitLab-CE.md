@@ -56,8 +56,8 @@ sudo sed -i 's/^unqualified-search-registries = .*$/unqualified-search-registrie
 
 ```bash
 # 디렉토리 생성
-mkdir -pv /opt/gitlab
-mkdir -pv /data/gitlab/{config,logs,data,backups}
+mkdir -pv /opt/gitlab/{apps,runners/01}
+mkdir -pv /data/gitlab/{config,logs,data,backups,runner-config}
 
 # 데이터 디렉토리들에 개별 컨테이너 파일 컨텍스트 영구 적용 규칙 추가
 sudo semanage fcontext -a -t container_file_t "/data(/.*)?"
@@ -120,6 +120,23 @@ services:
     shm_size: '256m'
 EOF
 
+cat << EOF > /opt/gitlab/gitlab-runner/01/docker-compose.yml
+# /opt/gitlab/gitlab-runner/01/docker-compose.yml
+
+services:
+  gitlab-runner:
+    image: 'gitlab/gitlab-runner:latest'
+    container_name: gitlab-runner
+    restart: always
+    depends_on:
+      - gitlab
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+      - '/data/gitlab/runner-config:/etc/gitlab-runner' # 명시적 경로 매핑
+    environment:
+      TZ: 'Asia/Seoul'
+EOF
+
 cat << EOF > /opt/gitlab/.env
 PASSWORD_AD=testing1234
 EOF
@@ -143,6 +160,15 @@ cp -v container-* /usr/lib/systemd/system/
 # 🚀 서비스 활성화 및 즉시 시작
 systemctl enable --now container-gitlab
 ```
+
+```bash
+podman exec -it gitlab-runner-01 gitlab-runner register
+Runtime platform                                    arch=amd64 os=linux pid=16 revision=ac71f4d8 version=18.10.0
+Running in system-mode.
+
+Enter the GitLab instance URL (for example, https://gitlab.com/):
+```
+
 
 ![그림_1](/assets/img/2026-04-01/그림1.png)
 _GitLab 계정 생성_

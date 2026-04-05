@@ -95,7 +95,197 @@ podman generate systemd nginx > /etc/systemd/system/podman-nginx.service
 systemctl enable --now podman-nginx.service
 ```
 
+````bash
+# Podman 4.6 이하 권장 Systemd Quadlet 방식
+bash podman-container-to-quadlet.sh --name gitlab --overwrite
+# 디버깅 Dry-run 재확인
+/usr/libexec/podman/quadlet -dryrun
 
+```bash
+#!/usr/bin/env bash
+# -*- coding: utf-8 -*-
+#
+# Author: OpenAI & User Collaboration
+# Version: 1.2.0
+# Description: 기존 실행 중인 Podman 컨테이너를 Quadlet(.container) 파일로 변환합니다.
+
+set -Eeuo pipefail
+
+SCRIPT_NAME="$(basename "$0")"
+CONTAINER_NAME=""
+OUTPUT_DIR=""
+ROOTLESS_MODE="false"
+RELOAD_SYSTEMD="false"
+OVERWRITE="false"
+DEBUG_MODE="false"
+
+# -----------------------------
+# Color & Logging
+# -----------------------------
+if [[ -t 1 ]]; then
+    C_RESET='\033[0m'; C_RED='\033[31m'; C_GREEN='\033[32m'; C_YELLOW='\033[33m'; C_BLUE='\033[34m'; C_MAGENTA='\033[35m'; C_CYAN='\033[36m'; C_BOLD='\033[1m'
+else
+    C_RESET=''; C_RED=''; C_GREEN=''; C_YELLOW=''; C_BLUE=''; C_MAGENTA=''; C_CYAN=''; C_BOLD=''
+fi
+
+timestamp() { TZ=Asia/Seoul date '+%Y-%m-%d %H:%M:%S %Z'; }
+log_info() { printf '%b[%s] [INFO] %s%b\n' "${C_GREEN}" "$(timestamp)" "$*" "${C_RESET}" >&2; }
+log_error() { printf '%b[%s] [ERROR] %s%b\n' "${C_RED}" "$(timestamp)" "$*" "${C_RESET}" >&2; }
+die() { log_error "$*"; exit 1; }
+
+usage() {
+    cat <<EOF
+사용법:
+  ${SCRIPT_NAME} <컨테이너이름> [옵션]
+  ${SCRIPT_NAME} --name <컨테이너이름> --reload --overwrite
+
+옵션:
+  --name <name>       변환할 컨테이너 이름
+  --output-dir <dir>  생성될 .container 파일 저장 경로
+  --user              Rootless 모드 사용 (~/.config/containers/systemd)
+  --reload            생성 후 systemctl daemon-reload 실행
+  --overwrite         기존 파일이 있을 경우 덮어쓰기
+  -h, --help          도움말 출력
+EOF
+}
+
+require_cmd() {
+    command -v "$1" >/dev/null 2>&1 || die "필수 명령어가 없습니다: $1 (설치 후 다시 시도하세요)"
+}
+
+parse_args() {
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --name) CONTAINER_NAME="$2"; shift 2 ;;
+            --output-dir) OUTPUT_DIR="$2"; shift 2 ;;
+            --user) ROOTLESS_MODE="true"; shift ;;
+            --reload) RELOAD_SYSTEMD="true"; shift ;;
+            --overwrite) OVERWRITE="true"; shift ;;
+            -h|--help) usage; exit 0 ;;
+            *) if [[ -z "${CONTAINER_NAME}" ]]; then CONTAINER_NAME="$1"; shift; else die "알 수 없는 인자: $1"; fi ;;
+        esac
+    done
+    [[ -n "${CONTAINER_NAME}" ]] || die "컨테이너 이름을 입력해야 합니다."
+}
+
+# -----------------------------
+# Extraction Logic
+# -----------------------------
+
+get_restart_policy() {
+    local p; p="$(podman inspect --format '{{.HostConfig.RestartPolicy.Name}}' "${CONTAINER_NAME}" 2>/dev/null || true)"
+    case "${p}" in always|unless-stopped) echo "always" ;; on-failure) echo "on-failure" ;; *) echo "no" ;; esac
+}
+
+write_quadlet() {
+    local out_dir="$1" file_path="$2"
+    local image restart_policy hn shm
+
+    # 1. 이미지 및 기본 정보 추출
+    image="$(podman inspect --format '{{.Config.Image}}' "${CONTAINER_NAME}")"
+    # 이미지 이름 정규화 (Warning 방지)
+    [[ "${image}" != *"/"* ]] && image="docker.io/library/${image}"
+
+    restart_policy="$(get_restart_policy)"
+    hn="$(podman inspect --format '{{.Config.Hostname}}' "${CONTAINER_NAME}" 2>/dev/null || true)"
+    shm="$(podman inspect --format '{{.HostConfig.ShmSize}}' "${CONTAINER_NAME}" 2>/dev/null || echo "67108864")"
+
+    mkdir -p "${out_dir}"
+    [[ -e "${file_path}" && "${OVERWRITE}" != "true" ]] && die "파일이 이미 존재합니다: ${file_path} (--overwrite 사용)"
+
+    log_info "변환 시작: ${CONTAINER_NAME} -> ${file_path}"
+
+    {
+        printf '# Auto-generated Quadlet file\n'
+        printf '# Generated at: %s\n\n' "$(timestamp)"
+
+        printf '[Unit]\n'
+        printf 'Description=Quadlet Service for %s\n' "${CONTAINER_NAME}"
+        printf 'After=network-online.target\n\n'
+
+        printf '[Container]\n'
+        printf 'Image=%s\n' "${image}"
+        printf 'ContainerName=%s\n' "${CONTAINER_NAME}"
+
+        # [수정] N 대문자 준수
+        [[ -n "${hn}" && "${hn}" != "$(uname -n)" ]] && printf 'HostName=%s\n' "${hn}"
+
+        # [수정] 환경변수 추출 (따옴표 처리 강화)
+        podman inspect "${CONTAINER_NAME}" | jq -r '.[0].Config.Env // [] | .[]' | while read -r env_line; do
+            # 1. 환경변수 라인이 비어있거나(=만 있는 경우 포함) 체크
+            [[ -z "${env_line}" || "${env_line}" == "=" ]] && continue
+
+            # 2. KEY=VALUE 형태에서 VALUE가 비어있는지 체크 (정교한 필터링)
+            if [[ "${env_line}" == *"="* ]]; then
+                val="${env_line#*=}" # '=' 이후의 값 추출
+                [[ -z "${val}" ]] && continue
+            fi
+
+            printf 'Environment="%s"\n' "${env_line}"
+        done
+
+        # 포트 추출
+        podman inspect "${CONTAINER_NAME}" | jq -r '
+            .[0].HostConfig.PortBindings // {} | to_entries[] | .key as $cp | .value[]
+            | if .HostIp != "" and .HostIp != "0.0.0.0" then "\(.HostIp):\(.HostPort):\($cp)" else "\(.HostPort):\($cp)" end
+        ' | while read -r p; do printf 'PublishPort=%s\n' "$p"; done
+
+        # [수정] 볼륨 추출 및 :Z 자동 권장
+        podman inspect "${CONTAINER_NAME}" | jq -r '
+            .[0].Mounts // [] | .[] | select(.Type == "bind") | "\(.Source):\(.Destination)"
+        ' | while read -r v; do
+            [[ "$v" != *":Z" && "$v" != *":z" ]] && v="${v}:Z"
+            printf 'Volume=%s\n' "$v"
+        done
+
+        # ShmSize 변환 (bytes -> MB)
+        if [[ "$shm" != "67108864" ]]; then
+            printf 'ShmSize=%sm\n' "$((shm / 1024 / 1024))"
+        fi
+
+        printf '\n[Service]\n'
+        [[ "${restart_policy}" != "no" ]] && printf 'Restart=%s\n' "${restart_policy}"
+
+        printf '\n[Install]\n'
+        printf 'WantedBy=multi-user.target\n'
+    } > "${file_path}"
+}
+
+# -----------------------------
+# Execution
+# -----------------------------
+
+main() {
+    parse_args "$@"
+    require_cmd podman
+    require_cmd jq
+
+    if ! podman container exists "${CONTAINER_NAME}"; then die "컨테이너가 존재하지 않습니다: ${CONTAINER_NAME}"; fi
+
+    if [[ -z "${OUTPUT_DIR}" ]]; then
+        if [[ "${ROOTLESS_MODE}" == "true" ]]; then
+            OUTPUT_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/containers/systemd"
+        else
+            OUTPUT_DIR="/etc/containers/systemd"
+        fi
+    fi
+
+    local file_path="${OUTPUT_DIR}/${CONTAINER_NAME}.container"
+    write_quadlet "${OUTPUT_DIR}" "${file_path}"
+
+    if [[ "${RELOAD_SYSTEMD}" == "true" ]]; then
+        local cmd="systemctl daemon-reload"
+        [[ "${ROOTLESS_MODE}" == "true" ]] && cmd="systemctl --user daemon-reload"
+        $cmd && log_info "명령 실행 완료: $cmd"
+    fi
+
+    log_info "모든 작업이 완료되었습니다!"
+    echo -e "\n${C_BOLD}${C_BLUE}생성된 파일 내용 확인:${C_RESET}"
+    cat "${file_path}"
+}
+
+main "$@"
+````
 
 ## 참고 자료
 

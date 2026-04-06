@@ -98,10 +98,10 @@ services:
       - '2424:22'
     volumes:
       # 요청하신 대로 /data/gitlab 하위 구조로 매핑
-      - '/data/gitlab/config:/etc/gitlab'
-      - '/data/gitlab/logs:/var/log/gitlab'
-      - '/data/gitlab/data:/var/opt/gitlab'
-      - '/data/gitlab/backups:/var/opt/gitlab/backups'
+      - gitlab_etc:/etc/gitlab
+      - gitlab_log:/var/log/gitlab
+      - gitlab_opt:/var/opt/gitlab
+      - gitlab_backup:/var/opt/gitlab/backups
     shm_size: '256m'
     networks:
       net:
@@ -116,10 +116,36 @@ networks:
         - subnet: 10.90.0.0/24
           ip_range: 10.90.0.100/30
           gateway: 10.90.0.1
+
+volumes:
+  gitlab_etc:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /data/gitlab/config  # 실제 호스트 경로
+  gitlab_log:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /data/gitlab/logs
+  gitlab_opt:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /data/gitlab/data
+  gitlab_backup:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /data/gitlab/backups
 EOF
 
-cat cat << EOF > /opt/gitlab/gitlab-runner/build/docker-compose.yml
-# /opt/gitlab/gitlab-runner/build/docker-compose.yml
+cat << EOF > /opt/gitlab/runners/build/docker-compose.yml
+# /opt/gitlab/runners/build/docker-compose.yml
 
 services:
   gitlab-runner-build:
@@ -127,7 +153,7 @@ services:
     container_name: gitlab-runner-build
     restart: always
     volumes:
-      - /data/gitlab/runner-configs/build:/etc/gitlab-runner:Z
+      - runner_config:/etc/gitlab-runner:Z
       - /run/podman/podman.sock:/var/run/docker.sock:Z
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
@@ -142,10 +168,19 @@ networks:
   net:
     name: gitlab_net
     external: true  # 위에서 생성된 네트워크를 공유
+
+volumes:
+  # podman volume ls에서 보일 이름을 정의합니다.
+  runner_config:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /data/gitlab/runner-configs/build
 EOF
 
-cat cat << EOF > /opt/gitlab/gitlab-runner/deploy/docker-compose.yml
-# /opt/gitlab/gitlab-runner/deploy/docker-compose.yml
+cat << EOF > /opt/gitlab/runners/deploy/docker-compose.yml
+# /opt/gitlab/runners/deploy/docker-compose.yml
 
 services:
   gitlab-runner-deploy:
@@ -153,7 +188,7 @@ services:
     container_name: gitlab-runner-deploy
     restart: always
     volumes:
-      - /data/gitlab/runner-configs/deploy:/etc/gitlab-runner:Z
+      - runner_config:/etc/gitlab-runner:Z
       - /run/podman/podman.sock:/var/run/docker.sock:Z
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
@@ -168,6 +203,15 @@ networks:
   net:
     name: gitlab_net
     external: true  # 위에서 생성된 네트워크를 공유
+
+volumes:
+  # podman volume ls에서 보일 이름을 정의합니다.
+  runner_config:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /data/gitlab/runner-configs/build # 실제 데이터 저장 위치
 EOF
 
 cat << EOF > /opt/gitlab/.env
@@ -284,6 +328,89 @@ podman exec -it gitlab-runner-01 gitlab-runner list
 podman exec -it gitlab-runner-01 gitlab-runner unregister --all-runners
 ```
 
+```bash
+.gitlab/
+├── ci
+│   ├── build-java.yml
+│   ├── common.yml
+│   └── deploy-local.yml
+├── .gitlab-ci.yml
+└── App.java
+```
+
+```bash
+# .gitlab/ci/build-java.yml
+build-app:
+  extends: .build_template
+  stage: build
+  script:
+    - echo "[INFO] Starting build for ${APP_NAME} version ${FULL_VERSION}..."
+    - javac App.java
+    - jar cvfe "${FINAL_JAR}" App App.class
+    - ls -lh "${FINAL_JAR}"
+  artifacts:
+    paths:
+      - "${FINAL_JAR}"
+    expire_in: 1 day
+```
+
+```bash
+# .gitlab/ci/common.yml
+variables:
+  APP_NAME: "java21-app"
+  JAVA_IMAGE: "eclipse-temurin:21-jdk-jammy"
+  VERSION_PREFIX: "1.0"
+  
+  # 배포 경로 표준화
+  DEPLOY_ROOT: "/data/deploy/${APP_NAME}"
+  RELEASES_PATH: "${DEPLOY_ROOT}/releases"
+  CURRENT_LINK: "${DEPLOY_ROOT}/current"
+
+# 공통 빌드 템플릿
+.build_template:
+  image: ${JAVA_IMAGE}
+  variables:
+    # 빌드 시점에 조합되는 버전 정보
+    FULL_VERSION: "${VERSION_PREFIX}.${CI_PIPELINE_IID}"
+    FINAL_JAR: "${APP_NAME}-${FULL_VERSION}.jar"
+
+# 공통 배포 템플릿
+.deploy_template:
+  image: debian:bookworm-slim # 가벼운 이미지 권장
+  variables:
+    FULL_VERSION: "${VERSION_PREFIX}.${CI_PIPELINE_IID}"
+    FINAL_JAR: "${APP_NAME}-${FULL_VERSION}.jar"
+```
+
+```bash
+# .gitlab/ci/deploy-local.yml
+deploy-app:
+  extends: .deploy_template
+  stage: deploy
+  script:
+    - echo "[INFO] Deploying ${FINAL_JAR} to ${RELEASES_PATH}..."
+    # 1. 디렉토리 생성
+    - mkdir -p "${RELEASES_PATH}"
+    # 2. 버전별 JAR 파일 복사
+    - cp "./${FINAL_JAR}" "${RELEASES_PATH}/"
+    # 3. 심볼릭 링크 업데이트 (Atomic 전환)
+    - ln -sfn "${RELEASES_PATH}/${FINAL_JAR}" "${CURRENT_LINK}"
+    - echo "[SUCCESS] Deployment completed. Current link points to ${FINAL_JAR}"
+  dependencies:
+    - build-app
+```
+
+```bash
+# .gitlab-ci.yml (Root)
+include:
+  - local: '/.gitlab/ci/common.yml'
+  - local: '/.gitlab/ci/build-java.yml'
+  - local: '/.gitlab/ci/deploy-local.yml'
+
+stages:
+  - build
+  - deploy
+```
 
 ![그림_1](/assets/img/2026-04-01/그림1.png)
 _GitLab 계정 생성_

@@ -66,7 +66,7 @@ sudo sed -i 's/^unqualified-search-registries = .*$/unqualified-search-registrie
 ```bash
 # 디렉토리 생성
 mkdir -pv /opt/gitlab/{apps,runners/{build,deploy}}
-mkdir -pv /data/gitlab/{config,logs,data,backups,runner-configs}
+mkdir -pv /data/gitlab/{config,logs,data,backups,runner-configs/{build,deploy}}
 
 # 데이터 디렉토리들에 개별 컨테이너 파일 컨텍스트 영구 적용 규칙 추가
 sudo semanage fcontext -a -t container_file_t "/data(/.*)?"

@@ -329,13 +329,29 @@ podman exec -it gitlab-runner-01 gitlab-runner unregister --all-runners
 ```
 
 ```bash
-.gitlab/
-├── ci
-│   ├── build-java.yml
-│   ├── common.yml
-│   └── deploy-local.yml
+# 📁 추천 디렉터리 구조
+mkdir -pv .gitlab/ci/{base,jobs/{build,test,security,deploy},workflows}
+.
 ├── .gitlab-ci.yml
-└── App.java
+└── ci
+    ├── base
+    │   ├── common.yml
+    │   └── rules.yml
+    ├── jobs
+    │   ├── build
+    │   │   ├── java-maven.yml
+    │   │   └── docker-build.yml
+    │   ├── test
+    │   │   ├── unit-test.yml
+    │   │   └── sonarqube.yml
+    │   ├── security
+    │   │   └── container-scan.yml
+    │   └── deploy
+    │       ├── k8s-deploy.yml
+    │       └── terraform-apply.yml
+    └── workflows
+        ├── java-microservice.yml
+        └── static-site.yml
 ```
 
 ```bash
@@ -404,8 +420,8 @@ deploy-app:
 # .gitlab-ci.yml (Root)
 include:
   - local: '/.gitlab/ci/common.yml'
-  - local: '/.gitlab/ci/build-java.yml'
-  - local: '/.gitlab/ci/deploy-local.yml'
+  - local: '/.gitlab/ci/build.yml'
+  - local: '/.gitlab/ci/deploy.yml'
 
 stages:
   - build

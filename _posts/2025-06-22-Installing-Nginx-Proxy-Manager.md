@@ -703,6 +703,14 @@ services:
       - /data/profile/.bashrc:/root/.bashrc
     depends_on:
       - db
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'        # 트래픽 처리를 위해 CPU는 조금 넉넉히
+          memory: 256M        # 현재 101MB 사용 중 -> 256MB로 제한
+        reservations:
+          cpus: '0.10'
+          memory: 128M
 
   # 🗄️ PostgreSQL 데이터베이스
   db:
@@ -719,6 +727,14 @@ services:
     volumes:
       - npm_pgsql:/var/lib/postgresql
       - /data/profile/.bashrc:/root/.bashrc
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M        # 현재 34MB 사용 중 -> 128MB로 제한
+        reservations:
+          cpus: '0.05'
+          memory: 64M
 
 # ✅ Podman 볼륨 정의 (모두 /data/npm/ 하위)
 volumes:

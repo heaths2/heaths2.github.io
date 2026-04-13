@@ -376,7 +376,7 @@ EOF
 cd /opt/jenkins
 
 # Podman Compose를 이용한 컨테이너 실행 (백그라운드)
-podman-compose up -d
+podman compose up -d
 
 # 🛠️ 컨테이너 systemd 서비스 파일 생성
 podman generate systemd --name jenkins --files --new

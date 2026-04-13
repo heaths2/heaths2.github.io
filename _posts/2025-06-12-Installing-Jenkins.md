@@ -323,39 +323,51 @@ sudo semanage fcontext -a -t container_file_t "/data/jenkins(/.*)?"
 # 영구 규칙 적용
 sudo restorecon -Rv /data
 
+# DevOps 네트워크 대역 생성
+podman network create \
+  --driver bridge \
+  --subnet 10.90.0.0/24 \
+  --gateway 10.90.0.1 \
+  --ip-range 10.90.0.64/26 \
+  net_devops
+
 # Jenkins 및 데이터용 디렉토리 생성
 cat << EOF > /opt/jenkins/docker-compose.yml
 # /opt/jenkins/docker-compose.yml
-version: '3.8'
 
 services:
-  # Jenkins 컨테이너 추가
   jenkins:
-    image: jenkins/jenkins:lts
+    image: jenkins/jenkins:latest-jdk21
     container_name: jenkins
     hostname: jenkins
-    restart: unless-stopped    
+    restart: unless-stopped
     ports:
-      - "8080:8080" # Jenkins 웹 포트
-      - "50000:50000" # Jenkins 에이전트 통신 포트
+      - "8080:8080"   # 웹 UI 접속용
+      - "50000:50000" # 에이전트 통신용
     volumes:
-      - data:/var/jenkins_home # Jenkins 데이터 영구 저장
-      - /data/profile/.bashrc:/root/.bashrc   # bashrc 파일 매핑
-      - /data/profile/.ssh:/root/.ssh # 호스트의 SSH 키 디렉터리를 컨테이너에 마운트
-    user: root # 컨테이너 내부에서 root 권한으로 Podman/Docker 명령 실행
+      - jenkins_home:/var/jenkins_home
     environment:
       TZ: 'Asia/Seoul'
-      PUID: 0
-      PGID: 0
+      # 로그 설정 파일이 실제 경로에 없으면 오류가 날 수 있으니 유의하세요!
       JAVA_OPTS: "-Djava.util.logging.config.file=/var/jenkins_home/log.properties"
+    networks:
+      - net_devops
+
+  jenkins-agent:
+    image: jenkins/ssh-agent:latest-jdk21 # 오타 수정 완료
+    container_name: jenkins-agent
+    hostname: jenkins-agent
+    environment:
+      - JENKINS_AGENT_SSH_PUBKEY=your-ssh-pub-key-here # 나중에 실제 키로 교체 필요
+    networks:
+      - net_devops
 
 volumes:
-  data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /data/jenkins   # ✅ 실제 경로 매핑
+  jenkins_home: # 선언식으로 자동 생성 관리
+
+networks:
+  net_devops:
+    external: true # 미리 생성된 네트워크 사용
 EOF
 ```
 
@@ -396,3 +408,4 @@ _Jenkins 대시보드_
 
 ## 참고 자료
 - [Jenkins 공식 문서](https://www.jenkins.io/doc/book/installing/kubernetes/)
+- [Github 공식 문서](https://github.com/jenkinsci/docker)

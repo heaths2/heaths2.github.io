@@ -76,6 +76,14 @@ sudo restorecon -Rv /data
 ```
 
 ```bash
+# DevOps 네트워크 대역 생성
+podman network create \
+  --driver bridge \
+  --subnet 10.50.10.0/24 \
+  --gateway 10.50.10.1 \
+  --ip-range 10.50.10.64/26 \
+  net_devops
+
 # docker-compose 파일 생성
 
 cat << EOF > /opt/gitlab/docker-compose.yml
@@ -108,14 +116,8 @@ services:
         ipv4_address: 10.90.0.100
 
 networks:
-  net:
-    name: gitlab_net
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 10.90.0.0/24
-          ip_range: 10.90.0.100/30
-          gateway: 10.90.0.1
+  net_devops:
+    external: true
 
 volumes:
   gitlab_etc:

@@ -342,7 +342,7 @@ services:
     hostname: jenkins
     restart: unless-stopped
     ports:
-      - "8080:8080"   # 웹 UI 접속용
+      - "8090:8080"   # 웹 UI 접속용
       - "50000:50000" # 에이전트 통신용
     volumes:
       - jenkins_home:/var/jenkins_home
@@ -358,12 +358,19 @@ services:
     container_name: jenkins-agent
     hostname: jenkins-agent
     environment:
-      - JENKINS_AGENT_SSH_PUBKEY=your-ssh-pub-key-here # 나중에 실제 키로 교체 필요
+      - - JENKINS_AGENT_SSH_PUBKEY=${AGENT_SSH_PUBKEY}
     networks:
       - net_devops
 
 volumes:
   jenkins_home: # 선언식으로 자동 생성 관리
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      # 실제 파일이 저장될 로컬의 절대 경로를 적어주세요.
+      # (예: /home/user/jenkins/jenkins_home)
+      device: '${PWD}/jenkins_home'
 
 networks:
   net_devops:

@@ -84,6 +84,14 @@ podman network create \
   --ip-range 10.50.10.64/26 \
   net_devops
 
+# 1. 파일 생성 및 내용 입력
+cat > .env << EOF
+GITLAB_ROOT_PASSWORD=Passw0rd!
+EOF
+
+# 2. 파일 권한을 600(소유자 읽기/쓰기만 가능)으로 변경
+chmod 600 .env
+
 # docker-compose 파일 생성
 
 cat << EOF > /opt/gitlab/docker-compose.yml
@@ -96,6 +104,7 @@ services:
     hostname: gitlab
     environment:
       TZ: 'Asia/Seoul'
+      GITLAB_ROOT_PASSWORD: ${GITLAB_ROOT_PASSWORD}
       GITLAB_OMNIBUS_CONFIG: |
         external_url 'http://git.infra.local:8929'
         gitlab_rails['gitlab_shell_ssh_port'] = 2424
@@ -112,7 +121,7 @@ services:
       - gitlab_backup:/var/opt/gitlab/backups
     shm_size: '256m'
     networks:
-      net:
+      net_devops:
         ipv4_address: 10.90.0.100
 
 networks:

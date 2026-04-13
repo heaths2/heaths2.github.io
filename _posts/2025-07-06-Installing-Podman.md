@@ -78,6 +78,18 @@ sudo restorecon -Rv /data
 > semanage fcontext -l|grep "/data/podman/database"
 > ```
 
+- **DevOps** 네트워크 대역 생성
+
+```bash
+podman network create \
+  --driver bridge \
+  --subnet 10.90.0.0/24 \
+  --gateway 10.90.0.1 \
+  --ip-range 10.90.0.64/26 \
+  net_devops
+```
+
+
 ```bash
 # 컨테이너 네트워크 확인
 podman network inspect $(podman network ls -q) | jq -r '.[] | "\(.name): \(.plugins[0].ipam.ranges[0][0].subnet // .subnets[0].subnet)"'

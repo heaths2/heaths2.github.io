@@ -358,7 +358,7 @@ services:
     container_name: jenkins-agent
     hostname: jenkins-agent
     environment:
-      - - JENKINS_AGENT_SSH_PUBKEY=${AGENT_SSH_PUBKEY}
+      - JENKINS_AGENT_SSH_PUBKEY=\${AGENT_SSH_PUBKEY}
     networks:
       - net_devops
 

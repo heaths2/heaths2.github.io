@@ -357,6 +357,8 @@ services:
     image: jenkins/ssh-agent:latest-jdk21 # 오타 수정 완료
     container_name: jenkins-agent
     hostname: jenkins-agent
+    env_file:        # <--- 여기에 추가
+      - .env         # <--- .env 파일의 내용을 환경 변수로 불러오겠다
     environment:
       - JENKINS_AGENT_SSH_PUBKEY=\${AGENT_SSH_PUBKEY}
     networks:

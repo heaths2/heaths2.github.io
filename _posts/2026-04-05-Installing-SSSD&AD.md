@@ -127,6 +127,7 @@ use_fully_qualified_names = False
 ldap_id_mapping = True
 access_provider = ad
 ad_access_filter = (|(memberOf=CN=sudoers_dev,OU=Users,DC=infra,DC=local)(memberOf=CN=sudoers_stg,OU=Users,DC=infra,DC=local)(memberOf=CN=sudoers_prd,OU=Users,DC=infra,DC=local))
+auto_private_groups = True
 ad_server = ldap.infra.local
 
 # 성능

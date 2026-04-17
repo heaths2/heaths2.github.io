@@ -346,8 +346,12 @@ services:
       - "50000:50000" # 에이전트 통신용
     volumes:
       - jenkins_home:/var/jenkins_home
+    env_file:
+      - .env
     environment:
       TZ: 'Asia/Seoul'
+      JENKINS_ADMIN_ID: "admin"
+      JENKINS_ADMIN_PASSWORD: ${JENKINS_ADMIN_PASSWORD}
       # 로그 설정 파일이 실제 경로에 없으면 오류가 날 수 있으니 유의하세요!
       JAVA_OPTS: "-Djava.util.logging.config.file=/var/jenkins_home/log.properties"
     networks:

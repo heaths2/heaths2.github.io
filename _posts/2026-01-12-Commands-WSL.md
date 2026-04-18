@@ -59,6 +59,9 @@ default=bob
 
 [network]
 generateResolvConf = false
+
+[automount]
+options = "metadata,umask=22,fmask=11"
 EOF
 
 cat << EOF > /etc/resolv.conf

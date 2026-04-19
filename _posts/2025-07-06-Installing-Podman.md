@@ -52,13 +52,16 @@ sudo sed -i 's/^unqualified-search-registries = .*$/unqualified-search-registrie
 
 ```bash
 # 디렉토리 생성
-mkdir -pv /data/gitlab/{config,logs,data,backups}
+mkdir -pv /opt/gitlab/{config,logs,data,backups}
+mkdir -pv /opt/{jenkins,nexus}
 
-# 데이터 디렉토리들에 개별 컨테이너 파일 컨텍스트 영구 적용 규칙 추가
-sudo semanage fcontext -a -t container_file_t "/data(/.*)?"
+# 필요한 경로만 SELinux 컨텍스트 등록
+semanage fcontext -a -t container_file_t "/opt/gitlab(/.*)?"
+semanage fcontext -a -t container_file_t "/opt/jenkins(/.*)?"
+semanage fcontext -a -t container_file_t "/opt/nexus(/.*)?"
 
-# 영구 규칙 적용
-sudo restorecon -Rv /data
+# 적용
+restorecon -Rv /opt/gitlab /opt/jenkins /opt/nexus
 ```
 
 {: .prompt-info }

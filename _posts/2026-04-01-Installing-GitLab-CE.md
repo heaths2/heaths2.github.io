@@ -104,7 +104,7 @@ services:
     hostname: gitlab
     environment:
       TZ: 'Asia/Seoul'
-      GITLAB_ROOT_PASSWORD: ${GITLAB_ROOT_PASSWORD}
+      GITLAB_ROOT_PASSWORD: \${GITLAB_ROOT_PASSWORD}
       GITLAB_OMNIBUS_CONFIG: |
         external_url 'http://git.infra.local:8929'
         gitlab_rails['gitlab_shell_ssh_port'] = 2424
@@ -134,25 +134,25 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: /data/gitlab/config  # 실제 호스트 경로
+      device: ${PWD}/config
   gitlab_log:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /data/gitlab/logs
+      device: ${PWD}/logs
   gitlab_opt:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /data/gitlab/data
+      device: ${PWD}/data
   gitlab_backup:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /data/gitlab/backups
+      device: ${PWD}/backups
 EOF
 
 cat << EOF > /opt/gitlab/runners/build/docker-compose.yml
@@ -187,7 +187,7 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: /data/gitlab/runner-configs/build
+      device: ${PWD}/runner-configs/build
 EOF
 
 cat << EOF > /opt/gitlab/runners/deploy/docker-compose.yml
@@ -222,7 +222,7 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: /data/gitlab/runner-configs/build # 실제 데이터 저장 위치
+      device: ${PWD}/runner-configs/build # 실제 데이터 저장 위치
 EOF
 
 cat << EOF > /opt/gitlab/.env

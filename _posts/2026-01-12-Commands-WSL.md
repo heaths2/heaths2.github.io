@@ -61,6 +61,7 @@ default=bob
 generateResolvConf = false
 
 [automount]
+enabled = true
 options = "metadata,umask=22,fmask=11"
 EOF
 

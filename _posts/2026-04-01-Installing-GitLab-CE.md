@@ -114,7 +114,6 @@ services:
       - '443:443'
       - '2424:22'
     volumes:
-      # 요청하신 대로 /data/gitlab 하위 구조로 매핑
       - gitlab_etc:/etc/gitlab
       - gitlab_log:/var/log/gitlab
       - gitlab_opt:/var/opt/gitlab

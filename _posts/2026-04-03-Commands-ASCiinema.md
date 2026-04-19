@@ -25,7 +25,7 @@ Asciinema는 콘솔 및 SSH 환경에서 수행되는 사용자 작업을 기록
 └── asciinema-cleanup
 ```
 
-## ⚙️ 설지방법
+## ⚙️ 설치 방법
 
 - ASCiinema 설치
 

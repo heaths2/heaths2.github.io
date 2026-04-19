@@ -107,6 +107,11 @@ podman volume inspect $(podman volume ls -q) --format "table {{.Name}}\t{{.Mount
 podman inspect nginx --format '{{range .Mounts}}{{.Type}} | {{.Source}} -> {{.Destination}}{{println}}{{end}}'
 podman inspect nginx --format '{{range .Mounts}}{{.Source}} -> {{.Destination}}{{println}}{{end}}'
 
+# 저장소에서 컨테이너 이미지 가져오기
+podman pull docker.io/gitlab/gitlab-ce:latest
+podman pull docker.io/jenkins/jenkins:latest-jdk21
+podman pull docker.io/sonatype/nexus3:latest
+
 # 컨테이너 실행 (백그라운드)
 podman compose -f docker-compose.yml up -d
 

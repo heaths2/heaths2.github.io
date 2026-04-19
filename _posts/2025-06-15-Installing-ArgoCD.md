@@ -73,7 +73,7 @@ tags: [Provisioning, Helm, ArgoCD]
  └────────────────────────┘
 ```
 
-## ⚙️ 설지방법
+## ⚙️ 설치 방법
 
 ### RKE2, k9s, Helm 설치
 

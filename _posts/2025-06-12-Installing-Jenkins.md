@@ -316,7 +316,7 @@ podman-compose --version
 # Jenkins 및 데이터용 디렉토리 생성
 mkdir -pv /opt/jenkins
 cd /opt/jenkins
-mkdir -pv $(pwd)/{jenkins_home,jenkins_logs,jenkins_tmp,jenkins_agent_home,jenkins_agent_tmp,jenkins_agent_workspace,jenkins_agent_data,jenkins_agent_run,jenkins_agent_var_run}
+mkdir -pv $(pwd)/{jenkins_home,jenkins_logs,jenkins_tmp,agent_home,agent_tmp,agent_workspace,agent_data,agent_run,agent_var_run}
 
 # 데이터 디렉토리들에 개별 컨테이너 파일 컨텍스트 영구 적용 규칙 추가
 sudo semanage fcontext -a -t container_file_t "/data/jenkins(/.*)?"

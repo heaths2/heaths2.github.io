@@ -79,9 +79,11 @@ sudo restorecon -Rv /data
 # DevOps 네트워크 대역 생성
 podman network create \
   --driver bridge \
-  --subnet 10.50.10.0/24 \
-  --gateway 10.50.10.1 \
-  --ip-range 10.50.10.64/26 \
+  --subnet 10.90.0.0/24 \
+  --gateway 10.90.0.1 \
+  --dns 8.8.8.8 \
+  --dns 8.8.4.4 \
+  --ip-range 10.90.0.64/26 \
   net_devops
 
 # 1. 파일 생성 및 내용 입력

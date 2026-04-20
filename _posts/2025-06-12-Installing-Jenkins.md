@@ -315,7 +315,8 @@ podman-compose --version
 
 # Jenkins 및 데이터용 디렉토리 생성
 mkdir -pv /opt/jenkins
-mkdir -pv /data/jenkins
+cd /opt/jenkins
+mkdir -pv $(pwd)/{jenkins_home,logs,tmp,agent_home,agent_tmp,agent_workspace,agent_data,agent_run,agent_var_run}
 
 # 데이터 디렉토리들에 개별 컨테이너 파일 컨텍스트 영구 적용 규칙 추가
 sudo semanage fcontext -a -t container_file_t "/data/jenkins(/.*)?"
@@ -342,46 +343,109 @@ services:
     hostname: jenkins
     restart: unless-stopped
     ports:
-      - "8090:8080"   # 웹 UI 접속용
-      - "50000:50000" # 에이전트 통신용
+      - "8090:8080"     # 웹 UI
+      - "50000:50000"   # 에이전트 통신
     volumes:
-      - jenkins_home:/var/jenkins_home
+      - jenkins_home:/var/jenkins_home:Z
+      - jenkins_logs:/var/log/jenkins:Z
+      - jenkins_tmp:/tmp:Z
     env_file:
       - .env
     environment:
-      TZ: 'Asia/Seoul'
+      TZ: "Asia/Seoul"
       JENKINS_ADMIN_ID: "admin"
-      JENKINS_ADMIN_PASSWORD: ${JENKINS_ADMIN_PASSWORD}
-      # 로그 설정 파일이 실제 경로에 없으면 오류가 날 수 있으니 유의하세요!
+      JENKINS_ADMIN_PASSWORD: "\${ADMIN_PASSWORD}"
       JAVA_OPTS: "-Djava.util.logging.config.file=/var/jenkins_home/log.properties"
     networks:
       - net_devops
 
   jenkins-agent:
-    image: jenkins/ssh-agent:latest-jdk21 # 오타 수정 완료
+    image: jenkins/ssh-agent:latest-jdk21
     container_name: jenkins-agent
     hostname: jenkins-agent
-    env_file:        # <--- 여기에 추가
-      - .env         # <--- .env 파일의 내용을 환경 변수로 불러오겠다
+    restart: unless-stopped
+    env_file:
+      - .env
     environment:
-      - JENKINS_AGENT_SSH_PUBKEY=\${AGENT_SSH_PUBKEY}
+      JENKINS_AGENT_SSH_PUBKEY: "\${AGENT_SSH_PUBKEY}"
+      TZ: "Asia/Seoul"
+    volumes:
+      - jenkins_agent_home:/home/jenkins:Z
+      - jenkins_agent_tmp:/tmp:Z
+      - jenkins_agent_workspace:/home/jenkins/agent:Z
+      - jenkins_agent_data:/home/jenkins/.jenkins:Z
+      - jenkins_agent_run:/run:Z
+      - jenkins_agent_var_run:/var/run:Z
     networks:
       - net_devops
 
 volumes:
-  jenkins_home: # 선언식으로 자동 생성 관리
+  jenkins_home:
     driver: local
     driver_opts:
-      type: 'none'
-      o: 'bind'
-      # 실제 파일이 저장될 로컬의 절대 경로를 적어주세요.
-      # (예: /home/user/jenkins/jenkins_home)
-      device: '${PWD}/jenkins_home'
+      type: "none"
+      o: "bind"
+      device: /opt/jenkins/jenkins_home
+
+  jenkins_logs:
+    driver: local
+    driver_opts:
+      type: "none"
+      o: "bind"
+      device: /opt/jenkins/jenkins_logs
+
+  jenkins_tmp:
+    driver: local
+    driver_opts:
+      type: "none"
+      o: "bind"
+      device: /opt/jenkins/jenkins_tmp
+
+  jenkins_agent_home:
+    driver: local
+    driver_opts:
+      type: "none"
+      o: "bind"
+      device: /opt/jenkins/agent_home
+
+  jenkins_agent_tmp:
+    driver: local
+    driver_opts:
+      type: "none"
+      o: "bind"
+      device: /opt/jenkins/agent_tmp
+
+  jenkins_agent_workspace:
+    driver: local
+    driver_opts:
+      type: "none"
+      o: "bind"
+      device: /opt/jenkins/agent_workspace
+
+  jenkins_agent_data:
+    driver: local
+    driver_opts:
+      type: "none"
+      o: "bind"
+      device: /opt/jenkins/agent_data
+
+  jenkins_agent_run:
+    driver: local
+    driver_opts:
+      type: "none"
+      o: "bind"
+      device: /opt/jenkins/agent_run
+
+  jenkins_agent_var_run:
+    driver: local
+    driver_opts:
+      type: "none"
+      o: "bind"
+      device: /opt/jenkins/agent_var_run
 
 networks:
   net_devops:
-    external: true # 미리 생성된 네트워크 사용
-EOF
+    external: true
 ```
 
 ```bash

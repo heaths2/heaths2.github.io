@@ -99,7 +99,9 @@ podman network inspect $(podman network ls -q) | jq -r '.[] | "\(.name): \(.plug
 
 # 특정 컨테이너 IP 확인
 podman inspect nginx | jq '.[0].NetworkSettings.Networks'
+```
 
+```bash
 # 컨테이너 마운트 경로 확인
 podman volume inspect $(podman volume ls -q) --format "table {{.Name}}\t{{.Mountpoint}}"
 
@@ -114,6 +116,9 @@ podman pull docker.io/sonatype/nexus3:latest
 
 # 컨테이너 실행 (백그라운드)
 podman compose -f docker-compose.yml up -d
+
+# Dockerfile에서 VOLUME으로 선언된 경로를 출력
+podman inspect jenkins/jenkins:latest-jdk21 --format '{{.Config.Volumes}}'
 
 # Podman 4.6 이하 권장 Systemd Generate 방식
 # 🛠️ 컨테이너 systemd 서비스 파일 생성

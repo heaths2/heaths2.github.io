@@ -353,8 +353,6 @@ services:
       - .env
     environment:
       TZ: "Asia/Seoul"
-      JENKINS_ADMIN_ID: "admin"
-      JENKINS_ADMIN_PASSWORD: "\${ADMIN_PASSWORD}"
       JAVA_OPTS: "-Djava.util.logging.config.file=/var/jenkins_home/log.properties"
     networks:
       - net_devops

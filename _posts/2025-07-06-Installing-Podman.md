@@ -110,6 +110,9 @@ podman inspect nginx | jq '.[0].NetworkSettings.Networks'
 # Dockerfile에서 VOLUME으로 선언된 경로를 출력
 podman inspect jenkins/jenkins:latest-jdk21 --format '{{.Config.Volumes}}'
 
+# 익명 볼륨 확 
+podman inspect jenkins --format '{{json .Mounts}}' | jq
+
 # 컨테이너 마운트 경로 확인
 podman volume inspect $(podman volume ls -q) --format "table {{.Name}}\t{{.Mountpoint}}"
 
@@ -117,6 +120,8 @@ podman volume inspect $(podman volume ls -q) --format "table {{.Name}}\t{{.Mount
 podman inspect nginx --format '{{range .Mounts}}{{.Type}} | {{.Source}} -> {{.Destination}}{{println}}{{end}}'
 podman inspect nginx --format '{{range .Mounts}}{{.Source}} -> {{.Destination}}{{println}}{{end}}'
 ```
+
+### 저장소에서 컨테이너 이미지 가져오기
 
 ```bash
 # 저장소에서 컨테이너 이미지 가져오기

@@ -372,8 +372,6 @@ services:
       - jenkins_agent_tmp:/tmp:Z
       - jenkins_agent_workspace:/home/jenkins/agent:Z
       - jenkins_agent_data:/home/jenkins/.jenkins:Z
-      - jenkins_agent_run:/run:Z
-      - jenkins_agent_var_run:/var/run:Z
     networks:
       - net_devops
 
@@ -426,20 +424,6 @@ volumes:
       type: "none"
       o: "bind"
       device: /opt/jenkins/agent_data
-
-  jenkins_agent_run:
-    driver: local
-    driver_opts:
-      type: "none"
-      o: "bind"
-      device: /opt/jenkins/agent_run
-
-  jenkins_agent_var_run:
-    driver: local
-    driver_opts:
-      type: "none"
-      o: "bind"
-      device: /opt/jenkins/agent_var_run
 
 networks:
   net_devops:

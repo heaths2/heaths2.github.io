@@ -446,6 +446,7 @@ volumes:
 networks:
   net_devops:
     external: true
+EOF
 ```
 
 ```bash

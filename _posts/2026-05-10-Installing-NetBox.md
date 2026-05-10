@@ -69,6 +69,7 @@ BASE_DIR="/opt"
 APP_DIR="${BASE_DIR}/${APP_NAME}"
 mkdir -pv $APP_DIR
 cd $APP_DIR
+mkdir -pv "${PWD}"/{src,postgres-data,redis-data,redis-cache-data,netbox-media,netbox-reports,netbox-scripts,backup,logs}
 
 # 🔐 SELinux Context 설정
 sudo semanage fcontext -a -t container_file_t "${APP_DIR}(/.*)?"
@@ -90,10 +91,80 @@ podman network create \
 - PAM / NSS 설정 (authselect)
 
 ```bash
-# SSSD + 홈디렉토리 자동 생성 + sudo 연동
+# rm -rfv "${APP_DIR}" && \
 git clone -b release \
   https://github.com/netbox-community/netbox-docker.git \
-  "${APP_DIR}/src"
+  "${APP_DIR}"
+ 
+cd "${APP_DIR}"
+
+cp -v docker-compose.override.yml.example docker-compose.override.yml
+
+# DNS Plugin 요구사항 파일 생성
+cat > plugin_requirements.txt <<'EOF'
+netbox-plugin-dns
+netbox-ipcalculator
+netbox-topology-views
+EOF
+
+cat >> configuration/plugins.py <<'EOF'
+
+PLUGINS = [
+    "netbox_dns",
+    "netbox_ipcalculator",
+    "netbox_topology_views",
+]
+
+PLUGINS_CONFIG = {
+    "netbox_dns": {},
+    "netbox_ipcalculator": {},
+    "netbox_topology_views": {},
+}
+EOF
+
+cat > Dockerfile-Plugins <<'EOF'
+FROM netboxcommunity/netbox:latest
+
+COPY ./plugin_requirements.txt /opt/netbox/
+RUN /usr/local/bin/uv pip install -r /opt/netbox/plugin_requirements.txt
+
+# These lines are only required if your plugin has its own static files.
+COPY configuration/configuration.py /etc/netbox/config/configuration.py
+COPY configuration/plugins.py /etc/netbox/config/plugins.py
+RUN DEBUG="true" SECRET_KEY="dummydummydummydummydummydummydummydummydummydummy" \
+    /opt/netbox/venv/bin/python /opt/netbox/netbox/manage.py collectstatic --no-input
+EOF
+
+cat > docker-compose.override.yml <<'EOF'
+services:
+  netbox:
+    image: netbox:latest-plugins
+    pull_policy: never
+    ports:
+      - 8000:8080
+    build:
+      context: .
+      dockerfile: Dockerfile-Plugins
+  netbox-worker:
+    image: netbox:latest-plugins
+    pull_policy: never
+EOF
+
+podman compose build --no-cache
+podman compose up -d
+
+#POSTGRES_PASSWORD="$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom 2>/dev/null | head -c 32)"
+#REDIS_PASSWORD="$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom 2>/dev/null | head -c 32)"
+#SECRET_KEY="$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom 2>/dev/null | head -c 64)"
+#SUPERUSER_API_TOKEN="$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom 2>/dev/null | head -c 40)"
+#
+## .env 생성
+#cat > .env <<EOF
+#POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+#REDIS_PASSWORD=${REDIS_PASSWORD}
+#SECRET_KEY=${SECRET_KEY}
+#SUPERUSER_API_TOKEN=${SUPERUSER_API_TOKEN}
+#EOF
 ```
 
 {: .prompt-tip }
@@ -111,68 +182,7 @@ sudo adcli info infra.local
 id bob@infra.local
 ```
 
-- `/etc/sssd/sssd.conf` 설정 예시
-
-```bash
-# 사용자 이름을 bob 형태로 사용 (bob@infra.local 제거)
-# sudo sed -i 's/use_fully_qualified_names =.*/use_fully_qualified_names = False/' /etc/sssd/sssd.conf
-
-cat << EOF > /etc/sssd/sssd.conf
-
-[sssd]
-domains = infra.local
-config_file_version = 2
-services = nss, pam
-
-[domain/infra.local]
-default_shell = /bin/bash
-krb5_store_password_if_offline = True
-cache_credentials = True
-krb5_realm = infra.local
-realmd_tags = manages-system joined-with-adcli
-id_provider = ad
-fallback_homedir = /home/%u@%d
-ad_domain = infra.local
-use_fully_qualified_names = False
-ldap_id_mapping = True
-access_provider = ad
-ad_access_filter = (|(memberOf=CN=sudoers_dev,OU=Users,DC=infra,DC=local)(memberOf=CN=sudoers_stg,OU=Users,DC=infra,DC=local)(memberOf=CN=sudoers_prd,OU=Users,DC=infra,DC=local))
-auto_private_groups = True
-ad_server = ldap.infra.local
-
-# 성능
-enumerate = False
-ignore_group_members = True
-entry_cache_timeout = 600
-ldap_network_timeout = 5
-
-# 접근제어
-ad_gpo_access_control = disabled
-
-# 안정성
-dyndns_update = False
-EOF
-```
-
-- 🧩 SSSD 재시작 및 캐시 초기화
-
-```bash
-# SSSD 중지 → 캐시 삭제 → 재시작
-systemctl stop sssd
-rm -f /var/lib/sss/db/* /var/lib/sss/mc/*
-systemctl start sssd
-
-# 캐시 강제 초기화
-sss_cache -E
-```
-
-- 🧩 sudo 권한 확인
-
-```bash
-# 사용자 sudo 권한 확인
-sudo -l -U bob@infra.local
-```
 
 ## 참고 자료
 
-- [SSSD 공식 문서](https://docs.redhat.com/ko/documentation/red_hat_enterprise_linux/7/html/windows_integration_guide/ch-configuring_authentication)
+- [Github 공식 문서](https://github.com/netbox-community/netbox-docker/wiki/Using-Netbox-Plugins)

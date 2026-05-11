@@ -76,14 +76,92 @@ sudo realm join -U 'infra' infra.local
 sudo realm leave -U 'infra' infra.local
 ```
 
+- `/etc/sssd/sssd.conf` 설정
+
+```bash
+# SSSD
+cat << EOF > /etc/sssd/sssd.conf
+
+[sssd]
+domains = infra.local
+config_file_version = 2
+services = nss, pam
+
+[domain/infra.local]
+default_shell = /bin/bash
+krb5_store_password_if_offline = True
+cache_credentials = True
+krb5_realm = infra.local
+realmd_tags = manages-system joined-with-adcli
+id_provider = ad
+fallback_homedir = /home/%u
+ad_domain = infra.local
+use_fully_qualified_names = False
+ldap_id_mapping = True
+access_provider = ad
+ad_access_filter = (|(memberOf=CN=sudoers_dev,OU=infra,DC=infra,DC=local)(memberOf=CN=sudoers_stg,OU=infra,DC=infra,DC=local)(memberOf=CN=sudoers_prd,OU=infra,DC=infra,DC=local))
+auto_private_groups = True
+ad_server = ldap.infra.local
+
+# 성능
+enumerate = False
+ignore_group_members = True
+entry_cache_timeout = 600
+ldap_network_timeout = 5
+
+# 접근제어
+ad_gpo_access_control = disabled
+
+# 안정성
+dyndns_update = False
+
+#유저 필터
+filter_users = root, infra
+EOF
+
+chmod 600 /etc/sssd/sssd.conf
+
+cat << EOF > /etc/sudoers.d/ldap
+# Sudoers_DEV 그룹: 모든 명령어 실행 가능
+%Sudoers_DEV    ALL=(ALL)       NOPASSWD: ALL
+
+# Sudoers_STG 그룹: 모든 명령어 실행 가능
+%Sudoers_STG    ALL=(ALL)       NOPASSWD: ALL
+
+# Sudoers_PRD 그룹: 모든 명령어 실행 가능 (비밀번호 확인 필요)
+%Sudoers_PRD    ALL=(ALL)       NOPASSWD: ALL
+EOF
+
+systemctl stop sssd
+rm -f /etc/krb5.keytab       # 꼬인 신분증 파일 삭제
+kdestroy -A                  # 메모리에 남은 모든 티켓 삭제
+
+#RAW_IP=$(ip -br a show ens192 | awk '{print $3}' | cut -d'/' -f1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | cut -d'.' -f2-4 || echo "")
+RAW_IP=$(ip -br a show ens192 | awk '{print $3}' | cut -d'/' -f1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | cut -d'.' -f2-4); [ -n "$RAW_IP" ] && AD_COMP_NAME="IDC-$(echo $RAW_IP | sed 's/\./-/g')"; echo $AD_COMP_NAME
+
+adcli join \
+  --domain=infra.local \
+  --domain-controller=172.16.200.2 \
+  --login-user="infra" \
+  --host-fqdn="$(hostname -f).infra.local" \
+  --computer-name="$AD_COMP_NAME" \
+  --description="Original Hostname: $(hostname)" \
+  --verbose
+```
+
 - PAM / NSS 설정 (authselect)
 
 ```bash
-# SSSD + 홈디렉토리 자동 생성 + sudo 연동
-sudo authselect select sssd with-mkhomedir with-sudo --force
+# SSSD 인증 및 홈 디렉토리 자동 생성 활성화
+authselect select sssd with-mkhomedir --force
 
 # 적용 상태 확인
 sudo authselect current
+
+# NSSwitch
+sed -i -e '/^passwd:[[:space:]]*files sss systemd/ s/^/#/' \
+    -i -e '/^#passwd:[[:space:]]*files sss systemd/a passwd:     sss files systemd' \
+    /etc/nsswitch.conf
 ```
 
 {: .prompt-tip }
@@ -99,49 +177,6 @@ sudo adcli info infra.local
 
 # AD 사용자 조회 테스트
 id bob@infra.local
-```
-
-- `/etc/sssd/sssd.conf` 설정 예시
-
-```bash
-# 사용자 이름을 bob 형태로 사용 (bob@infra.local 제거)
-# sudo sed -i 's/use_fully_qualified_names =.*/use_fully_qualified_names = False/' /etc/sssd/sssd.conf
-
-cat << EOF > /etc/sssd/sssd.conf
-
-[sssd]
-domains = infra.local
-config_file_version = 2
-services = nss, pam
-
-[domain/infra.local]
-default_shell = /bin/bash
-krb5_store_password_if_offline = True
-cache_credentials = True
-krb5_realm = infra.local
-realmd_tags = manages-system joined-with-adcli
-id_provider = ad
-fallback_homedir = /home/%u@%d
-ad_domain = infra.local
-use_fully_qualified_names = False
-ldap_id_mapping = True
-access_provider = ad
-ad_access_filter = (|(memberOf=CN=sudoers_dev,OU=Users,DC=infra,DC=local)(memberOf=CN=sudoers_stg,OU=Users,DC=infra,DC=local)(memberOf=CN=sudoers_prd,OU=Users,DC=infra,DC=local))
-auto_private_groups = True
-ad_server = ldap.infra.local
-
-# 성능
-enumerate = False
-ignore_group_members = True
-entry_cache_timeout = 600
-ldap_network_timeout = 5
-
-# 접근제어
-ad_gpo_access_control = disabled
-
-# 안정성
-dyndns_update = False
-EOF
 ```
 
 - 🧩 SSSD 재시작 및 캐시 초기화

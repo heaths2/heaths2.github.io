@@ -62,7 +62,7 @@ generateResolvConf = false
 
 [automount]
 enabled = true
-options = "metadata,umask=22,fmask=11"
+options = "metadata,umask=22,fmask=133"
 EOF
 
 cat << EOF > /etc/resolv.conf

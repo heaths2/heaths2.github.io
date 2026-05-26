@@ -56,12 +56,10 @@ mkdir -pv /opt/gitlab/{config,logs,data,backups}
 mkdir -pv /opt/{jenkins,nexus}
 
 # 필요한 경로만 SELinux 컨텍스트 등록
-semanage fcontext -a -t container_file_t "/opt/gitlab(/.*)?"
-semanage fcontext -a -t container_file_t "/opt/jenkins(/.*)?"
-semanage fcontext -a -t container_file_t "/opt/nexus(/.*)?"
+semanage fcontext -a -t container_file_t "/opt(/.*)?"
 
 # 적용
-restorecon -Rv /opt/gitlab /opt/jenkins /opt/nexus
+restorecon -Rv /opt
 ```
 
 {: .prompt-info }

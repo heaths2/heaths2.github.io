@@ -6,6 +6,10 @@ categories: [Blog, Command]
 tags: [Command, LVM]
 ---
 
+## 📘 개요 (Overview)
+
+LVM(Logical Volume Management)은 Linux에서 물리 디스크를 논리 볼륨으로 추상화하여 유연하게 관리하는 기술입니다.
+
 ## ⚙️ 명령어 사용법
 
 ### 📦 디스크/볼륨 확인

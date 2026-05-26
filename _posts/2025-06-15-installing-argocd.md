@@ -9,7 +9,7 @@ tags: [Provisioning, Helm, ArgoCD]
 ## 📘 개요 (Overview)
 이 문서는 RKE2 기반 쿠버네티스 클러스터 환경에서 ArgoCD GitOps 시스템을 Helm Chart를 통해 설치하고 구성하는 방법을 안내합니다. 기본적인 클러스터 설치부터 ArgoCD의 Helm 배포, 스토리지(NFS), 로드밸런서(MetalLB), Ingress 설정까지 포함되어 있어 온프레미스 환경에서도 실용적으로 활용 가능합니다.
 
-## 🧭 등장배경
+## 🧭 등장 배경 (Background)
 기존 CI/CD 인프라 구축 과정에서 다음과 같은 문제에 직면했습니다.
 
 - /etc/hosts 기반 수동 IP 관리의 확장성 한계: 수많은 서비스의 IP를 수동으로 관리하는 것은 비효율적이며, 확장에 큰 제약이 있었습니다.
@@ -20,7 +20,7 @@ tags: [Provisioning, Helm, ArgoCD]
 이에 따라 RKE2 기반 K8s 클러스터 + Helm + NFS + MetalLB를 이용하여 ArgoCD를 안정적으로 배포하는 방안을 설계하게 되었습니다.
 
 
-## 📝 구성 요소 (Components)
+## 🧩 주요 구성 요소 (Components)
 
 | 구성 요소            | 역할 및 설명                                      |
 | ------------------ | --------------------------------------------- |
@@ -73,7 +73,7 @@ tags: [Provisioning, Helm, ArgoCD]
  └────────────────────────┘
 ```
 
-## ⚙️ 설치 방법
+## 🛠️ 설치 방법 (Installation)
 
 ### RKE2, k9s, Helm 설치
 

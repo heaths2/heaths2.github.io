@@ -37,7 +37,7 @@ GitLab은 **소스 코드 관리(SCM, Source Code Management)**를 중심으로 
 └── runner-configs
 ```
 
-## ⚙️ 설치방법
+## 🛠️ 설치 방법 (Installation)
 
 - 🛠️ Podman 설치
 

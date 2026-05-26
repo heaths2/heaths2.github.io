@@ -6,7 +6,7 @@ categories: [Blog, Command]
 tags: [Command, Cisco, XMODEM, YMODEM, ZMODEM, Serial Port]
 ---
 
-## 📘 개요
+## 📘 개요 (Overview)
 Cisco 스위치에서 **직렬 포트(Serial Port)**를 활용하여 XMODEM, YMODEM, ZMODEM과 같은 파일 전송 프로토콜로 Cisco IOS 이미지를 전송하는 방법은 네트워크 또는 USB 연결이 불가능한 경우에 사용됩니다. 이러한 방법은 로컬 관리 환경에서 스위치의 운영체제를 복구하거나 업그레이드하는 데 유용합니다. 특히 TFTP 서버를 사용할 수 없거나 네트워크 환경이 제한적인 경우에 활용됩니다.
 
 ## X / Y / Z MODEM 비교 표
@@ -213,5 +213,5 @@ boot system flash:c2960-lanbasek9-mz.150-2.SE11.bin
 write memory
 ```
 
-## 참조
+## 참고 자료
 - [TeraTerm 도구 다운로드](https://github.com/TeraTermProject/teraterm/releases)

@@ -10,10 +10,10 @@ tags: [Orchestration, Kubernetes, K8s]
 > - [ Kubespray 설치방법 (1)](https://heaths2.github.io/posts/kubespray_install/)
 > - [ Ansible AWX 설치방법 (2)](https://heaths2.github.io/posts/AWX-install/)
 
-## 📘 개요
+## 📘 개요 (Overview)
 AWX는 Ansible의 웹 기반 관리 툴로, Ansible 작업을 자동화하고 관리할 수 있는 강력한 기능을 제공합니다. Helm 차트를 사용하면 Kubernetes 클러스터에 AWX를 쉽고 일관되게 배포할 수 있습니다.
 
-## 환경구성
+## 📋 환경 요구 사항 (Requirements)
 이 작업은 외부 PostgreSQL 데이터베이스 서버를 설정하고, 기존 AWX 데이터를 백업 파일을 통해 복원하는 과정을 포함합니다.
 
 ### 새 사용자 및 데이터베이스 생성 스크립트 생성
@@ -357,6 +357,6 @@ helm install ingress-nginx /data/helm/ingress-nginx -n awx --create-namespace -f
 helm uninstall ingress-nginx -n ingress-nginx
 ```
 
-## 참조
+## 참고 자료
 - [Helm 공식 사이트](https://helm.sh)
 - [Helm Chart 저장소](https://bitnami.com/stacks/helm)

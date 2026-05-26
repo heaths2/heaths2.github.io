@@ -6,6 +6,10 @@ categories: [Blog, Command]
 tags: [Command, Script, WSL, Windows]
 ---
 
+## 📘 개요 (Overview)
+
+WSL(Windows Subsystem for Linux)은 Windows 환경에서 Linux 배포판을 실행할 수 있는 호환성 레이어입니다.
+
 ## ⚙️ 명령어 사용법
 
 ### WSL 설치 및 📌 설치 확인

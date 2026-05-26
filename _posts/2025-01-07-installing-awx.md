@@ -9,10 +9,10 @@ tags: [Orchestration, Ansible, AWX]
 > 관련글 :
 > [ Kubespray 설치방법 (1)](https://heaths2.github.io/posts/kubespray_install/)
 
-## 📘 개요
+## 📘 개요 (Overview)
 Ansible AWX는 Ansible의 CLI 중심 관리에 GUI 기반의 대시보드, REST API, 작업 스케줄링 등의 기능을 추가한 플랫폼입니다. 이는 팀과 조직이 공동으로 자동화 워크플로우를 설계하고 실행하며, 작업의 상태를 모니터링할 수 있는 강력한 도구를 제공합니다.
 
-## 특징
+## 🔑 주요 특징 (Features)
 1. 사용자 친화적인 GUI
 - CLI 없이도 작업을 실행, 모니터링, 관리 가능.
 - 대시보드에서 작업 성공/실패를 직관적으로 파악 가능.
@@ -40,7 +40,7 @@ Ansible AWX는 Ansible의 CLI 중심 관리에 GUI 기반의 대시보드, REST 
 - Git, SCM(소스 코드 관리), 클라우드 플랫폼(AWS, Azure, GCP)과의 통합.
 - 외부 Vault를 활용한 보안 자격 증명 관리.
 
-## 구성요소
+## 🧩 주요 구성 요소 (Components)
 1. 프로젝트(Project)
 - Ansible 플레이북과 역할(Role)을 저장하는 저장소.
 - Git, Subversion(SVN), 파일 디렉토리와 연결 가능.
@@ -69,7 +69,7 @@ Ansible AWX는 Ansible의 CLI 중심 관리에 GUI 기반의 대시보드, REST 
 - RBAC를 기반으로 작업 템플릿, 인벤토리, 프로젝트에 대한 접근 권한 관리.
 - 팀 단위로 그룹화하여 관리.
 
-## 설치
+## 🛠️ 설치 방법 (Installation)
 
 ### AWX Operator 설치
 1. 최신 LTS 태그 가져오기

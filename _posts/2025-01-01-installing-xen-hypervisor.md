@@ -6,10 +6,10 @@ categories: [Blog, Virtual Machine]
 tags: [Virtual Machine, Xen, Xen Hypervisor]
 ---
 
-## 📘 개요
+## 📘 개요 (Overview)
 Xen Hypervisor는 고성능 및 고효율의 오픈소스 **하이퍼바이저(Hypervisor)**로, 가상화 환경에서 다중 운영체제를 단일 물리 서버에서 실행할 수 있도록 지원하는 핵심 소프트웨어입니다. Xen은 Type-1 하이퍼바이저로 분류되며, 하드웨어 위에서 직접 실행되면서 높은 성능과 보안을 제공합니다.
 
-## 특징
+## 🔑 주요 특징 (Features)
 1. Type-1 하이퍼바이저
 - Xen은 하드웨어 위에서 직접 실행되는 Type-1 하이퍼바이저로, 게스트 운영체제와 독립적으로 작동하며 성능과 안정성이 뛰어납니다.
 
@@ -29,7 +29,7 @@ Xen Hypervisor는 고성능 및 고효율의 오픈소스 **하이퍼바이저(H
 6. 클라우드 및 서버 환경 최적화
 - Xen은 대규모 클라우드 환경과 데이터센터에서 최적화되어 있으며, **AWS, Citrix Hypervisor(구 XenServer)**와 같은 주요 클라우드 솔루션에서 사용됩니다.
 
-## 구성 요소
+## 🧩 주요 구성 요소 (Components)
 
 1. Xen Hypervisor
 - 물리 서버의 하드웨어와 직접 상호작용하며, 가상 머신(Virtual Machine, VM)을 생성 및 관리합니다.
@@ -40,7 +40,7 @@ Xen Hypervisor는 고성능 및 고효율의 오픈소스 **하이퍼바이저(H
 3. Domain U (DomU)
 - 사용자가 생성한 일반적인 가상 머신으로, Dom0를 통해 관리됩니다.
 
-## 환경구성
+## 📋 환경 요구 사항 (Requirements)
 > HPE Proliant DL360 Gen9 서버를 활용하여 Ubuntu 24.04에서 환경 구성합니다.
 
 ### 네트워크 설정

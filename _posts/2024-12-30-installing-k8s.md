@@ -6,13 +6,13 @@ categories: [Blog, Orchestration]
 tags: [Orchestration, Kubernetes, K8s]
 ---
 
-## 📘 개요
+## 📘 개요 (Overview)
 
 **Kubernetes 설치 매뉴얼**
 Kubernetes는 분산 시스템에서 컨테이너 애플리케이션을 자동으로 배포, 관리, 확장하는 데 널리 사용되는 강력한 오픈소스 도구입니다. 이 매뉴얼은 컨테이너 오케스트레이션 플랫폼인 **Kubernetes(K8s)**를 설치하고 구성하는 데 필요한 모든 과정을 단계별로 안내합니다.
 
 
-## 환경구성
+## 📋 환경 요구 사항 (Requirements)
 
 ### 사용자 계정 생성
 사용자 계정 생성 후 운영하고 싶은 경우 사용자 계정을 생성합니다.
@@ -445,7 +445,7 @@ kubectl get svc -n kubernetes-dashboard
 swapoff > daemon.json > systemctl restart docker;systemctl restart kubelet;
 ```
 
-## 참조
+## 참고 자료
 - [컨테이너 런타임 가이드](https://kubernetes.io/ko/docs/setup/production-environment/container-runtimes/)
 - [k8s 설치가이드](https://kubernetes.io/ko/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#kubeadm-kubelet-및-kubectl-설치/)
 - [k8s 대시보드 가이드](https://kubernetes.io/ko/docs/tasks/access-application-cluster/web-ui-dashboard/)

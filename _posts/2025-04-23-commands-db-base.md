@@ -6,6 +6,10 @@ categories: [Blog, Command]
 tags: [Command, Script, MySQL, MariaDB]
 ---
 
+## 📘 개요 (Overview)
+
+MySQL / MariaDB 데이터베이스 관리에 자주 사용하는 명령어 레퍼런스입니다.
+
 ## ⚙️ 명령어 사용법
 
 ```bash

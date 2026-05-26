@@ -6,7 +6,7 @@ categories: [Blog, Command]
 tags: [Command, Bash, Python, Script, Stock]
 ---
 
-## 📘 개요
+## 📘 개요 (Overview)
 주식 평균 계산기
 
 ```bash

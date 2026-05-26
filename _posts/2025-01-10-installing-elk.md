@@ -6,16 +6,16 @@ categories: [Blog, Provisioning]
 tags: [Provisioning, Elasticsearch, Logstash, Kibana, Filebeat, Fortigate]
 ---
 
-## 📘 개요
+## 📘 개요 (Overview)
 ELK Stack(Elasticsearch, Logstash, Kibana)은 로그 데이터를 수집, 저장, 분석, 시각화하는 데 최적화된 오픈 소스 소프트웨어 스택입니다. 본 매뉴얼은 여러 대의 FortiGate 방화벽에서 생성되는 로그를 중앙 집중식으로 관리하고 시각화하기 위한 ELK Stack 시스템의 구성과 설정 방법을 다룹니다.
 
-## 목적
+## 🎯 목적 (Purpose)
 1. FortiGate 방화벽에서 생성되는 로그 데이터를 한 곳에 모아 관리.
 2. 실시간 로그 분석 및 검색 기능 제공.
 3. 사용자 정의 대시보드를 통한 직관적인 데이터 시각화.
 4. 네트워크 보안 이벤트의 신속한 모니터링 및 대응 체계 강화.
 
-## 특징
+## 🔑 주요 특징 (Features)
 1. 데이터 수집 및 변환 (Logstash):
 - 다양한 입력 플러그인을 사용해 FortiGate 장비에서 데이터를 수집.
 - 데이터 필터링 및 변환 기능을 통해 로그 형식을 표준화.
@@ -43,7 +43,7 @@ ELK Stack(Elasticsearch, Logstash, Kibana)은 로그 데이터를 수집, 저장
 - Elasticsearch와 Kibana에 대한 역할 기반 액세스 제어(RBAC) 적용.
 - SSL/TLS를 통한 데이터 전송 암호화.
 
-## 환경 구성
+## 📋 환경 요구 사항 (Requirements)
 
 ### JAVA JVM 설치
 
@@ -959,7 +959,7 @@ curl -X GET "http://localhost:9200/fortigate-logs-2025.01.10/_mapping?pretty"
 curl -X GET "http://localhost:9200/_tasks?pretty"
 ```
 
-## 참조
+## 참고 자료
 > - [JVM 버전 호환](https://www.elastic.co/kr/support/matrix#matrix_jvm)
 > - [logstash 공식문서](https://www.elastic.co/guide/en/beats/filebeat/current/logstash-output.html)
 > - [filebeat Processors 공식문서](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html)

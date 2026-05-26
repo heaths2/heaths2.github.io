@@ -6,7 +6,7 @@ categories: [Blog, Command]
 tags: [Command, Cisco, C2960, Catalyst 2960]
 ---
 
-## 📘 개요
+## 📘 개요 (Overview)
 Cisco Catalyst 2960 시리즈 스위치는 네트워크 관리 및 보안을 지원하는 엔터프라이즈급 스위치로, 사용 중에 설정 오류나 새로운 환경으로의 전환이 필요한 경우 공장 초기화를 통해 기본 상태로 복원할 수 있습니다. 공장 초기화는 스위치의 현재 설정과 저장된 데이터를 삭제하고, 초기 상태로 복구하여 새롭게 설정할 수 있도록 합니다.
 
 ## 공장 초기화의 목적
@@ -70,6 +70,6 @@ File "flash:vlan.dat" deleted
 
 ![IMG-009](https://user-images.githubusercontent.com/36792594/208579411-b323e18a-915d-404a-b113-b2728c9ae16c.png)
 
-## 참조
+## 참고 자료
 - [Cisco Catalyst 2960 스위치 공장 초기화 가이드](https://niksec.com/how-to-reset-cisco-catalyst-2960-switches-to-factory-default)
 - [Cisco 공식 문서](https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst2960/hardware/installation/guide_stack/2960SHIG/HIGOVERV.html)

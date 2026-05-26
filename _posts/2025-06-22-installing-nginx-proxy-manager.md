@@ -9,12 +9,12 @@ tags: [Provisioning, Helm, Nginx Proxy Manager]
 ## 📘 개요 (Overview)
 이 매뉴얼은 Kubernetes 환경에서 **Nginx Proxy Manager(NPM)**를 Helm Chart로 배포하는 과정을 정리한 것입니다. MariaDB를 백엔드 DB로 사용하며, NFS를 활용한 영구 저장소와 cert-manager를 통한 SSL 인증서 자동 발급(자체 서명, Let's Encrypt 등)을 포함합니다.
 
-## 🧭 등장배경
+## 🧭 등장 배경 (Background)
 - 컨테이너 환경의 프록시 관리 자동화와 웹 UI 기반 설정의 필요성이 증가
 - 수동 Docker Compose에서 Helm Chart 기반 인프라 표준화/자동화로 전환 추세
 - NFS 기반 스토리지, cert-manager 등 최신 K8s 구성요소와의 연동 사례가 많아지면서 실제 적용 사례 매뉴얼 요구 증가
 
-## 📝 주요 특징 및 구성요소 (Components)
+## 🧩 주요 구성 요소 (Components)
 
 - Helm Chart 템플릿 구조(Chart.yaml/values.yaml/템플릿)
 - DB 분리(MariaDB), Secret 기반 환경변수, PVC 기반 영구 저장소
@@ -41,7 +41,7 @@ nginx-proxy-manager/
 │   └── selfsigned-clusterissuer.yaml
 ```
 
-## ⚙️ 설치 방법
+## 🛠️ 설치 방법 (Installation)
 
 ### RKE2, k9s, Helm 설치
 

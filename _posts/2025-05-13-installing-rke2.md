@@ -6,18 +6,18 @@ categories: [Blog, Provisioning]
 tags: [Provisioning, RKE2, Rancher, Helm, K9s]
 ---
 
-## 📘 개요
+## 📘 개요 (Overview)
 이 문서는 경량 Kubernetes 배포판인 RKE2(Rancher Kubernetes Engine 2)를 기반으로,
 Rancher를 설치하여 웹 기반 Kubernetes 관리 플랫폼을 구축하는 전체 과정을 설명합니다.
 테스트 및 개발 환경에서 빠르게 RKE2 클러스터를 구성하고 Rancher UI로 관리하기 위한 목적에 최적화되어 있습니다.
 
-## 🧭 등장배경
+## 🧭 등장 배경 (Background)
 - 기존 VM 기반 Kubernetes 관리의 복잡성 해소 
 - Rancher UI를 통한 멀티 클러스터 관리 수요
 - K3s보다 보안 강화를 요구하는 환경(RKE2는 SELinux/PSP/etcd 내장)
 - 스크립트 기반 빠른 재구축 및 테스트 환경 자동화를 위한 설계
 
-## 🧩 주요 구성 요소
+## 🧩 주요 구성 요소 (Components)
 
 | 구성 요소            | 설명                                        |
 | ---------------- | ----------------------------------------- |

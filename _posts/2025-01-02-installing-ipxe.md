@@ -6,10 +6,10 @@ categories: [Blog, Provisioning]
 tags: [Provisioning, iPXE]
 ---
 
-## 📘 개요
+## 📘 개요 (Overview)
 iPXE는 오픈 소스 네트워크 부트 소프트웨어로, PXE(Preboot Execution Environment)를 확장하여 네트워크 기반 부팅을 더욱 유연하게 지원합니다. 디스크리스 부팅, 클라우드 환경 통합, 운영 체제 설치 및 대규모 시스템 프로비저닝에서 널리 사용됩니다. HTTP, HTTPS, iSCSI, TFTP 등 다양한 프로토콜을 지원하며, 스크립트 기능을 통해 복잡한 부팅 프로세스를 자동화할 수 있습니다.
 
-## 특징
+## 🔑 주요 특징 (Features)
 1. 다양한 프로토콜 지원
 - TFTP, HTTP(S), iSCSI, FCoE, AoE 등 현대적인 네트워크 프로토콜을 지원.
 
@@ -25,7 +25,7 @@ iPXE는 오픈 소스 네트워크 부트 소프트웨어로, PXE(Preboot Execut
 5. 확장성과 유연성
 - PXE의 한계를 극복하며 커스터마이징 가능.
 
-## 구성 요소
+## 🧩 주요 구성 요소 (Components)
 1. iPXE 바이너리
 - 네트워크 부팅을 실행하는 기본 프로그램.
 - 다양한 형태로 배포 가능:
@@ -54,7 +54,7 @@ chain http://boot.ipxe.org/demo/boot.php
 5. 동적 이미지 로딩
 - 클라우드 환경에서 최신 OS 이미지를 동적으로 로드.
 
-## 환경구성
+## 📋 환경 요구 사항 (Requirements)
 
 ### TFTP 서버 설정
 1. TFTP 서버 설치
@@ -441,7 +441,7 @@ _iPXE boot 커널 다운로드_
 ![iPXE](/assets/img/2025-01-02/iPXE_3.png)
 _iPXE boot img 다운로드_
 
-## 참조
+## 참고 자료
 - [iPXE 공식 사이트](https://ipxe.org/)
 - [FOG Project Wiki 문서](https://wiki.fogproject.org/wiki/index.php/BIOS_and_UEFI_Co-Existence)
 - [GitHub Gist 사용자 정의 메뉴 참조 문서](https://gist.github.com/rikka0w0/50895b82cbec8a3a1e8c7707479824c1)

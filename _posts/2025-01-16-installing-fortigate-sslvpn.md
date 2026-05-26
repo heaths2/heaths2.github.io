@@ -6,16 +6,16 @@ categories: [Blog, Provisioning]
 tags: [Provisioning, Fortinet, Fortigate, VPN]
 ---
 
-## 📘 개요
+## 📘 개요 (Overview)
 FortiGate SSLVPN은 Fortinet 방화벽을 통해 안전한 원격 접속을 제공하는 VPN 솔루션입니다. SSL 기반 암호화를 활용하여 인터넷을 통해 사내 네트워크에 원격으로 안전하게 연결할 수 있습니다.
 이 매뉴얼은 FortiGate에서 SSLVPN을 설정하고 관리하는 방법을 단계별로 안내합니다.
 
-## 목적
+## 🎯 목적 (Purpose)
 1. FortiGate SSLVPN 설정 매뉴얼은 다음과 같은 목적을 갖습니다:
 - FortiGate 방화벽을 이용해 원격 근무자들이 사내 네트워크에 안전하게 접속할 수 있도록 지원.
 - 네트워크 보안을 유지하면서도 효율적인 원격 접속을 구현.
 - 관리자가 FortiGate SSLVPN을 구성하고, 문제를 해결하며, 최적화할 수 있도록 도움 제공.
-## 특징
+## 🔑 주요 특징 (Features)
 FortiGate SSLVPN은 다음과 같은 주요 특징을 제공합니다:
 
 1. 보안
@@ -169,5 +169,5 @@ diagnose debug console timestamp enable
 diagnose debug enable
 ```
 
-## 참조
+## 참고 자료
 > - [FortiGate 공식문서](https://docs.fortinet.com/document/fortigate/7.4.4/administration-guide/032970/configuring-os-and-host-check)

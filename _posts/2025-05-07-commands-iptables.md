@@ -6,7 +6,7 @@ categories: [Blog, Command]
 tags: [Command, iptables]
 ---
 
-## 📘 개요
+## 📘 개요 (Overview)
 이 문서는 리눅스 서버 보안을 위해 iptables를 사용하여 기본 방화벽 정책을 구성하는 방법을 설명합니다.
 
 특히 SSH 접속과 ICMP(ping) 요청만 허용하고, 나머지 트래픽은 차단하는 화이트리스트 방식의 최소 보안 정책을 중심으로 구성되어 있습니다.
@@ -114,7 +114,7 @@ num    pkts bytes target     prot opt in     out     source               destin
 14       32  1920 LOG        all  --  *      *       0.0.0.0/0            0.0.0.0/0            LOG flags 0 level 7 prefix "iptables_OUTPUT_denied: "
 ```
 
-## ⚙️ 사용법
+## ⚙️ 명령어 사용법
 
 ```bash
 cat <<'EOF' | sudo tee /etc/rc.firewall

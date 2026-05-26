@@ -26,7 +26,7 @@ Podman은 데몬리스(daemonless) 구조를 채택한 컨테이너 런타임으
 - 🧭 **등장배경**: Docker 데몬 의존성과 루트 권한 요구로 인한 보안/운영 리스크를 해소하기 위해 데몬리스 컨테이너 런타임 수요가 증가
 - 🎯 **기대효과**: 루트리스 실행으로 보안 강화, systemd 통합으로 운영 일원화, Docker 명령어 호환으로 학습 비용 최소화
 
-## 📝 구성 요소 (Components)
+## 🧩 주요 구성 요소 (Components)
 
 | 역할 | 설명 | 특징 |
 | --- | --- | --- |
@@ -45,7 +45,7 @@ Podman은 데몬리스(daemonless) 구조를 채택한 컨테이너 런타임으
 | **SELinux** | enforcing 가능 | `getenforce` |
 | **Dependencies** | jq, policycoreutils-python-utils | `which jq semanage` |
 
-## ⚙️ 설치 방법 (Installation)
+## 🛠️ 설치 방법 (Installation)
 
 ### 1단계: 패키지 설치
 
@@ -195,7 +195,7 @@ sudo rm -rf /var/lib/containers/cache
 podman pull docker.io/library/nginx:latest
 ```
 
-## 📚 참고 자료 (References)
+## 참고 자료
 
 - [Podman 공식 문서](https://podman.io/docs/installation)
 - [Quadlet 공식 가이드](https://docs.podman.io/en/latest/markdown/podman-systemd.unit.5.html)

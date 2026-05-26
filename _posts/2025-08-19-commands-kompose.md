@@ -2,8 +2,8 @@
 title: Translate a Docker Compose File to Kubernetes Resources
 author: G.G
 date: 2025-08-19 11:41 +0900
-categories: [Blog, Provisioning]
-tags: [Provisioning, Kubernetes, Kompose]
+categories: [Blog, Command]
+tags: [Command, Kubernetes, Kompose]
 ---
 
 ## 📘 개요 (Overview)

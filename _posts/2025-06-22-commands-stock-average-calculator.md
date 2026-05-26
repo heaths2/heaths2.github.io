@@ -2,8 +2,8 @@
 title: 주식 추가 매수 계산
 author: G.G
 date: 2025-06-22 14:53:00 +0900
-categories: [Blog, Bash Shell]
-tags: [Bash, Python, Script, Stock]
+categories: [Blog, Command]
+tags: [Command, Bash, Python, Script, Stock]
 ---
 
 ## 📘 개요

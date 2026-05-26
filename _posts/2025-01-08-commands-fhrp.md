@@ -2,8 +2,8 @@
 title: Cisco Switch FHRP 설정
 author: G.G
 date: 2025-01-08 08:00:00 +0900
-categories: [Blog, Provisioning]
-tags: [Provisioning, Cisco, FHRP, HSRP, VRRP, GLBP]
+categories: [Blog, Command]
+tags: [Command, Cisco, FHRP, HSRP, VRRP, GLBP]
 ---
 
 ## 📘 개요

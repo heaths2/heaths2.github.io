@@ -1,9 +1,9 @@
 ---
-title: Kubernetes 설치방법
+title: XEN VM 이미지 병렬 복사 스크립트
 author: G.G
-date: 2025-01-01 08:55:00 +0900
-categories: [Blog, Bash Shell]
-tags: [Bash, Shell, Script]
+date: 2025-01-03 08:55:00 +0900
+categories: [Blog, Command]
+tags: [Command, Bash, Script, XEN]
 ---
 
 ## 📘 개요

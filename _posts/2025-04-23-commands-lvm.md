@@ -3,7 +3,7 @@ title: LVM(Logical Volume Management) 명령어 사용법
 author: G.G
 date: 2025-04-23 11:53:00 +0900
 categories: [Blog, Command]
-tags: [Command, Script, DMI, dmidecode]
+tags: [Command, LVM]
 ---
 
 ## ⚙️ 명령어 사용법

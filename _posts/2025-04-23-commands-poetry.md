@@ -134,4 +134,4 @@ poetry run python src/myprojects/main.py
 ```
 
 ## 참고 자료
-- [공식 문서서](https://python-poetry.org/docs/#installing-with-the-official-installer)
+- [공식 문서](https://python-poetry.org/docs/#installing-with-the-official-installer)

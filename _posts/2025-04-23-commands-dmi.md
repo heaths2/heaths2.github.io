@@ -66,7 +66,7 @@ exec &> >(tee -a "$log_file")
  
 echo "\
 OS :            $(lsb_release -is)
-Relase :        $(lsb_release -rs)
+Release :       $(lsb_release -rs)
 Code Name :     $(lsb_release -cs)
 Kernel :        $(uname -r)
 Architecture :  $(uname -m)

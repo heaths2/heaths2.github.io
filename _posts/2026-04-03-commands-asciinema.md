@@ -3,7 +3,7 @@ title: ASCiinema 사용법
 author: G.G
 date: 2026-04-03 20:06 +0900
 categories: [Blog, Command]
-tags: [Command, Certbot]
+tags: [Command, ASCiinema]
 ---
 
 ## 📘 개요 (Overview)

@@ -73,7 +73,7 @@ tags: [Command, iptables]
 sudo iptables -L --line-numbers -n -v
 ```
 
-## 🏗️ 정책 설정 내용용
+## 🏗️ 정책 설정 내용
 
 ```bash
 Chain Chain INPUT (policy DROP 244 packets, 33556 bytes)

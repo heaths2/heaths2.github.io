@@ -2,8 +2,8 @@
 title: Cisco Switch 기본 설정
 author: G.G
 date: 2025-01-08 09:00:00 +0900
-categories: [Blog, Provisioning]
-tags: [Provisioning, Cisco, NTP, SNMP, Banner, SCP, ACL, AAA Model]
+categories: [Blog, Command]
+tags: [Command, Cisco, NTP, SNMP, ACL, AAA]
 ---
 
 ## 📘 개요

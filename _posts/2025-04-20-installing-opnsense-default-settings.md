@@ -3,7 +3,7 @@ title: OPNsense 기본 세팅
 author: G.G
 date: 2025-04-20 21:08:00 +0900
 categories: [Blog, Provisioning]
-tags: [OPNsense]
+tags: [Provisioning, OPNsense]
 ---
 
 ## 📘 개요

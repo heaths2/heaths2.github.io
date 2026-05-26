@@ -2,8 +2,8 @@
 title: OPNsense HAProxy 사용법
 author: G.G
 date: 2025-05-10 21:01 +0900
-categories: [Blog, Provisioning ]
-tags: [Provisioning , HAProxy, Load balansing]
+categories: [Blog, Provisioning]
+tags: [Provisioning, HAProxy, Load Balancing]
 ---
 
 ## 📘 개요 (Overview)

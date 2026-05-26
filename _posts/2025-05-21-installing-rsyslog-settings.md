@@ -2,8 +2,8 @@
 title: RSyslog 설정법
 author: G.G
 date: 2025-05-21 12:52 +0900
-categories: [Blog, Provisioning ]
-tags: [Provisioning , syslog, logrotate]
+categories: [Blog, Provisioning]
+tags: [Provisioning, syslog, logrotate]
 ---
 
 ## 📘 개요 (Overview)

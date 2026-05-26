@@ -3,7 +3,7 @@ title: Kubespray 설치방법
 author: G.G
 date: 2024-12-30 11:56:00 +0900
 categories: [Blog, Orchestration]
-tags: [Kubernetes, K8s, Kubespray]
+tags: [Orchestration, Kubernetes, K8s, Kubespray]
 ---
 
 ## 📘 개요

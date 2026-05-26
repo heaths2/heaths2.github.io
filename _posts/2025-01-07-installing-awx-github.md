@@ -3,7 +3,7 @@ title: AWX Github 연동
 author: G.G
 date: 2025-01-07 21:08:00 +0900
 categories: [Blog, Orchestration]
-tags: [Ansible, AWX, Github]
+tags: [Orchestration, Ansible, AWX, Github]
 ---
 
 > 관련글 :

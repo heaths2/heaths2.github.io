@@ -36,86 +36,163 @@ python3 -m pip install asciinema
 - Console 및 SSH 감사 로그 / 감사 추적 설정
 
 ```bash
-sudo cat > /etc/profile.d/asciinema-record.sh <<'EOF'
 #!/usr/bin/env bash
-# -*- coding: utf-8 -*-
+# =============================================================================
+# Script  : asciinema-record.sh
+# Version : 1.1.0
+# Date    : 2026-05-27
+# =============================================================================
+# Description:
+#   SSH/로컬 로그인 시 터미널 세션을 asciinema 로 자동 녹화하는 감사 로그 스크립트.
+#   /etc/profile.d/ 에 배치하여 모든 대화형 로그인 셸에서 자동 실행된다.
+#
+# Bugs Fixed:
+#   [BUG-1] --command "bash -l": 로그인 셸 재귀 기동으로 asciinema 이중 실행
+#            수정: -l 플래그 제거, 부모 PID 이중 가드 추가
+#   [BUG-2] chown root:USER 비루트 실패(2>/dev/null 로 은폐): USER_DIR 권한 설정 무력화
+#            수정: EUID 분기 처리, 관리자 사전 생성 안내 주석 추가
+#
+# Changelog:
+#   1.1.0 (2026-05-27) - BUG-1/2 패치, 코드 정리
+#   1.0.0              - 최초 작성
+# =============================================================================
 
-# 1. 재귀 실행 및 비대화형 세션 방지
+# ---------------------------------------------------------------------------
+# 가드 A: asciinema v2+ 가 자동 설정하는 환경변수 확인
+# ---------------------------------------------------------------------------
 [[ -n "${ASCIINEMA_REC:-}" ]] && return 0 2>/dev/null
+
+# 비대화형 셸 즉시 리턴
 case "$-" in *i*) ;; *) return 0 2>/dev/null ;; esac
 
-# 2. 필수 바이너리 및 TTY 체크
-ASCIINEMA_BIN="$(command -v asciinema 2>/dev/null || true)"
-TTY_PATH="$(tty 2>/dev/null || true)"
-[[ -z "${ASCIINEMA_BIN}" || ! -x "${ASCIINEMA_BIN}" ]] && return 0 2>/dev/null
-[[ -z "${TTY_PATH}" || "${TTY_PATH}" == "not a tty" ]] && return 0 2>/dev/null
+# SSH 원격 명령 직접 실행은 녹화 불필요
 [[ -n "${SSH_ORIGINAL_COMMAND:-}" ]] && return 0 2>/dev/null
 
-# --- 경로 및 변수 설정 ---
-RECORD_ROOT="/var/log/asciinema"
-USER_NAME="${USER:-unknown}"
-USER_DIR="${RECORD_ROOT}/${USER_NAME}"
-TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
-HOSTNAME_SHORT="${HOSTNAME:-$(hostname 2>/dev/null || echo unknown)}"
+# ---------------------------------------------------------------------------
+# 가드 B: 부모 프로세스가 asciinema 인지 확인
+# [BUG-1] 환경변수 미전달 케이스(일부 OS/버전) 에서도 이중 실행 차단
+# ---------------------------------------------------------------------------
+_asciinema_check_parent() {
+    local ppid_comm
+    ppid_comm="$(cat /proc/"${PPID}"/comm 2>/dev/null)" || return 1
+    [[ "${ppid_comm}" == "asciinema" ]]
+}
+_asciinema_check_parent && return 0 2>/dev/null
+unset -f _asciinema_check_parent
 
-REMOTE_IP="local"
-[[ -n "${SSH_CONNECTION:-}" ]] && REMOTE_IP="$(echo "${SSH_CONNECTION}" | awk '{print $1}')"
+# ---------------------------------------------------------------------------
+# 필수 바이너리 및 TTY 확인
+# ---------------------------------------------------------------------------
+_AR_BIN="$(command -v asciinema 2>/dev/null)"
+[[ -z "${_AR_BIN}" || ! -x "${_AR_BIN}" ]] && return 0 2>/dev/null
 
-TTY_NAME="${TTY_PATH#/dev/}"
-TTY_NAME="${TTY_NAME//\//_}"
-RECORD_FILE="${USER_DIR}/${TIMESTAMP}_${HOSTNAME_SHORT}_${REMOTE_IP}_${TTY_NAME}.cast"
+_AR_TTY="$(tty 2>/dev/null)"
+[[ -z "${_AR_TTY}" || "${_AR_TTY}" == "not a tty" ]] && return 0 2>/dev/null
 
-# ---------------------------------------------------------
-# 3. 디렉터리 자동 생성 및 시니어 권한 설계 (보안 강화)
-# ---------------------------------------------------------
-# 로그 루트 생성 및 권한 설정
-if [[ ! -d "${RECORD_ROOT}" ]]; then
-    mkdir -p "${RECORD_ROOT}" 2>/dev/null
-    chown root:root "${RECORD_ROOT}"
-    chmod 1777 "${RECORD_ROOT}"
+# ---------------------------------------------------------------------------
+# 경로 및 변수 설정
+# ---------------------------------------------------------------------------
+_AR_ROOT="/var/log/asciinema"
+_AR_USER="${USER:-$(id -un 2>/dev/null)}"
+_AR_UDIR="${_AR_ROOT}/${_AR_USER}"
+_AR_TS="$(date +%Y%m%d-%H%M%S)"
+
+# FQDN → 짧은 호스트명 (예: srv01.domain.com → srv01)
+_AR_HOST="${HOSTNAME:-$(hostname 2>/dev/null)}"
+_AR_HOST="${_AR_HOST%%.*}"
+
+# [개선] awk 의존성 제거: 파라미터 확장으로 첫 번째 필드(클라이언트 IP) 추출
+_AR_IP="local"
+[[ -n "${SSH_CONNECTION:-}" ]] && _AR_IP="${SSH_CONNECTION%% *}"
+
+_AR_TTY_NAME="${_AR_TTY#/dev/}"
+_AR_TTY_NAME="${_AR_TTY_NAME//\//_}"
+_AR_FILE="${_AR_UDIR}/${_AR_TS}_${_AR_HOST}_${_AR_IP}_${_AR_TTY_NAME}.cast"
+
+# ---------------------------------------------------------------------------
+# 디렉터리 설정
+# [BUG-2] 수정: 비루트 사용자는 chown root:USER 불가 — EUID 분기로 명시 처리
+#
+# 완전한 감사 무결성(사용자의 USER_DIR 삭제 방지)이 필요하다면
+# root cron 또는 PAM pam_exec 모듈로 사전에 다음을 실행하도록 권장:
+#   mkdir -p /var/log/asciinema/<username>
+#   chown root:<username> /var/log/asciinema/<username>
+#   chmod 770 /var/log/asciinema/<username>
+# ---------------------------------------------------------------------------
+_AR_EUID="${EUID:-$(id -u 2>/dev/null)}"
+
+if [[ ! -d "${_AR_ROOT}" ]]; then
+    if ! mkdir -p "${_AR_ROOT}" 2>/dev/null; then
+        # 루트 디렉터리 생성 실패 → 녹화 불가, 세션은 정상 진입
+        unset _AR_BIN _AR_TTY _AR_ROOT _AR_USER _AR_UDIR _AR_TS _AR_HOST _AR_IP _AR_TTY_NAME _AR_FILE _AR_EUID
+        return 0 2>/dev/null
+    fi
+    if [[ "${_AR_EUID}" -eq 0 ]]; then
+        chown root:root "${_AR_ROOT}"
+        chmod 1777 "${_AR_ROOT}"
+    fi
+    # 비루트로 최초 실행: chmod 1777 불가. 관리자가 수동으로 사전 생성 필요.
 fi
 
-# 사용자별 디렉터리 생성 (사용자가 삭제하지 못하도록 root 소유로 생성)
-if [[ ! -d "${USER_DIR}" ]]; then
-    mkdir -p "${USER_DIR}" 2>/dev/null
-    # 소유권은 root, 그룹은 사용자에게 부여하여 '쓰기'는 가능하나 '폴더 삭제'는 불가하게 설정
-    chown root:"${USER_NAME}" "${USER_DIR}" 2>/dev/null
-    chmod 770 "${USER_DIR}" 2>/dev/null
+if [[ ! -d "${_AR_UDIR}" ]]; then
+    if ! mkdir -p "${_AR_UDIR}" 2>/dev/null; then
+        unset _AR_BIN _AR_TTY _AR_ROOT _AR_USER _AR_UDIR _AR_TS _AR_HOST _AR_IP _AR_TTY_NAME _AR_FILE _AR_EUID
+        return 0 2>/dev/null
+    fi
+
+    if [[ "${_AR_EUID}" -eq 0 ]]; then
+        # root 로그인: 타인 접근 완전 차단
+        chown root:root "${_AR_UDIR}"
+        chmod 700 "${_AR_UDIR}"
+    else
+        # 비루트: chown root:USER 는 root 권한 필요 — 수행 불가.
+        # 사전 생성이 없으면 사용자 소유로 유지 (타인 읽기만 차단).
+        chmod 700 "${_AR_UDIR}"
+    fi
 fi
 
-# ---------------------------------------------------------
-# 4. 보안 경고 배너 출력 (경각심 고취)
-# ---------------------------------------------------------
+# ---------------------------------------------------------------------------
+# 보안 경고 배너
+# ---------------------------------------------------------------------------
 clear
-echo -e "\033[1;31m"
-echo "==============================================================="
-echo "                [ SECURITY WARNING & NOTICE ]"
-echo "==============================================================="
-echo -e "\033[0m"
-echo -e "본 서버는 내부 보안 정책에 따라 \033[1;33m모든 터미널 작업이 실시간 녹화\033[0m됩니다."
-echo -e "접속 IP   : ${REMOTE_IP}"
-echo -e "로그 경로 : ${RECORD_FILE}"
-echo ""
-echo -e "모든 명령어 입력 및 출력 결과는 감사 로그로 보관되며,"
-echo -e "비인가된 활동은 관련 법규에 따라 처벌받을 수 있습니다."
-echo -e "\033[1;31m"
-echo "==============================================================="
-echo -e "\033[0m"
+printf '\033[1;31m\n'
+printf '===============================================================\n'
+printf '                [ SECURITY WARNING & NOTICE ]\n'
+printf '===============================================================\n'
+printf '\033[0m\n'
+printf '본 서버는 내부 보안 정책에 따라 \033[1;33m모든 터미널 작업이 실시간 녹화\033[0m됩니다.\n'
+printf '접속 IP   : %s\n' "${_AR_IP}"
+printf '로그 경로 : %s\n' "${_AR_FILE}"
+printf '\n'
+printf '모든 명령어 입력 및 출력 결과는 감사 로그로 보관되며,\n'
+printf '비인가된 활동은 관련 법규에 따라 처벌받을 수 있습니다.\n'
+printf '\033[1;31m\n'
+printf '===============================================================\n'
+printf '\033[0m\n'
 sleep 1
 
-# 5. 녹화 실행
+# ---------------------------------------------------------------------------
+# 녹화 실행
+# ---------------------------------------------------------------------------
 export ASCIINEMA_REC=1
-umask 022  # 생성되는 로그 파일 권한 제어
+umask 022
 
-LOGIN_SHELL="${SHELL:-/bin/bash}"
-[[ -x "${LOGIN_SHELL}" ]] || LOGIN_SHELL="/bin/bash"
+_AR_SHELL="${SHELL:-/bin/bash}"
+[[ -x "${_AR_SHELL}" ]] || _AR_SHELL="/bin/bash"
 
-exec "${ASCIINEMA_BIN}" rec \
+# [BUG-1] 핵심 수정: '-l' 플래그 제거
+# 기존: --command "${LOGIN_SHELL} -l"
+#   → 로그인 셸로 재기동 → /etc/profile → 이 스크립트 재소스 → asciinema 이중 실행
+# 수정: '-l' 제거. exec 로 현재 셸을 대체하므로 로그인 환경(PATH, 환경변수 등)은
+#   이미 상속됨. 비로그인 대화형 셸로도 동일한 환경이 제공된다.
+exec "${_AR_BIN}" rec \
     --quiet \
     --idle-time-limit 2 \
-    --command "${LOGIN_SHELL} -l" \
-    "${RECORD_FILE}"
-EOF
+    --command "${_AR_SHELL}" \
+    "${_AR_FILE}"
+
+# exec 실패 시 여기까지 도달 → 녹화 없이 세션 정상 진입 (사용자 로그인 차단 방지)
+unset _AR_BIN _AR_TTY _AR_ROOT _AR_USER _AR_UDIR _AR_TS _AR_HOST _AR_IP _AR_TTY_NAME _AR_FILE _AR_EUID _AR_SHELL
 
 # 1) 로그 저장소 초기화
 sudo mkdir -p /var/log/asciinema

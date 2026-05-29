@@ -36,11 +36,12 @@ python3 -m pip install asciinema
 - Console 및 SSH 감사 로그 / 감사 추적 설정
 
 ```bash
+sudo cat << 'EOF' > /etc/profile.d/asciinema-record.sh
 #!/usr/bin/env bash
 # =============================================================================
 # Script  : asciinema-record.sh
-# Version : 1.1.0
-# Date    : 2026-05-27
+# Version : 1.2.0
+# Date    : 2026-05-29
 # =============================================================================
 # Description:
 #   SSH/로컬 로그인 시 터미널 세션을 asciinema 로 자동 녹화하는 감사 로그 스크립트.
@@ -48,11 +49,15 @@ python3 -m pip install asciinema
 #
 # Bugs Fixed:
 #   [BUG-1] --command "bash -l": 로그인 셸 재귀 기동으로 asciinema 이중 실행
-#            수정: -l 플래그 제거, 부모 PID 이중 가드 추가
+#            수정: -l 플래그 제거
 #   [BUG-2] chown root:USER 비루트 실패(2>/dev/null 로 은폐): USER_DIR 권한 설정 무력화
 #            수정: EUID 분기 처리, 관리자 사전 생성 안내 주석 추가
+#   [BUG-3] sudo -i / su - 경유 시 ASCIINEMA_REC 미전달로 이중 실행
+#            수정: PPID 단순 확인 → 조상 프로세스 트리 전체 탐색으로 교체
 #
 # Changelog:
+#   1.2.0 (2026-05-29) - BUG-3 패치: 프로세스 트리 탐색으로 sudo/su 이중 실행 완전 차단
+#                        _ar_cleanup 헬퍼로 환경 정리 로직 통합
 #   1.1.0 (2026-05-27) - BUG-1/2 패치, 코드 정리
 #   1.0.0              - 최초 작성
 # =============================================================================
@@ -69,25 +74,47 @@ case "$-" in *i*) ;; *) return 0 2>/dev/null ;; esac
 [[ -n "${SSH_ORIGINAL_COMMAND:-}" ]] && return 0 2>/dev/null
 
 # ---------------------------------------------------------------------------
-# 가드 B: 부모 프로세스가 asciinema 인지 확인
-# [BUG-1] 환경변수 미전달 케이스(일부 OS/버전) 에서도 이중 실행 차단
+# 가드 B: 조상 프로세스 트리에 asciinema 가 있는지 확인
+# [BUG-3] sudo -i / su - 경유 시 PPID 는 sudo/su 이므로 단순 PPID 확인 불충분
+#         PID 1 도달 또는 asciinema 발견까지 /proc 트리를 역방향 탐색
+#
+# 탐색 예시: bash(1238) → sudo(1237) → bash(1236) → asciinema(1235) → 발견 후 중단
 # ---------------------------------------------------------------------------
-_asciinema_check_parent() {
-    local ppid_comm
-    ppid_comm="$(cat /proc/"${PPID}"/comm 2>/dev/null)" || return 1
-    [[ "${ppid_comm}" == "asciinema" ]]
+_asciinema_in_ancestors() {
+    local pid="${PPID}" comm ppid key val
+    while (( pid > 1 )); do
+        comm="$(cat "/proc/${pid}/comm" 2>/dev/null)" || break
+        [[ "${comm}" == "asciinema" ]] && return 0
+        ppid=""
+        while IFS=$'\t ' read -r key val; do
+            [[ "${key}" == "PPid:" ]] && { ppid="${val}"; break; }
+        done < "/proc/${pid}/status" 2>/dev/null
+        [[ -z "${ppid}" || ! "${ppid}" =~ ^[0-9]+$ ]] && break
+        pid="${ppid}"
+    done
+    return 1
 }
-_asciinema_check_parent && return 0 2>/dev/null
-unset -f _asciinema_check_parent
+_asciinema_in_ancestors && return 0 2>/dev/null
+unset -f _asciinema_in_ancestors
+
+# ---------------------------------------------------------------------------
+# 정리 함수: 이 시점 이후 모든 종료 경로에서 호출
+# 호출 시 자신(함수)과 _AR_* 변수 전부 제거하여 셸 환경 오염 방지
+# ---------------------------------------------------------------------------
+_ar_cleanup() {
+    unset -f _ar_cleanup
+    unset _AR_BIN _AR_TTY _AR_ROOT _AR_USER _AR_UDIR _AR_TS \
+          _AR_HOST _AR_IP _AR_TTY_NAME _AR_FILE _AR_EUID _AR_SHELL
+}
 
 # ---------------------------------------------------------------------------
 # 필수 바이너리 및 TTY 확인
 # ---------------------------------------------------------------------------
 _AR_BIN="$(command -v asciinema 2>/dev/null)"
-[[ -z "${_AR_BIN}" || ! -x "${_AR_BIN}" ]] && return 0 2>/dev/null
+[[ -z "${_AR_BIN}" || ! -x "${_AR_BIN}" ]] && { _ar_cleanup; return 0 2>/dev/null; }
 
 _AR_TTY="$(tty 2>/dev/null)"
-[[ -z "${_AR_TTY}" || "${_AR_TTY}" == "not a tty" ]] && return 0 2>/dev/null
+[[ -z "${_AR_TTY}" || "${_AR_TTY}" == "not a tty" ]] && { _ar_cleanup; return 0 2>/dev/null; }
 
 # ---------------------------------------------------------------------------
 # 경로 및 변수 설정
@@ -101,13 +128,15 @@ _AR_TS="$(date +%Y%m%d-%H%M%S)"
 _AR_HOST="${HOSTNAME:-$(hostname 2>/dev/null)}"
 _AR_HOST="${_AR_HOST%%.*}"
 
-# [개선] awk 의존성 제거: 파라미터 확장으로 첫 번째 필드(클라이언트 IP) 추출
+# awk 의존성 제거: 파라미터 확장으로 SSH_CONNECTION 첫 번째 필드(클라이언트 IP) 추출
 _AR_IP="local"
 [[ -n "${SSH_CONNECTION:-}" ]] && _AR_IP="${SSH_CONNECTION%% *}"
 
 _AR_TTY_NAME="${_AR_TTY#/dev/}"
 _AR_TTY_NAME="${_AR_TTY_NAME//\//_}"
 _AR_FILE="${_AR_UDIR}/${_AR_TS}_${_AR_HOST}_${_AR_IP}_${_AR_TTY_NAME}.cast"
+
+_AR_EUID="${EUID:-$(id -u 2>/dev/null)}"
 
 # ---------------------------------------------------------------------------
 # 디렉터리 설정
@@ -119,13 +148,10 @@ _AR_FILE="${_AR_UDIR}/${_AR_TS}_${_AR_HOST}_${_AR_IP}_${_AR_TTY_NAME}.cast"
 #   chown root:<username> /var/log/asciinema/<username>
 #   chmod 770 /var/log/asciinema/<username>
 # ---------------------------------------------------------------------------
-_AR_EUID="${EUID:-$(id -u 2>/dev/null)}"
-
 if [[ ! -d "${_AR_ROOT}" ]]; then
     if ! mkdir -p "${_AR_ROOT}" 2>/dev/null; then
         # 루트 디렉터리 생성 실패 → 녹화 불가, 세션은 정상 진입
-        unset _AR_BIN _AR_TTY _AR_ROOT _AR_USER _AR_UDIR _AR_TS _AR_HOST _AR_IP _AR_TTY_NAME _AR_FILE _AR_EUID
-        return 0 2>/dev/null
+        _ar_cleanup; return 0 2>/dev/null
     fi
     if [[ "${_AR_EUID}" -eq 0 ]]; then
         chown root:root "${_AR_ROOT}"
@@ -136,8 +162,7 @@ fi
 
 if [[ ! -d "${_AR_UDIR}" ]]; then
     if ! mkdir -p "${_AR_UDIR}" 2>/dev/null; then
-        unset _AR_BIN _AR_TTY _AR_ROOT _AR_USER _AR_UDIR _AR_TS _AR_HOST _AR_IP _AR_TTY_NAME _AR_FILE _AR_EUID
-        return 0 2>/dev/null
+        _ar_cleanup; return 0 2>/dev/null
     fi
 
     if [[ "${_AR_EUID}" -eq 0 ]]; then
@@ -181,10 +206,9 @@ _AR_SHELL="${SHELL:-/bin/bash}"
 [[ -x "${_AR_SHELL}" ]] || _AR_SHELL="/bin/bash"
 
 # [BUG-1] 핵심 수정: '-l' 플래그 제거
-# 기존: --command "${LOGIN_SHELL} -l"
+# 기존: --command "${_AR_SHELL} -l"
 #   → 로그인 셸로 재기동 → /etc/profile → 이 스크립트 재소스 → asciinema 이중 실행
-# 수정: '-l' 제거. exec 로 현재 셸을 대체하므로 로그인 환경(PATH, 환경변수 등)은
-#   이미 상속됨. 비로그인 대화형 셸로도 동일한 환경이 제공된다.
+# 수정: '-l' 제거. exec 로 현재 셸을 대체하므로 로그인 환경은 이미 상속됨.
 exec "${_AR_BIN}" rec \
     --quiet \
     --idle-time-limit 2 \
@@ -192,7 +216,8 @@ exec "${_AR_BIN}" rec \
     "${_AR_FILE}"
 
 # exec 실패 시 여기까지 도달 → 녹화 없이 세션 정상 진입 (사용자 로그인 차단 방지)
-unset _AR_BIN _AR_TTY _AR_ROOT _AR_USER _AR_UDIR _AR_TS _AR_HOST _AR_IP _AR_TTY_NAME _AR_FILE _AR_EUID _AR_SHELL
+_ar_cleanup
+EOF
 
 # 1) 로그 저장소 초기화
 sudo mkdir -p /var/log/asciinema

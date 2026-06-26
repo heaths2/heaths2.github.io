@@ -66,7 +66,14 @@ generateResolvConf = false
 
 [automount]
 enabled = true
-options = "metadata,umask=22,fmask=133"
+# fmask=11 → /mnt/c 의 .exe 가 실행권한(x) 유지(스크린샷 붙여넣기용 clip.exe/powershell.exe).
+# umask=22 로 group/other 쓰기는 차단해 보안 유지.
+# options = "metadata,umask=22,fmask=133"
+options = "metadata,umask=22,fmask=11"
+
+[interop]
+enabled = true
+appendWindowsPath = true
 EOF
 
 cat << EOF > /etc/resolv.conf

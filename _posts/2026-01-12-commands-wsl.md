@@ -56,7 +56,9 @@ wsl -d Rocky9 -u bob
 
 # wsl -d Rocky9 -u bob 옵션 생략
 # wsl /etc/resolv.conf 자동 생성 비활성화
-cat << EOF >> /etc/wsl.conf
+cat << EOF > /etc/wsl.conf
+[boot]
+systemd=true
 
 [user]
 default=bob

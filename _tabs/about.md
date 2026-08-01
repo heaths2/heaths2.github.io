@@ -70,6 +70,8 @@ kubeadm · Kubespray · RKE2 **세 가지 배포 방식**과 Ansible AWX **네 �
 
 Cisco 스위치 실장비 운영(초기화 · ACL · FHRP · 대역 제한)부터 OPNsense 방화벽, iptables/firewalld, FortiGate SSL VPN, 리버스 프록시와 인증서 발급까지.
 
+📌 **[네트워크·보안 구축 기록 — L2 스위치에서 L7 프록시까지](/posts/overview-network-security/)** — 계층별 흐름과 선택 근거를 정리한 개요
+
 - [Cisco Catalyst 2960 스위치 공장 초기화](/posts/commands-c2960s-factory-reset/)
 - [Cisco Switch 기본 설정](/posts/commands-cisco-base-setting/)
 - [Cisco Switch Bandwidth Limit 설정](/posts/commands-cisco-switch-limit/)
@@ -81,7 +83,6 @@ Cisco 스위치 실장비 운영(초기화 · ACL · FHRP · 대역 제한)부�
 - [OPNsense HAProxy 사용법](/posts/installing-opnsense-haproxy/)
 - [Nginx Proxy Manager 설치](/posts/installing-nginx-proxy-manager/)
 - [Certbot SSL 인증서 발급 방법](/posts/commands-certbot/)
-- [Pi-hole 설치 가이드](/posts/installing-pi-hle/)
 - [Firewalld 사용법](/posts/commands-firewalld/)
 
 ### 가상화·프로비저닝 (5편)

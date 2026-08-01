@@ -18,11 +18,11 @@ order: 4
 ## 역량 맵
 
 
-총 **57편**의 구축·운영 기록을 아래 영역으로 나눠 정리했습니다.
+총 **58편**의 구축·운영 기록을 아래 영역으로 나눠 정리했습니다.
 
 | 영역 | 기록 |
 |---|---:|
-| 인증·계정관리 | 4편 |
+| 인증·계정관리 | 5편 |
 | 컨테이너·오케스트레이션 | 16편 |
 | 네트워크·보안 | 13편 |
 | 가상화·프로비저닝 | 5편 |
@@ -33,9 +33,11 @@ order: 4
 | 금융 | 5편 |
 
 
-### 인증·계정관리 (4편)
+### 인증·계정관리 (5편)
 
 OpenLDAP 자체 구축, Active Directory 운영, 리눅스–AD 통합 인증(SSSD), 비밀번호 관리까지 계정 체계 전반을 다뤘습니다.
+
+📌 **[계정관리 구축 기록 — OpenLDAP에서 AD 연동까지](/posts/overview-identity-management/)** — 전체 흐름과 선택 근거를 정리한 개요
 
 - [OpenLDAP 설치 매뉴얼](/posts/installing-openldap/)
 - [AD(Active Directory) 사용법](/posts/commands-activedirectory/)

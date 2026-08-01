@@ -8,59 +8,30 @@ tags: [Provisioning, IAPM, Netbox]
 
 ## 📘 개요 (Overview)
 
-SSSD(System Security Services Daemon)는 리눅스 시스템에서 사용자 인증과 계정 정보를 중앙에서 통합 관리할 수 있도록 지원하는 서비스입니다. 특히 Active Directory와 연동하면, 개별 서버마다 계정을 생성하지 않고도 도메인 계정을 활용해 로그인 및 권한 관리를 일관되게 수행할 수 있습니다.
+NetBox는 네트워크 인프라의 **단일 진실 공급원(Source of Truth)** 역할을 하는 오픈소스 IPAM/DCIM 도구입니다. IP 대역과 VLAN, 랙과 장비, 케이블 연결, 회선과 가상머신까지 하나의 데이터 모델로 관리합니다.
 
-SSSD를 활용하면 LDAP 및 Kerberos 기반 인증을 통해 사용자 인증을 중앙화하고, 서버 간 계정 및 권한 정책을 표준화할 수 있습니다. 또한 캐싱 기능을 통해 네트워크가 일시적으로 단절되더라도 기존 사용자 인증을 유지할 수 있어 안정적인 운영 환경을 제공합니다.
+인프라 정보가 엑셀과 위키에 흩어져 있으면 "이 IP를 누가 쓰고 있나", "이 스위치 포트에 뭐가 물려 있나"에 아무도 답하지 못하게 됩니다. NetBox는 이 정보를 구조화된 모델로 강제하고 REST/GraphQL API로 노출하기 때문에, Ansible이나 모니터링 도구가 인벤토리를 자동으로 끌어다 쓸 수 있습니다.
 
-이 가이드는 리눅스 서버에서 SSSD를 구성하고 Active Directory와 연동하여, 도메인 기반 사용자 인증 및 권한 관리를 통합하는 방법을 단계별로 설명합니다. 이를 통해 보안성과 관리 효율성을 동시에 향상시키는 것을 목표로 합니다.
+이 가이드는 `netbox-docker`를 기반으로 Podman 환경에 NetBox Community를 구축하고, DNS·IP 계산기·토폴로지 뷰 플러그인을 포함한 커스텀 이미지를 빌드하는 절차를 다룹니다.
 
 ## 📂 디렉토리 구조 (Tree 구조)
 
 ```bash
-/etc
-└── /etc/nsswitch.conf
-
-/etc
-└── /etc/krb5.conf
-
-/etc/sssd
-└── /etc/sssd/sssd.conf
-```
-
-## 🧭 SSSD 인증 플로우
-
-```bash
-[사용자 로그인]
-        ↓
-[PAM]
-        ↓
-[SSSD]  ← 핵심 엔진
-        ↓
-[KRB5] → 인증 (비밀번호 확인)
-        ↓
-[AD]   → 계정 정보
-        ↓
-[NSS]  → 리눅스 계정처럼 보여줌
+/opt/netbox/
+├── src/
+├── postgres-data/        # PostgreSQL 데이터
+├── redis-data/           # Redis (작업 큐)
+├── redis-cache-data/     # Redis (캐시)
+├── netbox-media/         # 업로드 파일
+├── netbox-reports/       # 리포트 스크립트
+├── netbox-scripts/       # 커스텀 스크립트
+├── backup/
+└── logs/
 ```
 
 ## 🛠️ 설치 방법 (Installation)
 
-- 🧩 사전 확인 (DNS / AD 확인)
-
-```bash
-# AD LDAP 서비스 위치 확인 (SRV 레코드)
-nslookup -type=SRV _ldap._tcp.infra.local
-
-# Kerberos 인증 서버 확인
-nslookup -type=SRV _kerberos._tcp.infra.local
-```
-
-{: .prompt-tip }
-> 💡 **목적**
-> - AD 서버 자동 탐색 가능 여부 확인
-> - DNS 깨지면 → SSSD 100% 실패
-
-- 도메인 탐색 및 Join
+- 📁 작업 디렉토리 및 컨테이너 네트워크 준비
 
 ```bash
 # 📁 작업 디렉토리 생성
@@ -88,7 +59,7 @@ podman network create \
   net_devops
 ```
 
-- PAM / NSS 설정 (authselect)
+- 📦 netbox-docker 클론 및 플러그인 이미지 빌드
 
 ```bash
 # rm -rfv "${APP_DIR}" && \
@@ -167,22 +138,45 @@ podman compose up -d
 #EOF
 ```
 
-{: .prompt-tip }
 > 💡 **목적**
-> - 로그인 시 /home 자동 생성
-> - sudo 권한 연동 가능
+> - 플러그인은 `netboxcommunity/netbox` 기본 이미지에 포함되지 않아 **직접 빌드**해야 합니다
+> - `pull_policy: never` 를 지정해야 로컬 빌드 이미지가 원격 이미지로 덮어써지지 않습니다
+> - `netbox-worker` 도 동일 이미지를 써야 플러그인이 백그라운드 작업에서 동작합니다
+{: .prompt-tip }
 
-- AD 연결 검증
+## ✅ 설치 확인 (Verification)
 
 ```bash
-# AD 연결 정보 확인
-sudo adcli info infra.local
+cd "${APP_DIR}"
 
-# AD 사용자 조회 테스트
-id bob@infra.local
+# 컨테이너 상태 — netbox, netbox-worker, postgres, redis 전부 Up 이어야 정상
+podman compose ps
+
+# 초기 마이그레이션 진행 상황 (첫 기동은 수 분 소요)
+podman compose logs -f netbox | grep -iE "migrat|ready|listening"
+
+# HTTP 응답 확인
+curl -sS -o /dev/null -w "%{http_code}\n" http://localhost:8000/login/
+
+# 플러그인 적재 확인
+podman compose exec netbox /opt/netbox/netbox/manage.py shell -c \
+  "from django.conf import settings; print(settings.PLUGINS)"
 ```
 
+```bash
+# 예상 출력
+200
+['netbox_dns', 'netbox_ipcalculator', 'netbox_topology_views']
+```
+{: .prompt-info }
+
+- 관리자 계정 생성
+
+```bash
+podman compose exec netbox /opt/netbox/netbox/manage.py createsuperuser
+```
 
 ## 참고 자료
 
-- [Github 공식 문서](https://github.com/netbox-community/netbox-docker/wiki/Using-Netbox-Plugins)
+- [NetBox 공식 문서](https://netboxlabs.com/docs/netbox/)
+- [netbox-docker — 플러그인 사용법](https://github.com/netbox-community/netbox-docker/wiki/Using-Netbox-Plugins)

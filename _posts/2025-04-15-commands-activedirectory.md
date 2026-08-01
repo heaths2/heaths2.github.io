@@ -94,4 +94,6 @@ Unlock-ADAccount -Identity $Account
 ```
 
 ## 참고 자료
-- [증권정보포털 세이브로](https://seibro.or.kr)
+- [Active Directory Domain Services 개요](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/active-directory-domain-services)
+- [ActiveDirectory PowerShell 모듈 레퍼런스](https://learn.microsoft.com/en-us/powershell/module/activedirectory/)
+- [RSAT(원격 서버 관리 도구) 설치](https://learn.microsoft.com/en-us/windows-server/remote/remote-server-administration-tools)

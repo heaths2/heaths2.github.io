@@ -1,7 +1,7 @@
 ---
-title: [도구명] 명령어 사용법
+title: "[도구명] 명령어 사용법"
 author: G.G
-date: YYYY-MM-DD HH:MM +0900
+date: 2024-01-01 00:00 +0900 # ← 작성일로 교체
 categories: [Blog, Command]
 tags: [Command, 태그1, 태그2]
 ---

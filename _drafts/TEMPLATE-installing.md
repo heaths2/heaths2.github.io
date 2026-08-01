@@ -1,7 +1,7 @@
 ---
-title: [도구명] 설치 매뉴얼
+title: "[도구명] 설치 매뉴얼"
 author: G.G
-date: YYYY-MM-DD HH:MM +0900
+date: 2024-01-01 00:00 +0900 # ← 작성일로 교체
 categories: [Blog, Provisioning]
 tags: [Provisioning, 태그1, 태그2]
 ---

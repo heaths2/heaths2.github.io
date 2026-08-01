@@ -18,12 +18,12 @@ order: 4
 ## 역량 맵
 
 
-총 **56편**의 구축·운영 기록을 아래 영역으로 나눠 정리했습니다.
+총 **57편**의 구축·운영 기록을 아래 영역으로 나눠 정리했습니다.
 
 | 영역 | 기록 |
 |---|---:|
 | 인증·계정관리 | 4편 |
-| 컨테이너·오케스트레이션 | 15편 |
+| 컨테이너·오케스트레이션 | 16편 |
 | 네트워크·보안 | 13편 |
 | 가상화·프로비저닝 | 5편 |
 | DNS·IPAM | 3편 |
@@ -42,9 +42,11 @@ OpenLDAP 자체 구축, Active Directory 운영, 리눅스–AD 통합 인증(SS
 - [Vaultwarden 설치 가이드](/posts/installing-vaultwarden/)
 - [SSSD & Active Directory 연동 가이드](/posts/installing-sssd-ad/)
 
-### 컨테이너·오케스트레이션 (15편)
+### 컨테이너·오케스트레이션 (16편)
 
 kubeadm · Kubespray · RKE2 **세 가지 배포 방식**과 Ansible AWX **네 가지 설치 방식**을 직접 구축했습니다. GitOps(ArgoCD), 레지스트리(Harbor), CI(Jenkins)로 배포 파이프라인까지 연결했습니다.
+
+📌 **[컨테이너 플랫폼 구축 기록 — kubeadm에서 RKE2까지](/posts/overview-container-platform/)** — 전체 흐름과 선택 근거를 정리한 개요
 
 - [Kubernetes 설치방법](/posts/installing-k8s/)
 - [Kubespray 설치방법](/posts/installing-kubespray/)

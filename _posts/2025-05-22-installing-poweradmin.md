@@ -493,6 +493,7 @@ ingress:
 
 ### deployment-postgresql.yaml
 
+{% raw %}
 ```yaml
 ---
 # 📁 PowerAdmin/templates/deployment-postgresql.yaml
@@ -555,6 +556,7 @@ spec:
             name: pdns-init-sql
 ```
 {: file='PowerAdmin/templates/deployment-postgresql.yaml'}
+{% endraw %}
 
 
 ### service-postgresql.yaml
@@ -580,6 +582,7 @@ spec:
 
 ### pvc-postgresql.yaml
 
+{% raw %}
 ```yaml
 ---
 # 📁 PowerAdmin/templates/pvc-postgresql.yaml
@@ -597,9 +600,11 @@ spec:
       storage: {{ .Values.postgresql.storageSize }}
 ```
 {: file='PowerAdmin/templates/pvc-postgresql.yaml'}
+{% endraw %}
 
 ### configmap-initdb.yaml
 
+{% raw %}
 ```yaml
 ---
 # 📁 PowerAdmin/templates/configmap-initdb.yaml
@@ -618,9 +623,11 @@ data:
 {{ .Files.Get "sql/pdns-grants.sql" | indent 4 }}
 ```
 {: file='PowerAdmin/templates/configmap-initdb.yaml'}
+{% endraw %}
 
 ### job-postgresql.yaml
 
+{% raw %}
 ```yaml
 ---
 # 📁 PowerAdmin/templates/job-postgresql.yaml
@@ -660,6 +667,7 @@ spec:
             name: pdns-init-sql
 ```
 {: file='PowerAdmin/templates/job-postgresql.yaml'}
+{% endraw %}
 
 ## 참고 자료
 - [PowerDNS 공식문서](https://repo.powerdns.com)

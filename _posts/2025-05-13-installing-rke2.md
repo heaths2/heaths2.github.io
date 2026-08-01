@@ -239,6 +239,7 @@ kubectl get nodes -o jsonpath="{range .items[*]}{.metadata.name} → {.spec.podC
 > - IP 대역 확인
 {: .prompt-info }
 
+{% raw %}
 ```bash
 # Rancher Web UI 접속 URL 자동 생성 (초기 비밀번호 포함)
 echo https://rke2.infra.com/dashboard/?setup=$(kubectl get secret --namespace cattle-system bootstrap-secret -o go-template='{{.data.bootstrapPassword|base64decode}}')
@@ -246,6 +247,7 @@ echo https://rke2.infra.com/dashboard/?setup=$(kubectl get secret --namespace ca
 # Rancher 초기 관리자 패스워드 확인
 kubectl get secret --namespace cattle-system bootstrap-secret -o go-template='{{.data.bootstrapPassword|base64decode}}{{ "\n" }}'
 ```
+{% endraw %}
 
 ### 🔐 Rancher Admin 비밀번호 초기화 
 

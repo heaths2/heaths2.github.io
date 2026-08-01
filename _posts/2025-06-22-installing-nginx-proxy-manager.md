@@ -276,6 +276,7 @@ certManager:
 EOF
 ```
 
+{% raw %}
 ```bash
 # 📌 templates/_helpers.tpl
 cat << 'EOF' > nginx-proxy-manager/templates/_helpers.tpl
@@ -294,7 +295,9 @@ cat << 'EOF' > nginx-proxy-manager/templates/_helpers.tpl
 {{- end -}}
 EOF
 ```
+{% endraw %}
 
+{% raw %}
 ```bash
 # 📌 templates/NOTES.txt
 cat << 'EOF' > nginx-proxy-manager/templates/NOTES.txt
@@ -322,6 +325,7 @@ Initial Login Credentials:
 Remember to change your password after the first login.
 EOF
 ```
+{% endraw %}
 
 ```bash
 # 📌 templates/db-secret.yaml

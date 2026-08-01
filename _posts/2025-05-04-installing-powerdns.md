@@ -271,6 +271,7 @@ EOF
 
 ### deployment-postgresql.yaml
 
+{% raw %}
 ```yaml
 cat <<'EOF' | sudo tee PowerDNS-Admin/templates/deployment-postgresql.yaml
 ---
@@ -323,9 +324,11 @@ spec:
 EOF
 ```
 {: file='PowerDNS-Admin/templates/deployment-postgresql.yaml'}
+{% endraw %}
 
 ### deployment-powerdns-admin.yaml
 
+{% raw %}
 ```yaml
 cat <<'EOF' | sudo tee PowerDNS-Admin/templates/deployment-powerdns-admin.yaml
 ---
@@ -370,9 +373,11 @@ spec:
 EOF
 ```
 {: file='PowerDNS-Admin/templates/deployment-powerdns-admin.yaml'}
+{% endraw %}
 
 ### deployment-powerdns.yaml
 
+{% raw %}
 ```yaml
 cat <<'EOF' | sudo tee PowerDNS-Admin/templates/deployment-powerdns.yaml
 ---
@@ -424,9 +429,11 @@ spec:
 EOF
 ```
 {: file='PowerDNS-Admin/templates/deployment-powerdns.yaml'}
+{% endraw %}
 
 ### metallb-config.yaml
 
+{% raw %}
 ```yaml
 cat <<'EOF' | sudo tee PowerDNS-Admin/templates/metallb-config.yaml
 ---
@@ -456,9 +463,11 @@ spec:
 EOF
 ```
 {: file='PowerDNS-Admin/templates/metallb-config.yaml'}
+{% endraw %}
 
 ### ingress.yaml
 
+{% raw %}
 ```yaml
 cat <<'EOF' | sudo tee PowerDNS-Admin/templates/ingress.yaml
 ---
@@ -496,9 +505,11 @@ spec:
 EOF
 ```
 {: file='PowerDNS-Admin/templates/ingress.yaml'}
+{% endraw %}
 
 ### pvc-postgresql.yaml
 
+{% raw %}
 ```yaml
 cat <<'EOF' | sudo tee PowerDNS-Admin/templates/pvc-postgresql.yaml
 ---
@@ -518,6 +529,7 @@ spec:
 EOF
 ```
 {: file='PowerDNS-Admin/templates/pvc-postgresql.yaml'}
+{% endraw %}
 
 ### service-postgresql.yaml
 
@@ -544,6 +556,7 @@ EOF
 
 ### service-powerdns-admin.yaml
 
+{% raw %}
 ```yaml
 cat <<'EOF' | sudo tee PowerDNS-Admin/templates/service-powerdns-admin.yaml
 ---
@@ -564,9 +577,11 @@ spec:
 EOF
 ```
 {: file='PowerDNS-Admin/templates/service-powerdns-admin.yaml'}
+{% endraw %}
 
 ### service-powerdns.yaml
 
+{% raw %}
 ```yaml
 cat <<'EOF' | sudo tee PowerDNS-Admin/templates/service-powerdns.yaml
 ---
@@ -597,6 +612,7 @@ spec:
 EOF
 ```
 {: file='PowerDNS-Admin/templates/service-powerdns.yaml'}
+{% endraw %}
 
 ### _helpers.tpl
 

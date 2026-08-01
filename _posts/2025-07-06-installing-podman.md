@@ -118,6 +118,7 @@ podman pull docker.io/sonatype/nexus3:latest
 
 ### 네트워크 / 볼륨 / 컨테이너 확인
 
+{% raw %}
 ```bash
 # 1. 전체 네트워크 서브넷 일괄 확인
 podman network inspect $(podman network ls -q) \
@@ -134,6 +135,7 @@ podman volume inspect $(podman volume ls -q) \
 podman inspect <container> \
   --format '{{range .Mounts}}{{.Type}} | {{.Source}} -> {{.Destination}}{{println}}{{end}}'
 ```
+{% endraw %}
 
 ## 🛠️ 운영 (Operations)
 

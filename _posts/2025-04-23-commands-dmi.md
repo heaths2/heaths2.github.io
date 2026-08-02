@@ -6,6 +6,12 @@ categories: [Blog, Command]
 tags: [Command, Script, dmidecode]
 ---
 
+## 📘 개요 (Overview)
+
+dmidecode는 시스템의 DMI/SMBIOS 테이블을 읽어 하드웨어 정보를 출력하는 도구입니다. 제조사, 모델명, 시리얼 번호, 메모리 슬롯 구성, BIOS 버전 등을 확인할 수 있습니다.
+
+서버를 열어보지 않고도 사양과 자산 정보를 파악할 수 있어, 원격지 장비의 인벤토리를 정리하거나 증설 전에 슬롯 여유를 확인할 때 유용합니다.
+
 ## ⚙️ 명령어 사용법
 
 ### dmidecode Type 번호 및 키워드 매핑표

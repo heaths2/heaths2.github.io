@@ -115,3 +115,7 @@ mysql -u root -e "
 "
 ```
 
+## 참고 자료
+
+- [MySQL 8.0 레퍼런스 매뉴얼](https://dev.mysql.com/doc/refman/8.0/en/)
+- [MariaDB 공식 문서](https://mariadb.com/kb/en/documentation/)

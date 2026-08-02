@@ -201,3 +201,7 @@ No.  Class     Type    Event Type          Trap  Time Registered           Name
 ```
 
 </details>
+
+## 참고 자료
+
+- [Catalyst 2960 구성 가이드](https://www.cisco.com/c/en/us/support/switches/catalyst-2960-series-switches/products-installation-and-configuration-guides-list.html)

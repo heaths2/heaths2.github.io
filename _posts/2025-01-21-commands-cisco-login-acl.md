@@ -47,3 +47,7 @@ Switch(config-line)#access-class ALLOW_LOGIN in
 Switch(config-line)#end
 Switch# write memory
 ```
+
+## 참고 자료
+
+- [Catalyst 2960 구성 가이드](https://www.cisco.com/c/en/us/support/switches/catalyst-2960-series-switches/products-installation-and-configuration-guides-list.html)

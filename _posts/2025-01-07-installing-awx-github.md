@@ -133,3 +133,8 @@ __Github 새 템플릿 만들기(선택사항)_
 ### 템플릿 실행 확인
 ![AWX-Github_12](/assets/img/2025-01-07/AWX-Github_12.png)
 __Github 템플릿 실행 확인_
+
+## 참고 자료
+
+- [AWX 공식 문서](https://ansible.readthedocs.io/projects/awx/en/latest/)
+- [AWX GitHub 저장소](https://github.com/ansible/awx)

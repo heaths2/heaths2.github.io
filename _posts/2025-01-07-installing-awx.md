@@ -321,3 +321,8 @@ _AWX Web UI Login_
 
 ![AWX_2](/assets/img/2025-01-07/AWX_2.png)
 _AWX Web UI Dashboard_
+
+## 참고 자료
+
+- [AWX 공식 문서](https://ansible.readthedocs.io/projects/awx/en/latest/)
+- [AWX GitHub 저장소](https://github.com/ansible/awx)

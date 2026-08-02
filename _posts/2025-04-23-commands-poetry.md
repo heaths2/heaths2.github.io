@@ -6,6 +6,12 @@ categories: [Blog, Command]
 tags: [Command, Script, Poetry, Python3]
 ---
 
+## 📘 개요 (Overview)
+
+Poetry는 Python 프로젝트의 의존성 관리와 패키징을 담당하는 도구입니다. `pyproject.toml` 하나로 의존성, 가상환경, 빌드 설정을 함께 관리합니다.
+
+`requirements.txt` 방식과 달리 lock 파일로 하위 의존성 버전까지 고정하기 때문에, 개발 환경과 CI에서 동일한 패키지 조합이 재현됩니다.
+
 ## ⚙️ 명령어 사용법
 
 ### 1️⃣ Poetry 설치 및 📌 설치 확인

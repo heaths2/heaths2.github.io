@@ -307,3 +307,7 @@ if ($fromhost-ip == '10.1.50.18' and $syslogfacility-text == 'local7' and $syslo
 }
 ```
 {: file='/etc/logrotate.d/firewall'}
+
+## 참고 자료
+
+- [rsyslog 공식 문서](https://www.rsyslog.com/doc/index.html)

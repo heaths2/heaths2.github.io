@@ -107,3 +107,8 @@ _OPNsense HAProxy 설정 적용_
 
 ![그림_17](/assets/img/2025-05-10/그림17.png)
 _OPNsense HAProxy 설정 확인_
+
+## 참고 자료
+
+- [OPNsense 공식 문서](https://docs.opnsense.org/)
+- [HAProxy 공식 문서](https://docs.haproxy.org/)

@@ -150,3 +150,7 @@ echo 1 | sudo tee /sys/class/block/xvda3/device/rescan
 - vgcreate: 새로운 LVM 그룹 생성
 - lvcreate: 디스크 공간을 논리적으로 쪼개서 할당
 - resize2fs: ext4 전용 파일시스템 확장
+
+## 참고 자료
+
+- [RHEL 9 — 논리 볼륨 구성 및 관리](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/configuring_and_managing_logical_volumes/index)

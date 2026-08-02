@@ -221,3 +221,8 @@ iptables-save > iptables.rules
 ```bash
 iptables-restore < iptables.rules
 ```
+
+## 참고 자료
+
+- [netfilter/iptables 공식 문서](https://netfilter.org/documentation/)
+- [Arch Wiki — iptables](https://wiki.archlinux.org/title/Iptables)

@@ -613,3 +613,8 @@ on_crash    = 'restart'
 ```
 
 </details>
+
+## 참고 자료
+
+- [Xen Project 소프트웨어 개요](https://wiki.xenproject.org/wiki/Xen_Project_Software_Overview)
+- [Xen Project 공식 문서](https://xenbits.xen.org/docs/)

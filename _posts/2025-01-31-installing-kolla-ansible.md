@@ -177,3 +177,7 @@ kolla-ansible pull -i multinode
 ```bash
 kolla-ansible deploy -i multinode
 ```
+
+## 참고 자료
+
+- [Kolla-Ansible 공식 문서](https://docs.openstack.org/kolla-ansible/latest/)

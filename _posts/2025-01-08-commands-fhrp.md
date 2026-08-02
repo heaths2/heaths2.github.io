@@ -160,3 +160,8 @@ R1# show standby brief
 R2# show standby all
 R2# show standby brief
 ```
+
+## 참고 자료
+
+- [Cisco FHRP 개요](https://www.cisco.com/c/en/us/products/ios-nx-os-software/first-hop-redundancy-protocol-fhrp/index.html)
+- [HSRP 구성 가이드](https://www.cisco.com/c/en/us/support/docs/ip/hot-standby-router-protocol-hsrp/9234-hsrpguidetoc.html)

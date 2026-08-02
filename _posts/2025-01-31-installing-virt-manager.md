@@ -9,7 +9,7 @@ tags: [Virtual Machine, Virt-Manager, Virsh, QEMU]
 ## 📘 개요 (Overview)
 Virt-Manager(Virtual Machine Manager)는 KVM, QEMU 및 libvirt 기반 가상 머신을 관리하는 GUI 툴입니다. 이를 통해 가상 머신을 쉽게 생성, 관리 및 모니터링할 수 있다.
 
-## 🧩 주요 구성 요소 (Components)
+## 🔑 주요 특징 (Features)
 1. 가상 머신 생성 및 관리: KVM/QEMU 기반 VM을 GUI에서 생성하고 관리 가능
 2. 리소스 모니터링: CPU, 메모리, 네트워크 사용량 확인
 3. 원격 가상 머신 관리: SSH를 통해 원격 호스트의 VM 관리
@@ -36,3 +36,8 @@ lscpu | grep Virtualization
 sudo apt update
 sudo apt install virt-manager libvirt-daemon-system libvirt-clients libvirt-daemon-driver-xen ssh-askpass --no-install-recommends
 ```
+
+## 참고 자료
+
+- [Virt-Manager 공식 사이트](https://virt-manager.org/)
+- [libvirt 공식 문서](https://libvirt.org/docs.html)

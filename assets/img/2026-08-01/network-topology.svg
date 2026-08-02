@@ -1,0 +1,295 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1640 1180" width="1640" height="1180" font-family="Pretendard, 'Noto Sans KR', 'Malgun Gothic', -apple-system, sans-serif">
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M 0 0 L 10 5 L 0 10 z" fill="#7b8794"/></marker></defs>
+<rect width="1640" height="1180" fill="#ffffff"/>
+<text x="24" y="34" font-size="20" fill="#1b2733" text-anchor="start" font-weight="700">엔터프라이즈 네트워크 구성도</text>
+<text x="24" y="56" font-size="12" fill="#7b8794" text-anchor="start" font-weight="400">IDC · 본사 · 지점 3거점 / 망분리 · 다단 보안 · 전 구간 이중화   ※ IP·기관명·거점명은 공개용으로 일반화</text>
+<line x1="24" y1="70" x2="1616" y2="70" stroke="#e3e8ec" stroke-width="1.5"/>
+<rect x="24" y="86" width="1040" height="940" rx="10" fill="#fbfcfd" stroke="#5d6d7e" stroke-width="1.6"/>
+<text x="36" y="105" font-size="13" font-weight="700" fill="#5d6d7e">IDC 데이터센터</text>
+<rect x="60" y="112" width="150" height="42" rx="6" fill="#f2f4f6" stroke="#5d6d7e" stroke-width="1.4"/>
+<text x="135.0" y="137.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">인터넷 회선 A</text>
+<rect x="230" y="112" width="150" height="42" rx="6" fill="#f2f4f6" stroke="#5d6d7e" stroke-width="1.4"/>
+<text x="305.0" y="137.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">인터넷 회선 B</text>
+<rect x="400" y="112" width="190" height="42" rx="6" fill="#e8f6f3" stroke="#117a65" stroke-width="1.4"/>
+<text x="495.0" y="137.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">전용회선 (제휴기관)</text>
+<rect x="610" y="112" width="150" height="42" rx="6" fill="#e8f6f3" stroke="#117a65" stroke-width="1.4"/>
+<text x="685.0" y="137.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">클라우드 DX</text>
+<rect x="60" y="178" width="700" height="110" rx="10" fill="#fffafa" stroke="#c0392b" stroke-width="1.6"/>
+<text x="72" y="197" font-size="13" font-weight="700" fill="#c0392b">경계 보안 · 이중화</text>
+<rect x="80" y="206" width="140" height="62" rx="6" fill="#fdeeec" stroke="#c0392b" stroke-width="1.4"/>
+<text x="150.0" y="234.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">경계 방화벽 #1</text>
+<text x="150.0" y="248.14" font-size="10.5" font-weight="400" fill="#55636f" text-anchor="middle">차세대 FW</text>
+<rect x="232" y="206" width="140" height="62" rx="6" fill="#fdeeec" stroke="#c0392b" stroke-width="1.4"/>
+<text x="302.0" y="234.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">경계 방화벽 #2</text>
+<text x="302.0" y="248.14" font-size="10.5" font-weight="400" fill="#55636f" text-anchor="middle">차세대 FW</text>
+<text x="226" y="240" font-size="15" fill="#c0392b" text-anchor="middle" font-weight="400">⇄</text>
+<rect x="400" y="206" width="140" height="62" rx="6" fill="#fdeeec" stroke="#c0392b" stroke-width="1.4"/>
+<text x="470.0" y="241.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">IPS #1</text>
+<rect x="552" y="206" width="140" height="62" rx="6" fill="#fdeeec" stroke="#c0392b" stroke-width="1.4"/>
+<text x="622.0" y="241.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">IPS #2</text>
+<text x="546" y="240" font-size="15" fill="#c0392b" text-anchor="middle" font-weight="400">⇄</text>
+<path d="M 135 154 L 135 206" stroke="#7b8794" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+<path d="M 305 154 L 305 206" stroke="#7b8794" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+<path d="M 470 154 L 470 206" stroke="#117a65" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+<path d="M 685 154 L 685 206" stroke="#117a65" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+<rect x="300" y="320" width="200" height="58" rx="6" fill="#eaf2f9" stroke="#2471a3" stroke-width="1.4"/>
+<text x="400.0" y="346.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">코어 스위치 L3 · 이중화</text>
+<text x="400.0" y="360.14" font-size="10.5" font-weight="400" fill="#55636f" text-anchor="middle">게이트웨이 이중화 (FHRP)</text>
+<polyline points="150 268 150 300 400 300 400 320" stroke="#7b8794" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+<polyline points="470 268 470 300 400 300" stroke="#7b8794" stroke-width="1.5" fill="none"/>
+<text x="560" y="296" font-size="10" fill="#7b8794" text-anchor="middle" font-weight="400">VRRP/HSRP 가상 IP</text>
+<rect x="60" y="404" width="250" height="300" rx="10" fill="#fffafa" stroke="#c0392b" stroke-width="1.6"/>
+<text x="72" y="423" font-size="13" font-weight="700" fill="#c0392b">DMZ</text>
+<rect x="80" y="434" width="90" height="44" rx="6" fill="#eaf2f9" stroke="#2471a3" stroke-width="1.4"/>
+<text x="125.0" y="460.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">DMZ SW#1</text>
+<rect x="190" y="434" width="90" height="44" rx="6" fill="#eaf2f9" stroke="#2471a3" stroke-width="1.4"/>
+<text x="235.0" y="460.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">DMZ SW#2</text>
+<rect x="80" y="500" width="90" height="44" rx="6" fill="#fdeeec" stroke="#c0392b" stroke-width="1.4"/>
+<text x="125.0" y="526.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">WAF #1</text>
+<rect x="190" y="500" width="90" height="44" rx="6" fill="#fdeeec" stroke="#c0392b" stroke-width="1.4"/>
+<text x="235.0" y="526.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">WAF #2</text>
+<rect x="80" y="566" width="90" height="44" rx="6" fill="#fdf3e3" stroke="#b9770e" stroke-width="1.4"/>
+<text x="125.0" y="592.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">LB #1</text>
+<rect x="190" y="566" width="90" height="44" rx="6" fill="#fdf3e3" stroke="#b9770e" stroke-width="1.4"/>
+<text x="235.0" y="592.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">LB #2</text>
+<rect x="80" y="632" width="90" height="44" rx="6" fill="#e9f7ef" stroke="#1e8449" stroke-width="1.4"/>
+<text x="125.0" y="658.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">WEB #1</text>
+<rect x="190" y="632" width="90" height="44" rx="6" fill="#e9f7ef" stroke="#1e8449" stroke-width="1.4"/>
+<text x="235.0" y="658.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">WEB #2</text>
+<path d="M 125 478 L 125 500" stroke="#7b8794" stroke-width="1.5" fill="none"/>
+<path d="M 235 478 L 235 500" stroke="#7b8794" stroke-width="1.5" fill="none"/>
+<path d="M 125 544 L 125 566" stroke="#7b8794" stroke-width="1.5" fill="none"/>
+<path d="M 235 544 L 235 566" stroke="#7b8794" stroke-width="1.5" fill="none"/>
+<path d="M 125 610 L 125 632" stroke="#7b8794" stroke-width="1.5" fill="none"/>
+<path d="M 235 610 L 235 632" stroke="#7b8794" stroke-width="1.5" fill="none"/>
+<polyline points="350 349 180 349 180 434" stroke="#7b8794" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+<rect x="336" y="404" width="190" height="300" rx="10" fill="#fffdf7" stroke="#b9770e" stroke-width="1.6"/>
+<text x="348" y="423" font-size="13" font-weight="700" fill="#b9770e">관리망 (MGMT)</text>
+<rect x="352" y="434" width="72" height="42" rx="6" fill="#fdf3e3" stroke="#b9770e" stroke-width="1.4"/>
+<text x="388.0" y="459.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">NAS</text>
+<rect x="434" y="434" width="72" height="42" rx="6" fill="#fdf3e3" stroke="#b9770e" stroke-width="1.4"/>
+<text x="470.0" y="459.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">SIEM</text>
+<rect x="352" y="488" width="72" height="42" rx="6" fill="#fdf3e3" stroke="#b9770e" stroke-width="1.4"/>
+<text x="388.0" y="513.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">PAM</text>
+<rect x="434" y="488" width="72" height="42" rx="6" fill="#fdf3e3" stroke="#b9770e" stroke-width="1.4"/>
+<text x="470.0" y="513.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">KMS</text>
+<rect x="352" y="556" width="72" height="42" rx="6" fill="#f2f4f6" stroke="#5d6d7e" stroke-width="1.4"/>
+<text x="388.0" y="581.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">DNS</text>
+<rect x="434" y="556" width="72" height="42" rx="6" fill="#f2f4f6" stroke="#5d6d7e" stroke-width="1.4"/>
+<text x="470.0" y="581.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">모니터링</text>
+<rect x="352" y="610" width="72" height="42" rx="6" fill="#f2f4f6" stroke="#5d6d7e" stroke-width="1.4"/>
+<text x="388.0" y="635.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">로그수집</text>
+<rect x="434" y="610" width="72" height="42" rx="6" fill="#f2f4f6" stroke="#5d6d7e" stroke-width="1.4"/>
+<text x="470.0" y="635.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">점검도구</text>
+<polyline points="430 378 430 404" stroke="#7b8794" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+<rect x="552" y="404" width="240" height="300" rx="10" fill="#fcfdff" stroke="#7d3c98" stroke-width="1.6"/>
+<text x="564" y="423" font-size="13" font-weight="700" fill="#7d3c98">개발망 서버팜</text>
+<rect x="566" y="430" width="68" height="260" rx="6" fill="#eaf2f9" stroke="#2471a3" stroke-width="1.2"/>
+<text x="600" y="448" font-size="11.5" fill="#2471a3" text-anchor="middle" font-weight="700">WEB</text>
+<rect x="576" y="458" width="48" height="22" rx="3" fill="#ffffff" stroke="#2471a3" stroke-width="1"/>
+<text x="600" y="473" font-size="9.5" fill="#55636f" text-anchor="middle" font-weight="400">VM</text>
+<text x="600" y="492" font-size="8.5" fill="#8b97a2" text-anchor="middle" font-weight="400">VLAN 120</text>
+<rect x="576" y="514" width="48" height="22" rx="3" fill="#ffffff" stroke="#2471a3" stroke-width="1"/>
+<text x="600" y="529" font-size="9.5" fill="#55636f" text-anchor="middle" font-weight="400">VM</text>
+<text x="600" y="548" font-size="8.5" fill="#8b97a2" text-anchor="middle" font-weight="400">VLAN 121</text>
+<rect x="576" y="570" width="48" height="22" rx="3" fill="#ffffff" stroke="#2471a3" stroke-width="1"/>
+<text x="600" y="585" font-size="9.5" fill="#55636f" text-anchor="middle" font-weight="400">VM</text>
+<text x="600" y="604" font-size="8.5" fill="#8b97a2" text-anchor="middle" font-weight="400">VLAN 122</text>
+<rect x="576" y="626" width="48" height="22" rx="3" fill="#ffffff" stroke="#2471a3" stroke-width="1"/>
+<text x="600" y="641" font-size="9.5" fill="#55636f" text-anchor="middle" font-weight="400">VM</text>
+<text x="600" y="660" font-size="8.5" fill="#8b97a2" text-anchor="middle" font-weight="400">VLAN 123</text>
+<rect x="642" y="430" width="68" height="260" rx="6" fill="#e9f7ef" stroke="#1e8449" stroke-width="1.2"/>
+<text x="676" y="448" font-size="11.5" fill="#1e8449" text-anchor="middle" font-weight="700">WAS</text>
+<rect x="652" y="458" width="48" height="22" rx="3" fill="#ffffff" stroke="#1e8449" stroke-width="1"/>
+<text x="676" y="473" font-size="9.5" fill="#55636f" text-anchor="middle" font-weight="400">VM</text>
+<text x="676" y="492" font-size="8.5" fill="#8b97a2" text-anchor="middle" font-weight="400">VLAN 130</text>
+<rect x="652" y="514" width="48" height="22" rx="3" fill="#ffffff" stroke="#1e8449" stroke-width="1"/>
+<text x="676" y="529" font-size="9.5" fill="#55636f" text-anchor="middle" font-weight="400">VM</text>
+<text x="676" y="548" font-size="8.5" fill="#8b97a2" text-anchor="middle" font-weight="400">VLAN 131</text>
+<rect x="652" y="570" width="48" height="22" rx="3" fill="#ffffff" stroke="#1e8449" stroke-width="1"/>
+<text x="676" y="585" font-size="9.5" fill="#55636f" text-anchor="middle" font-weight="400">VM</text>
+<text x="676" y="604" font-size="8.5" fill="#8b97a2" text-anchor="middle" font-weight="400">VLAN 132</text>
+<rect x="652" y="626" width="48" height="22" rx="3" fill="#ffffff" stroke="#1e8449" stroke-width="1"/>
+<text x="676" y="641" font-size="9.5" fill="#55636f" text-anchor="middle" font-weight="400">VM</text>
+<text x="676" y="660" font-size="8.5" fill="#8b97a2" text-anchor="middle" font-weight="400">VLAN 133</text>
+<rect x="718" y="430" width="68" height="260" rx="6" fill="#fdeeec" stroke="#c0392b" stroke-width="1.2"/>
+<text x="752" y="448" font-size="11.5" fill="#c0392b" text-anchor="middle" font-weight="700">DB</text>
+<rect x="728" y="458" width="48" height="22" rx="3" fill="#ffffff" stroke="#c0392b" stroke-width="1"/>
+<text x="752" y="473" font-size="9.5" fill="#55636f" text-anchor="middle" font-weight="400">VM</text>
+<text x="752" y="492" font-size="8.5" fill="#8b97a2" text-anchor="middle" font-weight="400">VLAN 140</text>
+<rect x="728" y="514" width="48" height="22" rx="3" fill="#ffffff" stroke="#c0392b" stroke-width="1"/>
+<text x="752" y="529" font-size="9.5" fill="#55636f" text-anchor="middle" font-weight="400">VM</text>
+<text x="752" y="548" font-size="8.5" fill="#8b97a2" text-anchor="middle" font-weight="400">VLAN 141</text>
+<rect x="728" y="570" width="48" height="22" rx="3" fill="#ffffff" stroke="#c0392b" stroke-width="1"/>
+<text x="752" y="585" font-size="9.5" fill="#55636f" text-anchor="middle" font-weight="400">VM</text>
+<text x="752" y="604" font-size="8.5" fill="#8b97a2" text-anchor="middle" font-weight="400">VLAN 142</text>
+<rect x="728" y="626" width="48" height="22" rx="3" fill="#ffffff" stroke="#c0392b" stroke-width="1"/>
+<text x="752" y="641" font-size="9.5" fill="#55636f" text-anchor="middle" font-weight="400">VM</text>
+<text x="752" y="660" font-size="8.5" fill="#8b97a2" text-anchor="middle" font-weight="400">VLAN 143</text>
+<rect x="806" y="404" width="240" height="300" rx="10" fill="#fcfdff" stroke="#1e8449" stroke-width="1.6"/>
+<text x="818" y="423" font-size="13" font-weight="700" fill="#1e8449">운영망 서버팜</text>
+<rect x="820" y="430" width="68" height="260" rx="6" fill="#eaf2f9" stroke="#2471a3" stroke-width="1.2"/>
+<text x="854" y="448" font-size="11.5" fill="#2471a3" text-anchor="middle" font-weight="700">WEB</text>
+<rect x="830" y="458" width="48" height="22" rx="3" fill="#ffffff" stroke="#2471a3" stroke-width="1"/>
+<text x="854" y="473" font-size="9.5" fill="#55636f" text-anchor="middle" font-weight="400">VM</text>
+<text x="854" y="492" font-size="8.5" fill="#8b97a2" text-anchor="middle" font-weight="400">VLAN 220</text>
+<rect x="830" y="514" width="48" height="22" rx="3" fill="#ffffff" stroke="#2471a3" stroke-width="1"/>
+<text x="854" y="529" font-size="9.5" fill="#55636f" text-anchor="middle" font-weight="400">VM</text>
+<text x="854" y="548" font-size="8.5" fill="#8b97a2" text-anchor="middle" font-weight="400">VLAN 221</text>
+<rect x="830" y="570" width="48" height="22" rx="3" fill="#ffffff" stroke="#2471a3" stroke-width="1"/>
+<text x="854" y="585" font-size="9.5" fill="#55636f" text-anchor="middle" font-weight="400">VM</text>
+<text x="854" y="604" font-size="8.5" fill="#8b97a2" text-anchor="middle" font-weight="400">VLAN 222</text>
+<rect x="830" y="626" width="48" height="22" rx="3" fill="#ffffff" stroke="#2471a3" stroke-width="1"/>
+<text x="854" y="641" font-size="9.5" fill="#55636f" text-anchor="middle" font-weight="400">VM</text>
+<text x="854" y="660" font-size="8.5" fill="#8b97a2" text-anchor="middle" font-weight="400">VLAN 223</text>
+<rect x="896" y="430" width="68" height="260" rx="6" fill="#e9f7ef" stroke="#1e8449" stroke-width="1.2"/>
+<text x="930" y="448" font-size="11.5" fill="#1e8449" text-anchor="middle" font-weight="700">WAS</text>
+<rect x="906" y="458" width="48" height="22" rx="3" fill="#ffffff" stroke="#1e8449" stroke-width="1"/>
+<text x="930" y="473" font-size="9.5" fill="#55636f" text-anchor="middle" font-weight="400">VM</text>
+<text x="930" y="492" font-size="8.5" fill="#8b97a2" text-anchor="middle" font-weight="400">VLAN 230</text>
+<rect x="906" y="514" width="48" height="22" rx="3" fill="#ffffff" stroke="#1e8449" stroke-width="1"/>
+<text x="930" y="529" font-size="9.5" fill="#55636f" text-anchor="middle" font-weight="400">VM</text>
+<text x="930" y="548" font-size="8.5" fill="#8b97a2" text-anchor="middle" font-weight="400">VLAN 231</text>
+<rect x="906" y="570" width="48" height="22" rx="3" fill="#ffffff" stroke="#1e8449" stroke-width="1"/>
+<text x="930" y="585" font-size="9.5" fill="#55636f" text-anchor="middle" font-weight="400">VM</text>
+<text x="930" y="604" font-size="8.5" fill="#8b97a2" text-anchor="middle" font-weight="400">VLAN 232</text>
+<rect x="906" y="626" width="48" height="22" rx="3" fill="#ffffff" stroke="#1e8449" stroke-width="1"/>
+<text x="930" y="641" font-size="9.5" fill="#55636f" text-anchor="middle" font-weight="400">VM</text>
+<text x="930" y="660" font-size="8.5" fill="#8b97a2" text-anchor="middle" font-weight="400">VLAN 233</text>
+<rect x="972" y="430" width="68" height="260" rx="6" fill="#fdeeec" stroke="#c0392b" stroke-width="1.2"/>
+<text x="1006" y="448" font-size="11.5" fill="#c0392b" text-anchor="middle" font-weight="700">DB</text>
+<rect x="982" y="458" width="48" height="22" rx="3" fill="#ffffff" stroke="#c0392b" stroke-width="1"/>
+<text x="1006" y="473" font-size="9.5" fill="#55636f" text-anchor="middle" font-weight="400">VM</text>
+<text x="1006" y="492" font-size="8.5" fill="#8b97a2" text-anchor="middle" font-weight="400">VLAN 240</text>
+<rect x="982" y="514" width="48" height="22" rx="3" fill="#ffffff" stroke="#c0392b" stroke-width="1"/>
+<text x="1006" y="529" font-size="9.5" fill="#55636f" text-anchor="middle" font-weight="400">VM</text>
+<text x="1006" y="548" font-size="8.5" fill="#8b97a2" text-anchor="middle" font-weight="400">VLAN 241</text>
+<rect x="982" y="570" width="48" height="22" rx="3" fill="#ffffff" stroke="#c0392b" stroke-width="1"/>
+<text x="1006" y="585" font-size="9.5" fill="#55636f" text-anchor="middle" font-weight="400">VM</text>
+<text x="1006" y="604" font-size="8.5" fill="#8b97a2" text-anchor="middle" font-weight="400">VLAN 242</text>
+<rect x="982" y="626" width="48" height="22" rx="3" fill="#ffffff" stroke="#c0392b" stroke-width="1"/>
+<text x="1006" y="641" font-size="9.5" fill="#55636f" text-anchor="middle" font-weight="400">VM</text>
+<text x="1006" y="660" font-size="8.5" fill="#8b97a2" text-anchor="middle" font-weight="400">VLAN 243</text>
+<polyline points="400 378 400 392 672 392 672 404" stroke="#7b8794" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+<polyline points="672 392 926 392 926 404" stroke="#7b8794" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+<rect x="60" y="730" width="466" height="120" rx="10" fill="#fafbfc" stroke="#5d6d7e" stroke-width="1.6"/>
+<text x="72" y="749" font-size="13" font-weight="700" fill="#5d6d7e">스토리지 · 베어메탈</text>
+<rect x="84" y="762" width="110" height="50" rx="6" fill="#eaf2f9" stroke="#2471a3" stroke-width="1.4"/>
+<text x="139.0" y="791.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">SAN SW#1</text>
+<rect x="206" y="762" width="110" height="50" rx="6" fill="#eaf2f9" stroke="#2471a3" stroke-width="1.4"/>
+<text x="261.0" y="791.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">SAN SW#2</text>
+<rect x="340" y="762" width="80" height="50" rx="6" fill="#f2f4f6" stroke="#5d6d7e" stroke-width="1.4"/>
+<text x="380.0" y="791.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">스토리지</text>
+<rect x="430" y="762" width="80" height="50" rx="6" fill="#f2f4f6" stroke="#5d6d7e" stroke-width="1.4"/>
+<text x="470.0" y="791.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">베어메탈</text>
+<path d="M 194 787 L 206 787" stroke="#7b8794" stroke-width="1.5" fill="none"/>
+<path d="M 316 787 L 340 787" stroke="#7b8794" stroke-width="1.5" fill="none"/>
+<rect x="552" y="730" width="494" height="120" rx="10" fill="#f7fcfb" stroke="#117a65" stroke-width="1.6"/>
+<text x="564" y="749" font-size="13" font-weight="700" fill="#117a65">전용회선 연동</text>
+<rect x="568" y="760" width="148" height="36" rx="6" fill="#e8f6f3" stroke="#117a65" stroke-width="1.4"/>
+<text x="642.0" y="781.78" font-size="10.5" font-weight="400" fill="#1b2733" text-anchor="middle">제휴 금융기관 A</text>
+<rect x="728" y="760" width="148" height="36" rx="6" fill="#e8f6f3" stroke="#117a65" stroke-width="1.4"/>
+<text x="802.0" y="781.78" font-size="10.5" font-weight="400" fill="#1b2733" text-anchor="middle">제휴 금융기관 B</text>
+<rect x="888" y="760" width="148" height="36" rx="6" fill="#e8f6f3" stroke="#117a65" stroke-width="1.4"/>
+<text x="962.0" y="781.78" font-size="10.5" font-weight="400" fill="#1b2733" text-anchor="middle">제휴 금융기관 C</text>
+<rect x="568" y="804" width="148" height="36" rx="6" fill="#e8f6f3" stroke="#117a65" stroke-width="1.4"/>
+<text x="642.0" y="825.78" font-size="10.5" font-weight="400" fill="#1b2733" text-anchor="middle">제휴 금융기관 D</text>
+<rect x="728" y="804" width="148" height="36" rx="6" fill="#e8f6f3" stroke="#117a65" stroke-width="1.4"/>
+<text x="802.0" y="825.78" font-size="10.5" font-weight="400" fill="#1b2733" text-anchor="middle">제휴 금융기관 E</text>
+<rect x="888" y="804" width="148" height="36" rx="6" fill="#e8f6f3" stroke="#117a65" stroke-width="1.4"/>
+<text x="962.0" y="825.78" font-size="10.5" font-weight="400" fill="#1b2733" text-anchor="middle">클라우드 DX</text>
+<text x="560" y="868" font-size="10.5" fill="#7b8794" text-anchor="start" font-weight="400">※ VLAN 단위로 기관별 회선 분리</text>
+<rect x="60" y="880" width="986" height="124" rx="10" fill="#fbfcfd" stroke="#5d6d7e" stroke-width="1.6"/>
+<text x="72" y="899" font-size="13" font-weight="700" fill="#5d6d7e">구성 원칙</text>
+<rect x="76" y="901" width="76" height="17" rx="4" fill="#eef1f4" stroke="#c5ced6" stroke-width="1"/>
+<text x="114" y="913" font-size="10.5" fill="#41505e" text-anchor="middle" font-weight="700">이중화</text>
+<text x="164" y="913" font-size="10.5" fill="#5d6d7e" text-anchor="start" font-weight="400">경계·코어·WAF·LB·SAN 전 구간 쌍으로 구성해 단일 장애점을 두지 않음</text>
+<rect x="76" y="925" width="76" height="17" rx="4" fill="#eef1f4" stroke="#c5ced6" stroke-width="1"/>
+<text x="114" y="937" font-size="10.5" fill="#41505e" text-anchor="middle" font-weight="700">망분리</text>
+<text x="164" y="937" font-size="10.5" fill="#5d6d7e" text-anchor="start" font-weight="400">개발망과 운영망을 서버팜·VLAN 단위로 분리. 관리망은 별도 존으로 격리</text>
+<rect x="76" y="949" width="76" height="17" rx="4" fill="#eef1f4" stroke="#c5ced6" stroke-width="1"/>
+<text x="114" y="961" font-size="10.5" fill="#41505e" text-anchor="middle" font-weight="700">다단 방어</text>
+<text x="164" y="961" font-size="10.5" fill="#5d6d7e" text-anchor="start" font-weight="400">경계 FW → IPS → WAF → LB → 호스트 방화벽까지 계층별로 통제 지점 배치</text>
+<rect x="76" y="973" width="76" height="17" rx="4" fill="#eef1f4" stroke="#c5ced6" stroke-width="1"/>
+<text x="114" y="985" font-size="10.5" fill="#41505e" text-anchor="middle" font-weight="700">연동 격리</text>
+<text x="164" y="985" font-size="10.5" fill="#5d6d7e" text-anchor="start" font-weight="400">외부 기관 연동은 전용회선으로 분리하고 기관별 VLAN을 따로 할당</text>
+<rect x="1088" y="86" width="528" height="560" rx="10" fill="#fbfcfe" stroke="#2471a3" stroke-width="1.6"/>
+<text x="1100" y="105" font-size="13" font-weight="700" fill="#2471a3">본사 (HQ)</text>
+<rect x="1240" y="112" width="220" height="42" rx="6" fill="#e8f6f3" stroke="#117a65" stroke-width="1.4"/>
+<text x="1350.0" y="137.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">전용회선 ← IDC</text>
+<rect x="1240" y="178" width="220" height="52" rx="6" fill="#eaf2f9" stroke="#2471a3" stroke-width="1.4"/>
+<text x="1350.0" y="208.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">코어 스위치 · 층별 이중화</text>
+<path d="M 1350 154 L 1350 178" stroke="#7b8794" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+<rect x="1110" y="254" width="484" height="150" rx="10" fill="#fffafa" stroke="#c0392b" stroke-width="1.6"/>
+<text x="1122" y="273" font-size="13" font-weight="700" fill="#c0392b">망분리</text>
+<rect x="1126" y="284" width="144" height="64" rx="6" fill="#fdeeec" stroke="#c0392b" stroke-width="1.4"/>
+<text x="1198.0" y="313.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">중요단말망</text>
+<text x="1198.0" y="327.14" font-size="10.5" font-weight="400" fill="#55636f" text-anchor="middle">접근제어 경유</text>
+<path d="M 1198 230 L 1198 284" stroke="#7b8794" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+<rect x="1282" y="284" width="144" height="64" rx="6" fill="#fdeeec" stroke="#c0392b" stroke-width="1.4"/>
+<text x="1354.0" y="313.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">업무망</text>
+<text x="1354.0" y="327.14" font-size="10.5" font-weight="400" fill="#55636f" text-anchor="middle">유선</text>
+<path d="M 1354 230 L 1354 284" stroke="#7b8794" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+<rect x="1438" y="284" width="144" height="64" rx="6" fill="#fdeeec" stroke="#c0392b" stroke-width="1.4"/>
+<text x="1510.0" y="313.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">인터넷망</text>
+<text x="1510.0" y="327.14" font-size="10.5" font-weight="400" fill="#55636f" text-anchor="middle">유선 · 무선</text>
+<path d="M 1510 230 L 1510 284" stroke="#7b8794" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+<rect x="1110" y="420" width="484" height="206" rx="10" fill="#fbfdfc" stroke="#1e8449" stroke-width="1.6"/>
+<text x="1122" y="439" font-size="13" font-weight="700" fill="#1e8449">본사 서버팜</text>
+<rect x="1126" y="450" width="104" height="44" rx="6" fill="#e9f7ef" stroke="#1e8449" stroke-width="1.4"/>
+<text x="1178.0" y="476.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">AD</text>
+<rect x="1244" y="450" width="104" height="44" rx="6" fill="#e9f7ef" stroke="#1e8449" stroke-width="1.4"/>
+<text x="1296.0" y="476.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">DNS</text>
+<rect x="1362" y="450" width="104" height="44" rx="6" fill="#e9f7ef" stroke="#1e8449" stroke-width="1.4"/>
+<text x="1414.0" y="476.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">Radius</text>
+<rect x="1480" y="450" width="104" height="44" rx="6" fill="#e9f7ef" stroke="#1e8449" stroke-width="1.4"/>
+<text x="1532.0" y="476.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">VPN</text>
+<rect x="1126" y="508" width="104" height="44" rx="6" fill="#fdf3e3" stroke="#b9770e" stroke-width="1.4"/>
+<text x="1178.0" y="534.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">EPP</text>
+<rect x="1244" y="508" width="104" height="44" rx="6" fill="#fdf3e3" stroke="#b9770e" stroke-width="1.4"/>
+<text x="1296.0" y="534.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">DLP</text>
+<rect x="1362" y="508" width="104" height="44" rx="6" fill="#fdf3e3" stroke="#b9770e" stroke-width="1.4"/>
+<text x="1414.0" y="534.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">SAST</text>
+<rect x="1480" y="508" width="104" height="44" rx="6" fill="#fdf3e3" stroke="#b9770e" stroke-width="1.4"/>
+<text x="1532.0" y="534.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">SCM</text>
+<rect x="1300" y="566" width="140" height="44" rx="6" fill="#f2f4f6" stroke="#5d6d7e" stroke-width="1.4"/>
+<text x="1370.0" y="592.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">메신저</text>
+<text x="1130" y="600" font-size="10.5" fill="#7b8794" text-anchor="start" font-weight="400">자료전송 구간: InfiniBand</text>
+<rect x="1088" y="672" width="528" height="354" rx="10" fill="#fdfbfe" stroke="#7d3c98" stroke-width="1.6"/>
+<text x="1100" y="691" font-size="13" font-weight="700" fill="#7d3c98">지점</text>
+<rect x="1240" y="700" width="220" height="42" rx="6" fill="#e8f6f3" stroke="#117a65" stroke-width="1.4"/>
+<text x="1350.0" y="725.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">전용회선 ← IDC</text>
+<rect x="1240" y="762" width="220" height="48" rx="6" fill="#eaf2f9" stroke="#2471a3" stroke-width="1.4"/>
+<text x="1350.0" y="790.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">지점 스위치</text>
+<path d="M 1350 742 L 1350 762" stroke="#7b8794" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+<rect x="1150" y="850" width="220" height="64" rx="6" fill="#fdeeec" stroke="#c0392b" stroke-width="1.4"/>
+<text x="1260.0" y="879.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">업무망</text>
+<text x="1260.0" y="893.14" font-size="10.5" font-weight="400" fill="#55636f" text-anchor="middle">사내 시스템 접근</text>
+<polyline points="1350 810 1350 830 1260 830 1260 850" stroke="#7b8794" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+<rect x="1396" y="850" width="220" height="64" rx="6" fill="#fdeeec" stroke="#c0392b" stroke-width="1.4"/>
+<text x="1506.0" y="879.14" font-size="11.5" font-weight="700" fill="#1b2733" text-anchor="middle">인터넷망</text>
+<text x="1506.0" y="893.14" font-size="10.5" font-weight="400" fill="#55636f" text-anchor="middle">일반 인터넷</text>
+<polyline points="1350 810 1350 830 1506 830 1506 850" stroke="#7b8794" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+<text x="1112" y="960" font-size="10.5" fill="#7b8794" text-anchor="start" font-weight="400">본사·지점 모두 업무망과 인터넷망을 물리적으로 분리</text>
+<text x="1112" y="982" font-size="10.5" fill="#7b8794" text-anchor="start" font-weight="400">중요단말망은 접근제어 장비를 반드시 경유</text>
+<polyline points="1064 300 1076 300 1076 133 1240 133" stroke="#117a65" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<polyline points="1064 300 1076 300 1076 721 1240 721" stroke="#117a65" stroke-width="1.8" fill="none" marker-end="url(#ar)"/>
+<rect x="24" y="1046" width="1592" height="110" rx="10" fill="#fbfcfd" stroke="#5d6d7e" stroke-width="1.6"/>
+<text x="36" y="1065" font-size="13" font-weight="700" fill="#5d6d7e">범례</text>
+<rect x="48" y="1080" width="26" height="18" rx="4" fill="#fdeeec" stroke="#c0392b" stroke-width="1.4"/>
+<text x="82" y="1094" font-size="11.5" fill="#55636f" text-anchor="start" font-weight="400">경계·보안</text>
+<rect x="268" y="1080" width="26" height="18" rx="4" fill="#eaf2f9" stroke="#2471a3" stroke-width="1.4"/>
+<text x="302" y="1094" font-size="11.5" fill="#55636f" text-anchor="start" font-weight="400">네트워크</text>
+<rect x="488" y="1080" width="26" height="18" rx="4" fill="#e9f7ef" stroke="#1e8449" stroke-width="1.4"/>
+<text x="522" y="1094" font-size="11.5" fill="#55636f" text-anchor="start" font-weight="400">운영 서버</text>
+<rect x="708" y="1080" width="26" height="18" rx="4" fill="#f5eefa" stroke="#7d3c98" stroke-width="1.4"/>
+<text x="742" y="1094" font-size="11.5" fill="#55636f" text-anchor="start" font-weight="400">개발 서버</text>
+<rect x="928" y="1080" width="26" height="18" rx="4" fill="#fdf3e3" stroke="#b9770e" stroke-width="1.4"/>
+<text x="962" y="1094" font-size="11.5" fill="#55636f" text-anchor="start" font-weight="400">관리·보안도구</text>
+<rect x="1148" y="1080" width="26" height="18" rx="4" fill="#e8f6f3" stroke="#117a65" stroke-width="1.4"/>
+<text x="1182" y="1094" font-size="11.5" fill="#55636f" text-anchor="start" font-weight="400">외부·전용회선</text>
+<rect x="1368" y="1080" width="26" height="18" rx="4" fill="#f2f4f6" stroke="#5d6d7e" stroke-width="1.4"/>
+<text x="1402" y="1094" font-size="11.5" fill="#55636f" text-anchor="start" font-weight="400">기타</text>
+<text x="48" y="1128" font-size="11" fill="#8b97a2" text-anchor="start" font-weight="400">※ 공개용 도면입니다. 공인/사설 IP, 제휴 기관 실명, 거점명, 장비 벤더 조합은 모두 일반화했습니다.</text>
+</svg>

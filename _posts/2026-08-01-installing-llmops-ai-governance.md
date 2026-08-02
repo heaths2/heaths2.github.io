@@ -1158,7 +1158,7 @@ spec:
             - entries:
                 - keyless:
                     issuer: "https://token.actions.githubusercontent.com"
-                    subject: "https://github.com/heaths2/llmops-platform/*"
+                    subject: "https://github.com/<조직>/<플랫폼 레포>/*"
 ```
 {: file='security/policies/require-signed-images.yaml' }
 
